@@ -1,8 +1,19 @@
+import { HashRouter, Routes, Route } from "react-router-dom";
+
+import HomePage from "./components/HomePage.jsx";
+import WhiteboardPage from "./pages/WhiteboardPage/WhiteboardPage.jsx";
+import Navbar from "./components/Navbar/Navbar.jsx";
+
 function App() {
   return (
-    <div>
-      <h1>HOPE IN THE LORD</h1>
-    </div>
+    <HashRouter>
+      <Navbar />
+
+      <Routes>
+        <Route path="/" exact element={<HomePage />} />
+        <Route path="/whiteboard" exact element={<WhiteboardPage />} />
+      </Routes>
+    </HashRouter>
   );
 }
 

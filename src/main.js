@@ -1,5 +1,12 @@
-const { app, BrowserWindow } = require("electron");
+import { app, BrowserWindow } from "electron";
+import contextMenu from "electron-context-menu";
+
 const path = require("node:path");
+
+// fix: remove this later
+contextMenu({
+  showInspectElement: true,
+});
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
