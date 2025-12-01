@@ -5,7 +5,7 @@ const name = "paragraph";
 const Paragraph = Node.create({
   name,
   marks: "bold italic underline strike superscript highlight textStyle",
-  group: "node paragraph",
+  group: "block paragraph",
   content: "inline*",
   priority: 100,
 

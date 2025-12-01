@@ -19,6 +19,24 @@ const Heading2 = Node.create({
     };
   },
 
+  addInputRules() {
+    return [
+      textblockTypeInputRule({
+        find: new RegExp(`^(#{2})\\s$`),
+        type: this.type,
+        getAttributes: {
+          indentLevel: 0,
+          contentType: name,
+          nodeType: "block",
+        },
+      }),
+    ];
+  },
+
+  parseHTML() {
+    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h2" }];
+  },
+
   // FIX: indent cannot occur. Remains at 0
   // FIX: Enter -> create a paragraph
   addAttributes() {
@@ -45,24 +63,6 @@ const Heading2 = Node.create({
         }),
       },
     };
-  },
-
-  addInputRules() {
-    return [
-      textblockTypeInputRule({
-        find: new RegExp(`^(#{2})\\s$`),
-        type: this.type,
-        getAttributes: {
-          indentLevel: 0,
-          contentType: name,
-          nodeType: "block",
-        },
-      }),
-    ];
-  },
-
-  parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h2" }];
   },
 
   renderHTML({ HTMLAttributes }) {

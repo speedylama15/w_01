@@ -8,6 +8,7 @@ const Heading1 = Node.create({
   marks: "bold italic underline strike superscript highlight textStyle",
   group: "block heading",
   content: "inline*",
+  // prioritizes the content over the container when structural editing operations occur
   defining: true,
 
   addOptions() {
@@ -19,8 +20,24 @@ const Heading1 = Node.create({
     };
   },
 
-  // FIX: indent cannot occur. Remains at 0
-  // FIX: Enter -> create a paragraph
+  addInputRules() {
+    return [
+      textblockTypeInputRule({
+        find: new RegExp(`^(#{1})\\s$`),
+        type: this.type,
+        getAttributes: {
+          indentLevel: 0,
+          contentType: name,
+          nodeType: "block",
+        },
+      }),
+    ];
+  },
+
+  parseHTML() {
+    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h1" }];
+  },
+
   addAttributes() {
     return {
       contentType: {
@@ -45,24 +62,6 @@ const Heading1 = Node.create({
         }),
       },
     };
-  },
-
-  addInputRules() {
-    return [
-      textblockTypeInputRule({
-        find: new RegExp(`^(#{1})\\s$`),
-        type: this.type,
-        getAttributes: {
-          indentLevel: 0,
-          contentType: name,
-          nodeType: "block",
-        },
-      }),
-    ];
-  },
-
-  parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h1" }];
   },
 
   renderHTML({ HTMLAttributes }) {

@@ -13,9 +13,9 @@ const Whiteboard = () => {
 
   // debug
   const nodeRef = useRef();
-  const handleClick = (node, nodeDOM) => {
+  const handleClick = useCallback((node, nodeDOM) => {
     nodeRef.current = { node, nodeDOM };
-  };
+  }, []);
   // debug
 
   const { scale, set_scale, panOffsetCoords, set_panOffsetCoords } =

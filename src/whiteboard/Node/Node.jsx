@@ -2,6 +2,9 @@ import { memo, useEffect, useRef, useState } from "react";
 
 import useNodes from "../../stores/useNodes";
 
+// debug
+import Editor from "../../editor/Editor.jsx";
+
 import "./Node.css";
 
 function drawShape(x, y, width, height) {
@@ -41,6 +44,7 @@ function drawShape(x, y, width, height) {
 }
 
 const Node = memo(({ nodeID, handleClick }) => {
+  console.log("render");
   const [pathData, setPathData] = useState("");
 
   const node = useNodes((state) => state.nodesMap[nodeID]);
@@ -72,21 +76,18 @@ const Node = memo(({ nodeID, handleClick }) => {
         top: 0,
         left: 0,
         zIndex: 0,
-        backgroundColor: "#c5ffbeff",
         width: node.dimension.width,
-        height: node.dimension.height,
+        // height: node.dimension.height,
+        // idea: maybe this should be the way?
+        height: "unset",
         transform: `translate(${node.position.x}px, ${node.position.y}px)`,
         overflow: "visible",
-      }}
-      // debug
-      onMouseDown={(e) => {
-        e.stopPropagation();
-        handleClick(node, nodeRef.current);
       }}
     >
       <div
         className="rotatable-node"
         style={{
+          backgroundColor: "#bbddffff",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -98,7 +99,10 @@ const Node = memo(({ nodeID, handleClick }) => {
           transform: `rotate(${node.rotation}rad)`,
         }}
       >
-        <svg
+        {/* <Editor node={node} xmlns="http://www.w3.org/1999/xhtml" /> */}
+        <Editor node={node} />
+
+        {/* <svg
           ref={svgRef}
           width={node.dimension.width}
           height={node.dimension.height}
@@ -107,48 +111,21 @@ const Node = memo(({ nodeID, handleClick }) => {
             top: 0,
             left: 0,
             zIndex: 100,
+            pointerEvents: "none",
           }}
           viewBox={`0 0 ${node.dimension.width} ${node.dimension.height}`}
         >
           <path d={pathData} stroke="#3acc00ff" fill="none" strokeWidth="3" />
-
-          <foreignObject
-            x="0"
-            y="0"
-            width={node.dimension.width}
-            height={node.dimension.height}
-          >
-            <div
-              ref={editableRef}
-              xmlns="http://www.w3.org/1999/xhtml"
-              contentEditable
-              suppressContentEditableWarning
-              style={{
-                width: "100%",
-                maxWidth: `${node.dimension.width}px`,
-                minHeight: `${node.dimension.height}px`,
-                outline: "none",
-                overflow: "hidden",
-                whiteSpace: "pre-wrap",
-                wordWrap: "break-word",
-              }}
-              onInput={() => {
-                const scrollHeight = editableRef.current.scrollHeight;
-                const c_node = { ...node };
-                c_node.dimension.height = scrollHeight;
-
-                console.log(scrollHeight);
-
-                set_node(node.id, { ...c_node });
-              }}
-            >
-              {node.content.text}
-            </div>
-          </foreignObject>
-        </svg>
+        </svg> */}
       </div>
+    </div>
+  );
+});
 
-      {/* <div
+export default Node;
+
+{
+  /* <div
         className="node-controls"
         style={{
           position: "absolute",
@@ -167,9 +144,5 @@ const Node = memo(({ nodeID, handleClick }) => {
         <div className="node-resizer" data-location="top-right" />
         <div className="node-resizer" data-location="bottom-left" />
         <div className="node-resizer" data-location="bottom-right" />
-      </div> */}
-    </div>
-  );
-});
-
-export default Node;
+      </div> */
+}
