@@ -1,0 +1,16 @@
+.block-verse {
+  display: block;
+}
+
+.block-verse .content-verse::before {
+  display: inline-block;
+  content: attr(data-verse-number);
+  font-size: 14px;
+  vertical-align: super;
+  margin-right: 5px;
+}
+
+.block-verse verse {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 18px;
+}

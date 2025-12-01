@@ -11,8 +11,8 @@ const Navbar = () => {
 
       <div className="navbar_buttons">
         <button onClick={() => navigate(-1)}>Go Back</button>
-        <button onClick={() => navigate("/whiteboard")}>Whiteboard</button>
         <button onClick={() => navigate("/editor")}>Editor</button>
+        <button onClick={() => navigate("/whiteboard")}>Whiteboard</button>
       </div>
     </nav>
   );

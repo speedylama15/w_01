@@ -1,0 +1,20 @@
+/* td {
+  background-color: #d9c3ff;
+  border: 1px solid #475360;
+  padding: 10px 12px;
+  vertical-align: top;
+  position: relative;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+td:hover {
+  background-color: #c5b7de;
+  cursor: pointer;
+}
+*/

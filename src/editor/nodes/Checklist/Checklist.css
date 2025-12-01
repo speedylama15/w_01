@@ -1,0 +1,29 @@
+.checkbox {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
+  border: 1px solid #000;
+  border-radius: 5px;
+  outline: none;
+  margin-right: 8px;
+  /* FIX: not sure if have to fix this but just in case */
+  vertical-align: bottom;
+  cursor: pointer;
+}
+
+.block-checklist[data-is-checked="true"] .checkbox {
+}
+
+.block-checklist[data-is-checked="false"] .checkbox {
+}
+
+.block-checklist[data-is-checked="false"] .checkmark {
+  display: none;
+}
+
+.block-checklist .checkmark {
+  width: 20px;
+  height: 20px;
+}

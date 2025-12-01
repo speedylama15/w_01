@@ -1,0 +1,30 @@
+.block-image {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+}
+
+.block-image img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+}
+
+.resize-button-container {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(50%, 50%);
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.resize-button {
+  font-family: "Outfit";
+  font-size: 18px;
+  font-weight: 300;
+  background-color: #fff;
+  border: none;
+}

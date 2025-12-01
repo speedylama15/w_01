@@ -1,0 +1,16 @@
+.block-verseWithCitation {
+}
+
+verse-with-citation::before {
+  content: attr(data-citation);
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 500;
+  padding-right: 7px;
+}
+
+verse-with-citation {
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 300;
+}

@@ -1,0 +1,13 @@
+.block-divider {
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+hr {
+  /* FIX: ask how I can design hr */
+  display: block;
+  border: none;
+  height: 0.5px;
+  background: #5f616b;
+  border-radius: 12px;
+}

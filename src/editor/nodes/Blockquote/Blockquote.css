@@ -1,0 +1,20 @@
+.block-blockquote {
+  border: 1px solid #fa8072 !important;
+}
+
+.block-blockquote:not(.empty-blockquote) blockquote::before {
+  content: "\201C";
+}
+
+author::before {
+  content: attr(data-author);
+}
+
+blockquote {
+  /* FIX */
+  display: block;
+  /* FIX */
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1.4;
+}
