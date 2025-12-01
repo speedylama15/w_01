@@ -1,0 +1,47 @@
+.node {
+}
+
+.rotatable-node {
+}
+
+.node p {
+}
+
+/* ------------------------ */
+
+.node-controls {
+  /*  */
+}
+
+.node-resizer {
+  position: absolute;
+  background-color: #001068ff;
+}
+
+.node-resizer[data-location="top"] {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+}
+
+.node-resizer[data-location="right"] {
+  width: 1px;
+  height: 100%;
+  top: 0;
+  right: 0;
+}
+
+.node-resizer[data-location="bottom"] {
+  width: 100%;
+  height: 1px;
+  bottom: 0;
+  left: 0;
+}
+
+.node-resizer[data-location="left"] {
+  width: 1px;
+  height: 100%;
+  top: 0;
+  left: 0;
+}

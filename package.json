@@ -26,10 +26,17 @@
     "@electron-forge/plugin-fuses": "^7.10.2",
     "@electron-forge/plugin-webpack": "^7.10.2",
     "@electron/fuses": "^1.8.0",
+    "@eslint/js": "^9.39.1",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "babel-loader": "^10.0.0",
     "css-loader": "^6.11.0",
     "electron": "39.2.4",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "eslint-webpack-plugin": "^5.0.2",
+    "globals": "^16.5.0",
     "node-loader": "^2.1.0",
     "style-loader": "^3.3.4"
   },
@@ -37,9 +44,12 @@
     "d3": "^7.9.0",
     "electron-context-menu": "^4.1.1",
     "electron-squirrel-startup": "^1.0.1",
+    "paper": "^0.12.18",
+    "rbush": "^4.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.6",
+    "roughjs": "^4.6.6",
     "zustand": "^5.0.8"
   }
 }
