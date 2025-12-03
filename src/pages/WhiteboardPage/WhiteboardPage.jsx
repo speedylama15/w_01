@@ -1,17 +1,20 @@
+import { memo } from "react";
+
 import Whiteboard from "../../whiteboard/Whiteboard.jsx";
+import Sidebar from "./Sidebar.jsx";
 
 import "./WhiteboardPage.css";
 
-const WhiteboardPage = () => {
+const WhiteboardPage = memo(() => {
   return (
     <div className="whiteboard-page">
-      <div className="sidebar"></div>
+      <Sidebar />
 
       <div className="main">
         <Whiteboard />
       </div>
     </div>
   );
-};
+});
 
 export default WhiteboardPage;

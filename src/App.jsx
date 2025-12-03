@@ -8,15 +8,17 @@ import Navbar from "./components/Navbar/Navbar.jsx";
 
 function App() {
   return (
-    <HashRouter>
-      <Navbar />
+    <div className="t-page">
+      <HashRouter>
+        <Navbar />
 
-      <Routes>
-        <Route path="/" exact element={<HomePage />} />
-        <Route path="/editor" exact element={<EditorPage />} />
-        <Route path="/whiteboard" exact element={<WhiteboardPage />} />
-      </Routes>
-    </HashRouter>
+        <Routes>
+          <Route path="/" exact element={<HomePage />} />
+          <Route path="/editor" exact element={<EditorPage />} />
+          <Route path="/whiteboard" exact element={<WhiteboardPage />} />
+        </Routes>
+      </HashRouter>
+    </div>
   );
 }
 

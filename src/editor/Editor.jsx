@@ -126,7 +126,7 @@ const Editor = ({ node, ...others }) => {
   const set_node = useNodes((state) => state.set_node);
 
   const editor = useEditor({
-    content: "",
+    content: html,
     extensions: [
       // REVIEW: node
       Document,
@@ -168,7 +168,7 @@ const Editor = ({ node, ...others }) => {
       onKeyDown={() => {
         const nNode = { ...node };
         nNode.dimension.height = editor.view.dom.scrollHeight + 16 * 2;
-        set_node(node.id, { ...nNode });
+        set_node({ ...nNode });
       }}
     >
       <EditorContent editor={editor} className="editor-content" />

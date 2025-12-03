@@ -6,11 +6,21 @@ const useNodes = create((set) => {
   return {
     nodesMap,
 
-    set_node: (nodeID, node) =>
+    add_node: (node) =>
+      set((state) => {
+        return {
+          nodesMap: {
+            ...state.nodesMap,
+            [node.id]: node,
+          },
+        };
+      }),
+
+    set_node: (node) =>
       set((state) => ({
         nodesMap: {
           ...state.nodesMap,
-          [nodeID]: node,
+          [node.id]: node,
         },
       })),
   };
