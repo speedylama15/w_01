@@ -135,7 +135,8 @@ const Whiteboard = () => {
       document.body.style.userSelect = "none";
 
       if (mouseState === "ADD_SQUARE") {
-        // mouse down needs to happen first
+        // 1. select a shape from the side menu
+        // 2. mousedown on whiteboard (here)
         // set startCoords
         const startCoords = getWorldCoords(
           e,
@@ -167,9 +168,6 @@ const Whiteboard = () => {
         // clear the canvas
         // draw the current shape
         // fix: draw any visible shape (culling)
-
-        // debug
-        console.log(shapeCanvasRef.current);
 
         const shapeCanvas = shapeCanvasRef.current;
         const ctx = shapeCanvas.getContext("2d");

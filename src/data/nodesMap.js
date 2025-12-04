@@ -7,9 +7,9 @@ const nodesMap = {
     rotation: 0,
     position: { x: 0, y: 0 },
     dimension: { width: 320, height: 100 },
-    // idea: perhaps I need a property here called svg path
-    // review: path and drawing are almost identical
-    // idea: while drawing produce an svg path string
+    // review: store values that were given when shape was generated
+    // review: on runtime, I should be able to generate an svg path and use that for intersection
+    // review: or interactivity
   },
 };
 
