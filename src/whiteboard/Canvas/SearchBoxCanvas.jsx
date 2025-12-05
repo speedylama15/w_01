@@ -1,16 +1,11 @@
 import { useEffect } from "react";
 
-import useNodes from "../../stores/useNodes.js";
 import usePanning from "../../stores/usePanning.js";
 import useWrapperRect from "../../stores/useWrapperRect.js";
 
 import useSetCanvasDimension from "../../hooks/useSetCanvasDimension.jsx";
 
-import { drawSquareWithBezierCurve } from "../../utils/drawSquareWithBezierCurve";
-
-const ShapeCanvas = ({ ref }) => {
-  const nodesMap = useNodes((state) => state.nodesMap);
-
+const SearchBoxCanvas = ({ ref }) => {
   const wrapperRect = useWrapperRect((state) => state.wrapperRect);
 
   const scale = usePanning((state) => state.scale);
@@ -20,12 +15,11 @@ const ShapeCanvas = ({ ref }) => {
 
   useEffect(() => {
     const canvas = ref.current;
-    const ctx = canvas.getContext("2d");
 
-    // review: for enhancement
-    // idea: perhaps I can even make dpr a state for optimization
-    // idea: lower the dpr when zooming or panning
-    // idea: increase dpr when scale increases
+    // debug: do I not need this?
+    // if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -34,16 +28,11 @@ const ShapeCanvas = ({ ref }) => {
     ctx.scale(dpr, dpr);
     ctx.translate(panOffsetCoords.x, panOffsetCoords.y);
     ctx.scale(scale, scale);
-
-    // todo: culling is needed here
-    Object.values(nodesMap).forEach((node) => {
-      drawSquareWithBezierCurve(ctx, node, 10);
-    });
-  }, [ref, wrapperRect, panOffsetCoords, scale, nodesMap]);
+  }, [ref, wrapperRect, panOffsetCoords, scale]);
 
   return (
     <canvas
-      id="shape-canvas"
+      id="search-box-canvas"
       ref={ref}
       width={wrapperRect.width}
       height={wrapperRect.height}
@@ -58,4 +47,4 @@ const ShapeCanvas = ({ ref }) => {
   );
 };
 
-export default ShapeCanvas;
+export default SearchBoxCanvas;

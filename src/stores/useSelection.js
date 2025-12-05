@@ -2,11 +2,9 @@ import { create } from "zustand";
 
 const useSelection = create((set) => {
   return {
-    // review: BOX > Node
-    selectedBoxesMap: {},
-    set_selectedBoxesMap: (obj) =>
-      set(() => ({ selectedBoxesMap: { ...obj } })),
-    reset_selectedBoxesMap: () => set(() => ({ selectedBoxesMap: {} })),
+    // idea: maybe I can optimize this via storing only the IDs, but maybe that's overengineering
+    singleSelectedNode: null,
+    set_singleSelectedNode: (node) => set(() => ({ singleSelectedNode: node })),
   };
 });
 

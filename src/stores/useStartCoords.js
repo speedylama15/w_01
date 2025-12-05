@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-const useCoords = create((set) => {
+const useStartCoords = create((set) => {
   return {
     startCoords: null,
 
@@ -8,4 +8,4 @@ const useCoords = create((set) => {
   };
 });
 
-export default useCoords;
+export default useStartCoords;

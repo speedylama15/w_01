@@ -5,7 +5,7 @@ import useWrapperRect from "../stores/useWrapperRect";
 // idea: when resize occurs, maybe I should nullify/reset everything
 // idea: like the alignment lines and anything that relies on wrapperRect
 
-const useResizeObserver = (wrapperRef) => {
+const useObserveWrapperRect = (wrapperRef) => {
   const set_wrapperRect = useWrapperRect((state) => state.set_wrapperRect);
 
   useEffect(() => {
@@ -16,9 +16,6 @@ const useResizeObserver = (wrapperRef) => {
       const { x, y } = entries[0].target.getBoundingClientRect();
       const rect = { x, y, width, height };
 
-      // FIX
-      console.log("RESIZING!!!", rect);
-
       set_wrapperRect(rect);
     });
 
@@ -28,4 +25,4 @@ const useResizeObserver = (wrapperRef) => {
   }, [wrapperRef, set_wrapperRect]);
 };
 
-export default useResizeObserver;
+export default useObserveWrapperRect;

@@ -4,8 +4,8 @@ import nodesMap from "../data/nodesMap";
 
 const useNodes = create((set) => {
   return {
+    // nodesMap
     nodesMap,
-
     add_node: (node) =>
       set((state) => {
         return {
@@ -15,7 +15,6 @@ const useNodes = create((set) => {
           },
         };
       }),
-
     set_node: (node) =>
       set((state) => ({
         nodesMap: {
@@ -23,6 +22,10 @@ const useNodes = create((set) => {
           [node.id]: node,
         },
       })),
+
+    // newNode
+    newNode: null,
+    set_newNode: (node) => set(() => ({ newNode: node })),
   };
 });
 

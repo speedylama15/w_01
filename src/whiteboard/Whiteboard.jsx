@@ -1,22 +1,29 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import Node from "./Node/Node.jsx";
-import ShapeCanvas from "./Canvas/ShapeCanvas.jsx";
 import LineGrid from "./Canvas/LineGrid.jsx";
+import NodesTree from "./Canvas/NodesTree.jsx";
+import NewNodeCanvas from "./Canvas/NewNodeCanvas.jsx";
+import ShapeCanvas from "./Canvas/ShapeCanvas.jsx";
+import SearchBoxCanvas from "./Canvas/SearchBoxCanvas.jsx";
 
 import useMouse from "../stores/useMouse.js";
 import usePanning from "../stores/usePanning";
 import useNodes from "../stores/useNodes";
 import useStartCoords from "../stores/useStartCoords.js";
 import useWrapperRect from "../stores/useWrapperRect.js";
+import useTrees from "../stores/useTrees.js";
+import useSelection from "../stores/useSelection.js";
 
-import useResizeObserver from "../hooks/useResizeObserver.jsx";
+import useObserveWrapperRect from "../hooks/useObserveWrapperRect.jsx";
 
 import { getWorldCoords } from "../utils/getWorldCoords.js";
+import { getNodeAABB } from "../utils/getNodeAABB.js";
+import { drawSquareWithBezierCurve } from "../utils/drawSquareWithBezierCurve.js";
 
 import "./Whiteboard.css";
 
-// debug: finding intersection: at the bottom of the code
+// debug: finding intersection
 // const handleMouseMove = useCallback(
 //   (e) => {
 //     const wrapperRect = wrapperRef.current.getBoundingClientRect();
@@ -33,6 +40,7 @@ import "./Whiteboard.css";
 
 //       const whiteboardX =
 //         (e.clientX - wrapperRect.left - panOffsetCoords.x) / scale;
+//       // review: I'm pretty sure I can just use the world coord of nodeX instead of all this calculation
 //       const nodeX =
 //         (nodeRect.left - wrapperRect.left - panOffsetCoords.x) / scale;
 //       const localX = whiteboardX - nodeX;
@@ -93,23 +101,6 @@ import "./Whiteboard.css";
 //   [panOffsetCoords, scale]
 // );
 
-function drawRoughLine(ctx, x1, y1, x2, y2, roughness) {
-  const segments = 5; // Number of segments per line
-  const dx = (x2 - x1) / segments;
-  const dy = (y2 - y1) / segments;
-
-  for (let i = 0; i <= segments; i++) {
-    const x = x1 + dx * i + (Math.random() - 0.5) * roughness;
-    const y = y1 + dy * i + (Math.random() - 0.5) * roughness;
-
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
-  }
-}
-
 const Whiteboard = () => {
   // <------- states ------->
   const { mouseState, set_mouseState } = useMouse();
@@ -119,19 +110,39 @@ const Whiteboard = () => {
   const { scale, panOffsetCoords, set_scale, set_panOffsetCoords } =
     usePanning();
 
+  const set_nodesTree = useTrees((state) => state.set_nodesTree);
+  const reset_nodesTree = useTrees((state) => state.reset_nodesTree);
+
   const { startCoords, set_startCoords } = useStartCoords();
 
   const nodesMap = useNodes((state) => state.nodesMap);
   const add_node = useNodes((state) => state.add_node);
+  const set_node = useNodes((state) => state.set_node);
+  const newNode = useNodes((state) => state.newNode);
+  const set_newNode = useNodes((state) => state.set_newNode);
+
+  const singleSelectedNode = useSelection((state) => state.singleSelectedNode);
+  const set_singleSelectedNode = useSelection(
+    (state) => state.set_singleSelectedNode
+  );
 
   // <------- refs ------->
-  const newNodeConfigRef = useRef();
+
   const wrapperRef = useRef();
   const shapeCanvasRef = useRef();
+  const newNodeCanvasRef = useRef();
+  const searchBoxCanvasRef = useRef();
+
+  // <------- custom hooks ------->
+  useObserveWrapperRect(wrapperRef);
 
   // <------- event handlers ------->
   const handleMouseDown = useCallback(
     (e) => {
+      // idea: perhaps this is the place in which I need to set up rTree
+      // idea: maybe create a util function to set up rTree
+      set_nodesTree([]);
+
       document.body.style.userSelect = "none";
 
       if (mouseState === "ADD_SQUARE") {
@@ -148,7 +159,14 @@ const Whiteboard = () => {
         set_startCoords(startCoords);
       }
     },
-    [mouseState, panOffsetCoords, scale, wrapperRect, set_startCoords]
+    [
+      mouseState,
+      panOffsetCoords,
+      scale,
+      wrapperRect,
+      set_startCoords,
+      set_nodesTree,
+    ]
   );
 
   const handleMouseMove = useCallback(
@@ -164,17 +182,17 @@ const Whiteboard = () => {
           wrapperRect
         );
 
-        // each movement
-        // clear the canvas
-        // draw the current shape
-        // fix: draw any visible shape (culling)
+        const newNodeCanvas = newNodeCanvasRef.current;
+        const ctx = newNodeCanvas.getContext("2d");
+        const dpr = window.devicePixelRatio || 1;
 
-        const shapeCanvas = shapeCanvasRef.current;
-        const ctx = shapeCanvas.getContext("2d");
-
+        // reset and clear
+        // todo: selective drawing -> culling
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+        // provide scale + transform + sharp scale
+        ctx.scale(dpr, dpr);
         ctx.translate(panOffsetCoords.x, panOffsetCoords.y);
         ctx.scale(scale, scale);
 
@@ -183,112 +201,157 @@ const Whiteboard = () => {
         const y1 = Math.min(startCoords.y, currentCoords.y);
         const y2 = Math.max(startCoords.y, currentCoords.y);
 
+        // todo: perhaps I need to set a minimum width and height???
         const position = { x: x1, y: y1 };
         const dimension = { width: x2 - x1, height: y2 - y1 };
 
-        newNodeConfigRef.current = { position, dimension };
+        // store the new pos and dim of new node
+        set_newNode({ position, dimension });
 
-        // todo: draw
-        // fix: calculate the svg path
-        const roughness = 2;
-
-        const topLeft = {
-          x: position.x + (Math.random() - 0.5) * roughness,
-          y: position.y + (Math.random() - 0.5) * roughness,
-        };
-        const topRight = {
-          x: position.x + dimension.width + (Math.random() - 0.5) * roughness,
-          y: position.y + (Math.random() - 0.5) * roughness,
-        };
-        const bottomRight = {
-          x: position.x + dimension.width + (Math.random() - 0.5) * roughness,
-          y: position.y + dimension.height + (Math.random() - 0.5) * roughness,
-        };
-        const bottomLeft = {
-          x: position.x + (Math.random() - 0.5) * roughness,
-          y: position.y + dimension.height + (Math.random() - 0.5) * roughness,
-        };
-
-        ctx.beginPath();
-        ctx.moveTo(topLeft.x, topLeft.y);
-
-        drawRoughLine(
-          ctx,
-          topLeft.x,
-          topLeft.y,
-          topRight.x,
-          topRight.y,
-          roughness
-        );
-        drawRoughLine(
-          ctx,
-          topRight.x,
-          topRight.y,
-          bottomRight.x,
-          bottomRight.y,
-          roughness
-        );
-        drawRoughLine(
-          ctx,
-          bottomRight.x,
-          bottomRight.y,
-          bottomLeft.x,
-          bottomLeft.y,
-          roughness
-        );
-        drawRoughLine(
-          ctx,
-          bottomLeft.x,
-          bottomLeft.y,
-          topLeft.x,
-          topLeft.y,
-          roughness
-        );
-
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.restore();
-        // todo: draw
+        // draw
+        // DEBUG: DRAW NODE
+        drawSquareWithBezierCurve(ctx, { position, dimension });
 
         return;
       }
-    },
-    [mouseState, startCoords, panOffsetCoords, scale, wrapperRect]
-  );
 
-  const handleMouseUp = useCallback(
-    (e) => {
-      document.body.style.userSelect = "auto";
+      // todo
+      if (mouseState === "SINGLE_NODE_MOVE") {
+        const SEARCH_BOUNDARY = 500;
 
-      if (mouseState === "ADD_SQUARE") {
-        // x,y, width, height???
-        const { position, dimension } = newNodeConfigRef.current;
+        const currentCoords = getWorldCoords(
+          e,
+          panOffsetCoords,
+          scale,
+          wrapperRect
+        );
 
-        const newNode = {
-          id: `node-${Math.random()}`,
-          // fix: type -> as of rn, just note
-          type: "note",
-          shape: "square",
-          content: { html: "hi" },
-          rotation: 0,
-          position,
-          dimension,
+        // make it move by 1px
+        const diffX = Math.floor(currentCoords.x - startCoords.x);
+        const diffY = Math.floor(currentCoords.y - startCoords.y);
+
+        // these are CONSTANTLY updated
+        // draw on search box canvas
+        const NODEBOX = getNodeAABB(singleSelectedNode);
+        const SEARCHBOX = {
+          minX: NODEBOX.minX + diffX - SEARCH_BOUNDARY,
+          minY: NODEBOX.minY + diffY - SEARCH_BOUNDARY,
+          maxX: NODEBOX.maxX + diffX + SEARCH_BOUNDARY,
+          maxY: NODEBOX.maxY + diffY + SEARCH_BOUNDARY,
+          node: singleSelectedNode,
         };
 
-        add_node(newNode);
+        const searchBoxCanvas = searchBoxCanvasRef.current;
+        const ctx = searchBoxCanvas.getContext("2d");
+        const dpr = window.devicePixelRatio || 1;
 
-        set_mouseState(null);
-        set_startCoords(null);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#009b03ff";
 
-        newNodeConfigRef.current = null;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-        return;
+        ctx.scale(dpr, dpr);
+        ctx.translate(panOffsetCoords.x, panOffsetCoords.y);
+        ctx.scale(scale, scale);
+
+        ctx.strokeRect(
+          SEARCHBOX.minX,
+          SEARCHBOX.minY,
+          SEARCHBOX.maxX - SEARCHBOX.minX,
+          SEARCHBOX.maxY - SEARCHBOX.minY
+        );
+
+        // the selected node holds the init data in which we can base it off of
+        const initNode = singleSelectedNode;
+        // updated node
+        const updatedNode = {
+          ...initNode,
+          position: {
+            x: initNode.position.x + diffX,
+            y: initNode.position.y + diffY,
+          },
+        };
+
+        set_node(updatedNode);
       }
     },
-    [mouseState, add_node, set_mouseState, set_startCoords]
+    [
+      mouseState,
+      startCoords,
+      panOffsetCoords,
+      scale,
+      wrapperRect,
+      set_newNode,
+      singleSelectedNode,
+      set_node,
+    ]
   );
+
+  const handleMouseUp = useCallback(() => {
+    document.body.style.userSelect = "auto";
+
+    // for visualization
+    reset_nodesTree();
+
+    // a node to add MUST exist
+    if (mouseState === "ADD_SQUARE" && newNode) {
+      const { position, dimension } = newNode;
+
+      // debug: NODE STRUCTURE
+      const node = {
+        id: `node-${Math.random()}`,
+        type: "note",
+        shape: "square",
+        content: { html: "hi" },
+        rotation: 0,
+        position,
+        dimension,
+      };
+
+      add_node(node);
+
+      // idea: maybe get this out in the open because this is something that always (?) has to trigger?
+      set_mouseState(null);
+      set_startCoords(null);
+      set_newNode(null);
+
+      // clear new node canvas
+      const newNodeCanvas = newNodeCanvasRef.current;
+      const ctx = newNodeCanvas.getContext("2d");
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+      return;
+    }
+
+    if (mouseState === "SINGLE_NODE_MOVE") {
+      // I need to obtain the updated node's values
+      // because it's important to know if the node moved out of the group and I need to check its box
+      // DEBUG: this is for later when working with grouping
+
+      set_mouseState(null);
+      set_startCoords(null);
+      set_singleSelectedNode(null);
+
+      // clear search box canvas
+      const searchBoxCanvas = searchBoxCanvasRef.current;
+      const ctx = searchBoxCanvas.getContext("2d");
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+      return;
+    }
+  }, [
+    mouseState,
+    add_node,
+    set_mouseState,
+    set_startCoords,
+    reset_nodesTree,
+    newNode,
+    set_newNode,
+    set_singleSelectedNode,
+  ]);
 
   const handleWheel = useCallback(
     (e) => {
@@ -319,9 +382,6 @@ const Whiteboard = () => {
     },
     [panOffsetCoords, scale, set_panOffsetCoords, set_scale]
   );
-
-  // <------- custom hooks ------->
-  useResizeObserver(wrapperRef);
 
   // <------- useEffects ------->
   useEffect(() => {
@@ -361,8 +421,12 @@ const Whiteboard = () => {
       </div>
 
       <ShapeCanvas ref={shapeCanvasRef} />
+      <NewNodeCanvas ref={newNodeCanvasRef} />
+      <SearchBoxCanvas ref={searchBoxCanvasRef} />
 
       <LineGrid />
+
+      <NodesTree />
     </div>
   );
 };
