@@ -29,13 +29,138 @@ import "./nodes/Heading2/Heading2.css";
 import "./nodes/Heading3/Heading3.css";
 
 // idea: use HTML instead
-const html = `<div data-id="113262f9-7bd4-4690-8c4e-28ea3af9710b" data-content-type="heading1" data-indent-level="0" data-node-type="block" class="block block-heading1"><div class="content content-heading1"><heading1>Node 1</heading1></div></div><div data-id="22f29291-0280-4485-99e3-0d3d2d7c66f1" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph>1. This is a numbered list&nbsp;</paragraph></div></div><div data-id="c9fa1cd7-7652-4333-89d4-ba8587d63de7" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph>2. This is a numbered list. This is something that is something that is something in the world is something</paragraph></div></div><div data-id="3cfcb5b9-07a4-4a0a-a345-dcf4fc7ce0b1" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph>3. Curious how <mark><strong>heaven</strong></mark> looks like</paragraph></div></div><div data-id="1779bfa2-8197-48da-b234-596903870931" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph></paragraph></div></div><div data-id="ed4980bc-74a6-4cbb-ac19-5890eb500c3c" data-content-type="heading2" data-indent-level="0" data-node-type="block" class="block block-heading2"><div class="content content-heading2"><heading2>This</heading2></div></div><div data-id="e58fca4a-15eb-4d72-b037-c24e9324aae4" data-content-type="heading2" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph>1. <mark><strong>This is a numbered list&nbsp;</strong></mark></paragraph></div></div><div data-id="02777a53-b6c0-424c-9344-cc60fde06d48" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph>2. This is a numbered list. This is something that is something that is something in the world is something</paragraph></div></div><div data-id="4053d552-5a0b-45fc-a9ce-72f2315c9775" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph>3. Curious how <mark><strong>heaven</strong></mark> looks like</paragraph></div></div><div data-id="bab4717c-9bb2-4c0b-a849-7deb86cb7416" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph></paragraph></div></div><div data-id="f9ccb2e8-aae0-4a63-9850-a610930d75f0" data-content-type="heading2" data-indent-level="0" data-node-type="block" class="block block-heading2"><div class="content content-heading2"><heading2>This</heading2></div></div><div data-id="a6096742-aade-4b5d-aa27-6385e455287c" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph>This is a numbered list. <strong><em><u>This is something that is something that is something in the world is something</u></em></strong></paragraph></div></div><div data-id="06f93c4d-e102-48ef-80b7-5e05da7c3b2b" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph></paragraph></div></div><div data-id="a9c1bf5a-690c-4691-83a8-e4dc660fd0a3" data-content-type="paragraph" data-indent-level="0" data-node-type="block" class="block block-paragraph"><div class="content content-paragraph"><paragraph>Curious how <mark><strong>heaven</strong></mark> looks like</paragraph></div></div>`;
+const json = {
+  type: "doc",
+  content: [
+    {
+      type: "heading3",
+      attrs: {
+        id: "b34cc4b1-3e03-485a-857a-9382855df88b",
+        contentType: "heading3",
+        indentLevel: 0,
+        nodeType: "block",
+      },
+      content: [
+        {
+          type: "text",
+          text: "December 17th 2025",
+        },
+      ],
+    },
+    {
+      type: "paragraph",
+      attrs: {
+        id: "f0585ed6-4072-4e72-ab12-e4867cf8ec51",
+        contentType: "heading3",
+        indentLevel: 0,
+        nodeType: "block",
+      },
+      content: [
+        {
+          type: "text",
+          text: "Many things I need to work on.",
+        },
+      ],
+    },
+    {
+      type: "paragraph",
+      attrs: {
+        id: "e5ef2ef5-3a10-427c-a559-6e97e7999253",
+        contentType: "heading3",
+        indentLevel: 0,
+        nodeType: "block",
+      },
+      content: [
+        {
+          type: "text",
+          text: "The UI is something that I need to work on.",
+        },
+      ],
+    },
+    {
+      type: "paragraph",
+      attrs: {
+        id: "8d159177-4041-4c99-85ba-662a16b49fb0",
+        contentType: "heading3",
+        indentLevel: 0,
+        nodeType: "block",
+      },
+      content: [
+        {
+          type: "text",
+          text: "Tomorrow I will be going to church and I love going to ",
+        },
+        {
+          type: "text",
+          marks: [
+            {
+              type: "highlight",
+            },
+            {
+              type: "bold",
+            },
+          ],
+          text: "church",
+        },
+        {
+          type: "text",
+          text: ".",
+        },
+      ],
+    },
+    {
+      type: "paragraph",
+      attrs: {
+        id: "1487cbd4-b03b-4c9b-a766-cfca355cd5e3",
+        contentType: "heading3",
+        indentLevel: 0,
+        nodeType: "block",
+      },
+      content: [
+        {
+          type: "text",
+          text: "Just sitting there and to relax.",
+        },
+      ],
+    },
+    {
+      type: "paragraph",
+      attrs: {
+        id: "5d0a9a58-ed7b-49d4-b242-fb16d71c8712",
+        contentType: "heading3",
+        indentLevel: 0,
+        nodeType: "block",
+      },
+      content: [
+        {
+          type: "text",
+          text: "Well.",
+        },
+      ],
+    },
+    {
+      type: "paragraph",
+      attrs: {
+        id: "e7539a77-adb7-46b7-b611-e30287c0caca",
+        contentType: "heading3",
+        indentLevel: 0,
+        nodeType: "block",
+      },
+      content: [
+        {
+          type: "text",
+          text: "We don't really sit but nevertheless. The relaxation that I feel when I am at the church is something that I look forward to. Also, I get to drive outside with my mother and spend time with her.",
+        },
+      ],
+    },
+  ],
+};
 
-const Editor = ({ node, ...others }) => {
+const Editor = () => {
   const editorRef = useRef();
 
   const editor = useEditor({
-    content: html,
+    content: json,
     extensions: [
       // REVIEW: node
       Document,
@@ -70,12 +195,7 @@ const Editor = ({ node, ...others }) => {
   });
 
   return (
-    <div
-      ref={editorRef}
-      className="editor"
-      {...others}
-      onClick={() => console.log(editor.getHTML())}
-    >
+    <div ref={editorRef} className="editor">
       {/* DEBUG: maybe I should NOT allow users to alter contents of a node in whiteboard? */}
       {/* DEBUG: I DO NEED TO BECAUSE THAT IS HOW PEOPLE ARE TYPE BASIC THINGS */}
       {/* DEBUG: I also need to be able to center the contenteditable -> has to be the smallest possible size */}

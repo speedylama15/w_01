@@ -326,14 +326,6 @@ const Whiteboard = () => {
           wrapperRect
         );
 
-        const delta = {
-          x: currentCoords.x - startCoords.x,
-          y: currentCoords.y - startCoords.y,
-        };
-
-        // newWidth = Math.abs(initNode.dimension.width + delta.x);
-        // newHeight = Math.abs(initNode.dimension.height - delta.y);
-
         if (location === "top") {
           const deltaY = currentCoords.y - startCoords.y;
           newY = currentCoords.y;
@@ -348,13 +340,11 @@ const Whiteboard = () => {
         }
 
         if (location === "bottom") {
-          newHeight = Math.abs(initNode.dimension.height - delta.y);
+          const deltaY = -(currentCoords.y - startCoords.y);
+          newHeight = Math.abs(initNode.dimension.height - deltaY);
 
-          if (
-            currentCoords.y >=
-            initNode.position.y + initNode.dimension.height
-          ) {
-            newY = initNode.position.y + initNode.dimension.height;
+          if (currentCoords.y <= initNode.position.y) {
+            newY = currentCoords.y;
           }
         }
 
@@ -372,10 +362,6 @@ const Whiteboard = () => {
           newX = currentCoords.x;
           newWidth = Math.abs(initNode.dimension.width + deltaX);
 
-          if (currentCoords.x <= initNode.position.x) {
-            newX = currentCoords.x;
-          }
-
           if (
             currentCoords.x >=
             initNode.position.x + initNode.dimension.width
@@ -384,45 +370,86 @@ const Whiteboard = () => {
           }
         }
 
-        // if (location === "top-right") {
-        //   newY = currentCoords.y;
-        //   newWidth = Math.abs(initNode.dimension.width + delta.x);
-        //   newHeight = Math.abs(initNode.dimension.height - delta.y);
+        if (location === "top-right") {
+          const deltaX = currentCoords.x - startCoords.x;
+          const deltaY = currentCoords.y - startCoords.y;
+          newY = currentCoords.y;
+          newWidth = Math.abs(initNode.dimension.width + deltaX);
+          newHeight = Math.abs(initNode.dimension.height - deltaY);
 
-        //   if (currentCoords.x <= initNode.position.x) {
-        //     newX = currentCoords.x;
-        //   }
+          if (currentCoords.x <= initNode.position.x) {
+            newX = currentCoords.x;
+          }
 
-        //   if (
-        //     currentCoords.y >=
-        //     initNode.position.y + initNode.dimension.height
-        //   ) {
-        //     newY = initNode.position.y + initNode.dimension.height;
-        //   }
-        // }
+          if (
+            currentCoords.y >=
+            initNode.position.y + initNode.dimension.height
+          ) {
+            newY = initNode.position.y + initNode.dimension.height;
+          }
+        }
 
-        // if (location === "top-left") {
-        //   newX = currentCoords.x;
-        //   newY = currentCoords.y;
-        // }
+        if (location === "top-left") {
+          newX = currentCoords.x;
+          newY = currentCoords.y;
 
-        // if (location === "bottom-left") {
-        //   newX = currentCoords.x;
-        // }
-        // locations
+          const deltaX = -(currentCoords.x - startCoords.x);
+          const deltaY = currentCoords.y - startCoords.y;
 
-        // todo: mandatory swap
-        // if (currentCoords.x <= initNode.position.x) {
-        //   newX = currentCoords.x;
-        // }
+          newWidth = Math.abs(initNode.dimension.width + deltaX);
+          newHeight = Math.abs(initNode.dimension.height - deltaY);
 
-        // if (
-        //   currentCoords.y >=
-        //   initNode.position.y + initNode.dimension.height
-        // ) {
-        //   newY = initNode.position.y + initNode.dimension.height;
-        // }
-        // todo: mandatory swap
+          if (
+            currentCoords.x >=
+            initNode.position.x + initNode.dimension.width
+          ) {
+            newX = initNode.position.x + initNode.dimension.width;
+          }
+
+          if (
+            currentCoords.y >=
+            initNode.position.y + initNode.dimension.height
+          ) {
+            newY = initNode.position.y + initNode.dimension.height;
+          }
+        }
+
+        if (location === "bottom-right") {
+          const deltaX = currentCoords.x - startCoords.x;
+          const deltaY = -(currentCoords.y - startCoords.y);
+
+          newWidth = Math.abs(initNode.dimension.width + deltaX);
+          newHeight = Math.abs(initNode.dimension.height - deltaY);
+
+          if (currentCoords.x <= initNode.position.x) {
+            newX = currentCoords.x;
+          }
+
+          if (currentCoords.y <= initNode.position.y) {
+            newY = currentCoords.y;
+          }
+        }
+
+        if (location === "bottom-left") {
+          newX = currentCoords.x;
+
+          const deltaX = -(currentCoords.x - startCoords.x);
+          const deltaY = -(currentCoords.y - startCoords.y);
+
+          newWidth = Math.abs(initNode.dimension.width + deltaX);
+          newHeight = Math.abs(initNode.dimension.height - deltaY);
+
+          if (
+            currentCoords.x >=
+            initNode.position.x + initNode.dimension.width
+          ) {
+            newX = initNode.position.x + initNode.dimension.width;
+          }
+
+          if (currentCoords.y <= initNode.position.y) {
+            newY = currentCoords.y;
+          }
+        }
 
         set_node({
           ...initNode,
@@ -501,6 +528,10 @@ const Whiteboard = () => {
     }
 
     if (mouseState === "SINGLE_NODE_ROTATE") {
+      set_mouseState(null);
+    }
+
+    if (mouseState === "SINGLE_NODE_RESIZE") {
       set_mouseState(null);
     }
   }, [

@@ -13,13 +13,7 @@ import "./Node.css";
 
 const Node = memo(({ nodeID }) => {
   const node = useNodes((state) => state.nodesMap[nodeID]);
-  const isSingleSelected = useSelection(
-    (state) => state.singleSelectedNode?.id === nodeID
-  );
   // isMultiSelected?
-
-  // debug: check on this seldomly
-  // console.log("RENDER", node.id);
 
   const set_nodesTree = useTrees((state) => state.set_nodesTree);
 
@@ -51,6 +45,9 @@ const Node = memo(({ nodeID }) => {
     [node, set_mouseState, set_singleSelectedNode, set_nodesTree]
   );
 
+  // debug: check on this seldomly
+  console.log("RENDER", node.id);
+
   return (
     <div
       ref={nodeRef}
@@ -62,28 +59,20 @@ const Node = memo(({ nodeID }) => {
         left: 0,
         zIndex: 3,
         width: node.dimension.width,
-        height: node.dimension.height,
-        // idea: maybe this should be the way?
-        // height: "unset",
+        height: node.dimension.height, // idea: unset
         transform: `translate(${node.position.x}px, ${node.position.y}px)`,
-        overflow: "hidden",
         transformOrigin: "0 0",
+        padding: "24px",
       }}
       onMouseDown={handleMouseDown}
     >
       <div
-        className="rotatable-node"
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
           width: "100%",
-          // FIX: height MUST be set for some reason for rotation to work or else the Editor will be pushed to the side...
-          height: "100%",
-          padding: "16px",
-          transformOrigin: "center center",
-          overflow: "clip",
+          height: "100%", // FIX: height MUST be set for some reason for rotation to work or else the Editor will be pushed to the side...
           transform: `rotate(${node.rotation}rad)`,
+          transformOrigin: "center",
+          overflow: "clip",
         }}
       >
         <Editor />
