@@ -1,0 +1,78 @@
+.node-resizer {
+  position: absolute;
+  background-color: #ffffff;
+}
+
+.node-resizer[location="top"] {
+  top: 0;
+  width: 100%;
+  height: 1px;
+  transform: translateY(-50%);
+  cursor: ns-resize;
+}
+
+.node-resizer[location="right"] {
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  transform: translateX(50%);
+  cursor: ew-resize;
+}
+
+.node-resizer[location="bottom"] {
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  transform: translateY(50%);
+  cursor: ns-resize;
+}
+
+.node-resizer[location="left"] {
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%);
+  cursor: ew-resize;
+}
+
+.node-resizer[location="top-left"] {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  cursor: nwse-resize;
+}
+
+.node-resizer[location="top-right"] {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  cursor: nesw-resize;
+}
+
+.node-resizer[location="bottom-left"] {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  bottom: 0;
+  left: 0;
+  transform: translate(-50%, 50%);
+  cursor: nesw-resize;
+}
+
+.node-resizer[location="bottom-right"] {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  bottom: 0;
+  right: 0;
+  transform: translate(50%, 50%);
+  cursor: nwse-resize;
+}

@@ -18,14 +18,14 @@ const ShapeCanvas = ({ ref }) => {
 
   useSetCanvasDimension(ref);
 
+  // review: for enhancement
+  // idea: perhaps I can even make dpr a state for optimization
+  // idea: lower the dpr when zooming or panning
+  // idea: increase dpr when scale increases
   useEffect(() => {
     const canvas = ref.current;
     const ctx = canvas.getContext("2d");
 
-    // review: for enhancement
-    // idea: perhaps I can even make dpr a state for optimization
-    // idea: lower the dpr when zooming or panning
-    // idea: increase dpr when scale increases
     const dpr = window.devicePixelRatio || 1;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);

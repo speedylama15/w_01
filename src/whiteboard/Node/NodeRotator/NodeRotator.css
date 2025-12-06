@@ -1,0 +1,20 @@
+.node-rotator {
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 50%;
+  border: 3px solid #0b40ff;
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translate(-50%, 0px);
+  cursor: pointer;
+}
+
+.node-rotator:hover {
+  background-color: #2955f4;
+}
+
+.node-rotator:active {
+  background-color: #0934d2;
+}

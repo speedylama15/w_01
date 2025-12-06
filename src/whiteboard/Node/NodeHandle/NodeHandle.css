@@ -1,0 +1,41 @@
+.node-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.node-handle:hover {
+  background-color: #ddd;
+}
+
+.node-handle:active {
+  background-color: #ddd;
+}
+
+.node-handle[data-handle-location="top"] {
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.node-handle[data-handle-location="right"] {
+  top: 50%;
+  right: -24px;
+  transform: translateY(-50%);
+}
+
+.node-handle[data-handle-location="bottom"] {
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.node-handle[data-handle-location="left"] {
+  top: 50%;
+  left: -24px;
+  transform: translateY(-50%);
+}

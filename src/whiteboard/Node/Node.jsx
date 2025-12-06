@@ -1,53 +1,36 @@
 import { memo, useCallback, useRef } from "react";
 
+import NodeRotator from "./NodeRotator/NodeRotator.jsx";
+
 import useNodes from "../../stores/useNodes";
-import useStartCoords from "../../stores/useStartCoords.js";
-import usePanning from "../../stores/usePanning";
 import useMouse from "../../stores/useMouse";
 import useSelection from "../../stores/useSelection";
-import useWrapperRect from "../../stores/useWrapperRect";
-
-import { getWorldCoords } from "../../utils/getWorldCoords.js";
 
 import "./Node.css";
 
 const Node = memo(({ nodeID }) => {
   const node = useNodes((state) => state.nodesMap[nodeID]);
-
-  const panOffsetCoords = usePanning((state) => state.panOffsetCoords);
-  const scale = usePanning((state) => state.scale);
-  const wrapperRect = useWrapperRect((state) => state.wrapperRect);
+  const isSingleSelected = useSelection(
+    (state) => state.singleSelectedNode?.id === nodeID
+  );
+  // isMultiSelected?
 
   const set_mouseState = useMouse((state) => state.set_mouseState);
-  const set_startCoords = useStartCoords((state) => state.set_startCoords);
   const set_singleSelectedNode = useSelection(
     (state) => state.set_singleSelectedNode
   );
 
   const nodeRef = useRef(null);
 
-  const handleMouseDown = useCallback(
-    (e) => {
-      // idea: maybe I should allow propagation so that necessary functionalities are triggered
-      // set mouse state
-      set_mouseState("SINGLE_NODE_MOVE");
-      // set start coords
-      set_startCoords(getWorldCoords(e, panOffsetCoords, scale, wrapperRect));
-      // set single selected node
-      set_singleSelectedNode(node);
+  const handleMouseDown = useCallback(() => {
+    // idea: maybe I should allow propagation so that necessary functionalities are triggered
+    // set mouse state
+    set_mouseState("SINGLE_NODE_MOVE");
+    // set single selected node
+    set_singleSelectedNode(node);
 
-      return;
-    },
-    [
-      node,
-      panOffsetCoords,
-      scale,
-      wrapperRect,
-      set_mouseState,
-      set_startCoords,
-      set_singleSelectedNode,
-    ]
-  );
+    return;
+  }, [node, set_mouseState, set_singleSelectedNode]);
 
   return (
     <div
@@ -56,6 +39,7 @@ const Node = memo(({ nodeID }) => {
       className="node"
       style={{
         position: "absolute",
+        backgroundColor: "#54aaffff",
         top: 0,
         left: 0,
         zIndex: 2,
@@ -84,11 +68,39 @@ const Node = memo(({ nodeID }) => {
           transform: `rotate(${node.rotation}rad)`,
         }}
       >
-        {/* DEBUG: fix later */}
-        {/* todo: single instance of editor being shared */}
         <p>{node.content.html}</p>
-        {/* <Editor node={node} /> */}
       </div>
+
+      {isSingleSelected && (
+        <div
+          className="node-controls"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            transform: `rotate(${node.rotation}rad)`,
+          }}
+        >
+          <NodeRotator node={node} />
+
+          {/* <NodeResizer node={node} type="single" location={"top"} />
+        <NodeResizer node={node} type="single" location={"right"} />
+        <NodeResizer node={node} type="single" location={"bottom"} />
+        <NodeResizer node={node} type="single" location={"left"} />
+
+        <NodeResizer node={node} type="multi" location={"top-left"} />
+        <NodeResizer node={node} type="multi" location={"top-right"} />
+        <NodeResizer node={node} type="multi" location={"bottom-left"} />
+        <NodeResizer node={node} type="multi" location={"bottom-right"} />
+
+        <NodeHandle node={node} handleLocation={"top"} />
+        <NodeHandle node={node} handleLocation={"right"} />
+        <NodeHandle node={node} handleLocation={"bottom"} />
+        <NodeHandle node={node} handleLocation={"left"} /> */}
+        </div>
+      )}
     </div>
   );
 });

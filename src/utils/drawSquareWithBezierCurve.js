@@ -1,8 +1,21 @@
 // debug: this is for testing purposes
 // todo: need svg path
 export const drawSquareWithBezierCurve = (ctx, node, radius = 10) => {
-  const { x, y } = node.position;
+  const { rotation } = node;
   const { width, height } = node.dimension;
+
+  if (rotation !== 0) {
+    // debug
+    ctx.save();
+    const pivotX = node.position.x + width / 2;
+    const pivotY = node.position.y + height / 2;
+    ctx.translate(pivotX, pivotY);
+    ctx.rotate(rotation);
+    // debug
+  }
+
+  const x = rotation !== 0 ? -(width / 2) : node.position.x;
+  const y = rotation !== 0 ? -(height / 2) : node.position.y;
 
   const k = 0.5522847498;
 
@@ -72,4 +85,10 @@ export const drawSquareWithBezierCurve = (ctx, node, radius = 10) => {
   ctx.stroke();
 
   ctx.imageSmoothingEnabled = true;
+
+  // debug
+  if (rotation !== 0) {
+    ctx.restore();
+  }
+  // debug
 };

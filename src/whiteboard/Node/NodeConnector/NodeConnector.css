@@ -1,0 +1,33 @@
+.node-connector {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  z-index: 1000;
+  background-color: #0054ff;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+}
+
+.node-connector[data-connector-location="top"] {
+  top: 0px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.node-connector[data-connector-location="right"] {
+  top: 50%;
+  right: 0px;
+  transform: translate(50%, -50%);
+}
+
+.node-connector[data-connector-location="bottom"] {
+  bottom: 0px;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+
+.node-connector[data-connector-location="left"] {
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%);
+}

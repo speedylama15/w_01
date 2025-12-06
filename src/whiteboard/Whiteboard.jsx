@@ -10,7 +10,6 @@ import SearchBoxCanvas from "./Canvas/SearchBoxCanvas.jsx";
 import useMouse from "../stores/useMouse.js";
 import usePanning from "../stores/usePanning";
 import useNodes from "../stores/useNodes";
-import useStartCoords from "../stores/useStartCoords.js";
 import useWrapperRect from "../stores/useWrapperRect.js";
 import useTrees from "../stores/useTrees.js";
 import useSelection from "../stores/useSelection.js";
@@ -19,6 +18,7 @@ import useObserveWrapperRect from "../hooks/useObserveWrapperRect.jsx";
 
 import { getWorldCoords } from "../utils/getWorldCoords.js";
 import { getNodeAABB } from "../utils/getNodeAABB.js";
+import { getRadian } from "../utils/getRadian.js";
 import { drawSquareWithBezierCurve } from "../utils/drawSquareWithBezierCurve.js";
 
 import "./Whiteboard.css";
@@ -113,8 +113,6 @@ const Whiteboard = () => {
   const set_nodesTree = useTrees((state) => state.set_nodesTree);
   const reset_nodesTree = useTrees((state) => state.reset_nodesTree);
 
-  const { startCoords, set_startCoords } = useStartCoords();
-
   const nodesMap = useNodes((state) => state.nodesMap);
   const add_node = useNodes((state) => state.add_node);
   const set_node = useNodes((state) => state.set_node);
@@ -122,9 +120,6 @@ const Whiteboard = () => {
   const set_newNode = useNodes((state) => state.set_newNode);
 
   const singleSelectedNode = useSelection((state) => state.singleSelectedNode);
-  const set_singleSelectedNode = useSelection(
-    (state) => state.set_singleSelectedNode
-  );
 
   // <------- refs ------->
 
@@ -132,6 +127,11 @@ const Whiteboard = () => {
   const shapeCanvasRef = useRef();
   const newNodeCanvasRef = useRef();
   const searchBoxCanvasRef = useRef();
+
+  // setting start coords inside of Node or local components is BAD
+  // because getting coords requires panOffsetCoords and scale which constantly change
+  // which triggers a re-rendering of local component/s which is BIG NO NO
+  const startCoordsRef = useRef();
 
   // <------- custom hooks ------->
   useObserveWrapperRect(wrapperRef);
@@ -146,34 +146,24 @@ const Whiteboard = () => {
       document.body.style.userSelect = "none";
 
       if (mouseState === "ADD_SQUARE") {
-        // 1. select a shape from the side menu
-        // 2. mousedown on whiteboard (here)
-        // set startCoords
-        const startCoords = getWorldCoords(
+        // ADD SQUARE button MUST be clicked FIRST and then this logic can begin
+        // mousedown on whiteboard wrapper MUST happen
+        // set the start coords
+        // if start coords does not exist, nothing will happen
+        startCoordsRef.current = getWorldCoords(
           e,
           panOffsetCoords,
           scale,
           wrapperRect
         );
-
-        set_startCoords(startCoords);
       }
     },
-    [
-      mouseState,
-      panOffsetCoords,
-      scale,
-      wrapperRect,
-      set_startCoords,
-      set_nodesTree,
-    ]
+    [mouseState, panOffsetCoords, scale, wrapperRect, set_nodesTree]
   );
 
   const handleMouseMove = useCallback(
     (e) => {
-      if (mouseState === "ADD_SQUARE") {
-        if (!startCoords) return;
-
+      if (mouseState === "ADD_SQUARE" && startCoordsRef.current) {
         // startCoords MUST exist
         const currentCoords = getWorldCoords(
           e,
@@ -196,10 +186,10 @@ const Whiteboard = () => {
         ctx.translate(panOffsetCoords.x, panOffsetCoords.y);
         ctx.scale(scale, scale);
 
-        const x1 = Math.min(startCoords.x, currentCoords.x);
-        const x2 = Math.max(startCoords.x, currentCoords.x);
-        const y1 = Math.min(startCoords.y, currentCoords.y);
-        const y2 = Math.max(startCoords.y, currentCoords.y);
+        const x1 = Math.min(startCoordsRef.current.x, currentCoords.x);
+        const x2 = Math.max(startCoordsRef.current.x, currentCoords.x);
+        const y1 = Math.min(startCoordsRef.current.y, currentCoords.y);
+        const y2 = Math.max(startCoordsRef.current.y, currentCoords.y);
 
         // todo: perhaps I need to set a minimum width and height???
         const position = { x: x1, y: y1 };
@@ -215,8 +205,16 @@ const Whiteboard = () => {
         return;
       }
 
-      // todo
       if (mouseState === "SINGLE_NODE_MOVE") {
+        if (!startCoordsRef.current) {
+          startCoordsRef.current = getWorldCoords(
+            e,
+            panOffsetCoords,
+            scale,
+            wrapperRect
+          );
+        }
+
         const SEARCH_BOUNDARY = 500;
 
         const currentCoords = getWorldCoords(
@@ -227,8 +225,8 @@ const Whiteboard = () => {
         );
 
         // make it move by 1px
-        const diffX = Math.floor(currentCoords.x - startCoords.x);
-        const diffY = Math.floor(currentCoords.y - startCoords.y);
+        const diffX = Math.floor(currentCoords.x - startCoordsRef.current.x);
+        const diffY = Math.floor(currentCoords.y - startCoordsRef.current.y);
 
         // these are CONSTANTLY updated
         // draw on search box canvas
@@ -275,10 +273,20 @@ const Whiteboard = () => {
 
         set_node(updatedNode);
       }
+
+      // todo
+      if (mouseState === "SINGLE_NODE_ROTATE") {
+        const { id } = singleSelectedNode;
+
+        const radian = getRadian(e, id);
+
+        // debug: maybe enable snapping to 0, 90, 180, 270?
+
+        set_node({ ...singleSelectedNode, rotation: radian });
+      }
     },
     [
       mouseState,
-      startCoords,
       panOffsetCoords,
       scale,
       wrapperRect,
@@ -295,7 +303,7 @@ const Whiteboard = () => {
     reset_nodesTree();
 
     // a node to add MUST exist
-    if (mouseState === "ADD_SQUARE" && newNode) {
+    if (mouseState === "ADD_SQUARE" && newNode && startCoordsRef.current) {
       const { position, dimension } = newNode;
 
       // debug: NODE STRUCTURE
@@ -312,8 +320,8 @@ const Whiteboard = () => {
       add_node(node);
 
       // idea: maybe get this out in the open because this is something that always (?) has to trigger?
+      startCoordsRef.current = null;
       set_mouseState(null);
-      set_startCoords(null);
       set_newNode(null);
 
       // clear new node canvas
@@ -330,9 +338,8 @@ const Whiteboard = () => {
       // because it's important to know if the node moved out of the group and I need to check its box
       // DEBUG: this is for later when working with grouping
 
+      startCoordsRef.current = null;
       set_mouseState(null);
-      set_startCoords(null);
-      set_singleSelectedNode(null);
 
       // clear search box canvas
       const searchBoxCanvas = searchBoxCanvasRef.current;
@@ -342,15 +349,17 @@ const Whiteboard = () => {
 
       return;
     }
+
+    if (mouseState === "SINGLE_NODE_ROTATE") {
+      set_mouseState(null);
+    }
   }, [
     mouseState,
     add_node,
     set_mouseState,
-    set_startCoords,
     reset_nodesTree,
     newNode,
     set_newNode,
-    set_singleSelectedNode,
   ]);
 
   const handleWheel = useCallback(
@@ -410,6 +419,7 @@ const Whiteboard = () => {
         className="whiteboard"
         style={{
           transform: `translate(${panOffsetCoords.x}px, ${panOffsetCoords.y}px) scale(${scale})`,
+          // review: I forgot but this has some significance
           transformOrigin: "0 0",
         }}
       >

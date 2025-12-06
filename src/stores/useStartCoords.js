@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+// FIX: this has become useless
 const useStartCoords = create((set) => {
   return {
     startCoords: null,
