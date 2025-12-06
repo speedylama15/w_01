@@ -25,7 +25,7 @@ const NodesTree = () => {
     ctx.scale(scale, scale);
 
     nodesTree.all().forEach((box) => {
-      ctx.strokeStyle = "#130ff9ff";
+      ctx.strokeStyle = "#00ddffff";
       ctx.strokeRect(
         box.minX,
         box.minY,

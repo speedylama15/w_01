@@ -22,15 +22,12 @@ export const drawSquareWithBezierCurve = (ctx, node, radius = 10) => {
   ctx.imageSmoothingEnabled = false;
 
   ctx.lineWidth = 3;
-  ctx.strokeStyle = "salmon";
+  ctx.strokeStyle = "#003bbaff";
 
   ctx.beginPath();
-
   ctx.moveTo(x + radius, y);
-
   // ctx.lineTo(x + width - radius, y);
   ctx.quadraticCurveTo(x + width / 3, y + 10, x + width - radius, y);
-
   ctx.bezierCurveTo(
     x + width - radius + radius * k,
     y, // control point 1
@@ -39,7 +36,6 @@ export const drawSquareWithBezierCurve = (ctx, node, radius = 10) => {
     x + width,
     y + radius // end point
   );
-
   // ctx.lineTo(x + width, y + height - radius);
   ctx.quadraticCurveTo(
     x + width - 12,
@@ -47,7 +43,6 @@ export const drawSquareWithBezierCurve = (ctx, node, radius = 10) => {
     x + width,
     y + height - radius
   );
-
   ctx.bezierCurveTo(
     x + width,
     y + height - radius + radius * k, // control point 1
@@ -56,10 +51,8 @@ export const drawSquareWithBezierCurve = (ctx, node, radius = 10) => {
     x + width - radius,
     y + height // end point
   );
-
   // ctx.lineTo(x + radius, y + height);
   ctx.quadraticCurveTo(x + width / 2, y + height + 10, x + radius, y + height);
-
   ctx.bezierCurveTo(
     x + radius - radius * k,
     y + height, // control point 1
@@ -68,10 +61,8 @@ export const drawSquareWithBezierCurve = (ctx, node, radius = 10) => {
     x,
     y + height - radius // end point
   );
-
   // ctx.lineTo(x, y + radius);
   ctx.quadraticCurveTo(x - 12, y + height / 5, x, y + radius);
-
   ctx.bezierCurveTo(
     x,
     y + radius - radius * k, // control point 1
@@ -82,6 +73,8 @@ export const drawSquareWithBezierCurve = (ctx, node, radius = 10) => {
   );
 
   ctx.closePath();
+  ctx.fillStyle = "#e2ebffff";
+  ctx.fill();
   ctx.stroke();
 
   ctx.imageSmoothingEnabled = true;

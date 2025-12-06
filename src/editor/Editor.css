@@ -17,11 +17,12 @@
   height: 100%;
   min-height: 0;
   overflow-wrap: break-word;
+  outline: none;
 }
 
 .block-paragraph {
   /* fix */
-  text-align: center;
+  /* text-align: center; */
 }
 
 paragraph {

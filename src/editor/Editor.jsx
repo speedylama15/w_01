@@ -1,8 +1,6 @@
 import { useRef } from "react";
 import { useEditor, EditorContent, Content } from "@tiptap/react";
 
-import useNodes from "../stores/useNodes";
-
 import Text from "@tiptap/extension-text";
 import Document from "./nodes/Document/Document";
 import Paragraph from "./nodes/Paragraph/Paragraph";
@@ -35,8 +33,6 @@ const html = `<div data-id="113262f9-7bd4-4690-8c4e-28ea3af9710b" data-content-t
 
 const Editor = ({ node, ...others }) => {
   const editorRef = useRef();
-
-  const set_node = useNodes((state) => state.set_node);
 
   const editor = useEditor({
     content: html,
@@ -78,12 +74,11 @@ const Editor = ({ node, ...others }) => {
       ref={editorRef}
       className="editor"
       {...others}
-      onKeyDown={() => {
-        const nNode = { ...node };
-        nNode.dimension.height = editor.view.dom.scrollHeight + 16 * 2;
-        set_node({ ...nNode });
-      }}
+      onClick={() => console.log(editor.getHTML())}
     >
+      {/* DEBUG: maybe I should NOT allow users to alter contents of a node in whiteboard? */}
+      {/* DEBUG: I DO NEED TO BECAUSE THAT IS HOW PEOPLE ARE TYPE BASIC THINGS */}
+      {/* DEBUG: I also need to be able to center the contenteditable -> has to be the smallest possible size */}
       <EditorContent editor={editor} className="editor-content" />
     </div>
   );

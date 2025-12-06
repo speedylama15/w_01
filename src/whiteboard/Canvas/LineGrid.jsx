@@ -21,7 +21,7 @@ const LineGrid = () => {
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
 
-    const scaledLineWidth = 1 * scale;
+    const scaledLineWidth = 0.5 * scale;
     const scaledGridSize = GRID_SIZE * scale;
 
     // We reset the matrix, clear, and then apply the matrix again.
@@ -29,7 +29,7 @@ const LineGrid = () => {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
     // Style for the grid lines
-    ctx.strokeStyle = "#3c4148ff";
+    ctx.strokeStyle = "#a3b1c4ff";
     ctx.lineWidth = scaledLineWidth;
 
     // Robust calculation for starting grid line in Canvas Pixels

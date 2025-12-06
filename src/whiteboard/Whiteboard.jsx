@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import Node from "./Node/Node.jsx";
+import NodeControls from "./NodeControls/NodeControls.jsx";
 import LineGrid from "./Canvas/LineGrid.jsx";
 import NodesTree from "./Canvas/NodesTree.jsx";
 import NewNodeCanvas from "./Canvas/NewNodeCanvas.jsx";
@@ -13,6 +14,7 @@ import useNodes from "../stores/useNodes";
 import useWrapperRect from "../stores/useWrapperRect.js";
 import useTrees from "../stores/useTrees.js";
 import useSelection from "../stores/useSelection.js";
+import useResize from "../stores/useResize.js";
 
 import useObserveWrapperRect from "../hooks/useObserveWrapperRect.jsx";
 
@@ -120,6 +122,11 @@ const Whiteboard = () => {
   const set_newNode = useNodes((state) => state.set_newNode);
 
   const singleSelectedNode = useSelection((state) => state.singleSelectedNode);
+  const set_singleSelectedNode = useSelection(
+    (state) => state.set_singleSelectedNode
+  );
+
+  const resizeData = useResize((state) => state.resizeData);
 
   // <------- refs ------->
 
@@ -129,7 +136,7 @@ const Whiteboard = () => {
   const searchBoxCanvasRef = useRef();
 
   // setting start coords inside of Node or local components is BAD
-  // because getting coords requires panOffsetCoords and scale which constantly change
+  // IMPORTANT: because getting coords requires panOffsetCoords and scale which constantly change
   // which triggers a re-rendering of local component/s which is BIG NO NO
   const startCoordsRef = useRef();
 
@@ -156,9 +163,25 @@ const Whiteboard = () => {
           scale,
           wrapperRect
         );
+
+        return;
+      }
+
+      // local level mousedown and document level mousedown
+      // when it bubbles up to document, document does not receive the updated mouseState
+      // that's why inside of Node's mousedown, I have e.stopPropagation and just gave it document.body thing
+      if (mouseState === null) {
+        set_singleSelectedNode(null);
       }
     },
-    [mouseState, panOffsetCoords, scale, wrapperRect, set_nodesTree]
+    [
+      mouseState,
+      panOffsetCoords,
+      scale,
+      wrapperRect,
+      set_nodesTree,
+      set_singleSelectedNode,
+    ]
   );
 
   const handleMouseMove = useCallback(
@@ -274,7 +297,6 @@ const Whiteboard = () => {
         set_node(updatedNode);
       }
 
-      // todo
       if (mouseState === "SINGLE_NODE_ROTATE") {
         const { id } = singleSelectedNode;
 
@@ -283,6 +305,133 @@ const Whiteboard = () => {
         // debug: maybe enable snapping to 0, 90, 180, 270?
 
         set_node({ ...singleSelectedNode, rotation: radian });
+      }
+
+      // todo
+      if (mouseState === "SINGLE_NODE_RESIZE") {
+        if (!resizeData) return;
+
+        const initNode = singleSelectedNode;
+        const { startCoords, location } = resizeData;
+
+        let newX = initNode.position.x;
+        let newY = initNode.position.y;
+        let newWidth = initNode.dimension.width;
+        let newHeight = initNode.dimension.height;
+
+        const currentCoords = getWorldCoords(
+          e,
+          panOffsetCoords,
+          scale,
+          wrapperRect
+        );
+
+        const delta = {
+          x: currentCoords.x - startCoords.x,
+          y: currentCoords.y - startCoords.y,
+        };
+
+        // newWidth = Math.abs(initNode.dimension.width + delta.x);
+        // newHeight = Math.abs(initNode.dimension.height - delta.y);
+
+        if (location === "top") {
+          const deltaY = currentCoords.y - startCoords.y;
+          newY = currentCoords.y;
+          newHeight = Math.abs(initNode.dimension.height - deltaY);
+
+          if (
+            currentCoords.y >=
+            initNode.position.y + initNode.dimension.height
+          ) {
+            newY = initNode.position.y + initNode.dimension.height;
+          }
+        }
+
+        if (location === "bottom") {
+          newHeight = Math.abs(initNode.dimension.height - delta.y);
+
+          if (
+            currentCoords.y >=
+            initNode.position.y + initNode.dimension.height
+          ) {
+            newY = initNode.position.y + initNode.dimension.height;
+          }
+        }
+
+        if (location === "right") {
+          const deltaX = currentCoords.x - startCoords.x;
+          newWidth = Math.abs(initNode.dimension.width + deltaX);
+
+          if (currentCoords.x <= initNode.position.x) {
+            newX = currentCoords.x;
+          }
+        }
+
+        if (location === "left") {
+          const deltaX = -(currentCoords.x - startCoords.x);
+          newX = currentCoords.x;
+          newWidth = Math.abs(initNode.dimension.width + deltaX);
+
+          if (currentCoords.x <= initNode.position.x) {
+            newX = currentCoords.x;
+          }
+
+          if (
+            currentCoords.x >=
+            initNode.position.x + initNode.dimension.width
+          ) {
+            newX = initNode.position.x + initNode.dimension.width;
+          }
+        }
+
+        // if (location === "top-right") {
+        //   newY = currentCoords.y;
+        //   newWidth = Math.abs(initNode.dimension.width + delta.x);
+        //   newHeight = Math.abs(initNode.dimension.height - delta.y);
+
+        //   if (currentCoords.x <= initNode.position.x) {
+        //     newX = currentCoords.x;
+        //   }
+
+        //   if (
+        //     currentCoords.y >=
+        //     initNode.position.y + initNode.dimension.height
+        //   ) {
+        //     newY = initNode.position.y + initNode.dimension.height;
+        //   }
+        // }
+
+        // if (location === "top-left") {
+        //   newX = currentCoords.x;
+        //   newY = currentCoords.y;
+        // }
+
+        // if (location === "bottom-left") {
+        //   newX = currentCoords.x;
+        // }
+        // locations
+
+        // todo: mandatory swap
+        // if (currentCoords.x <= initNode.position.x) {
+        //   newX = currentCoords.x;
+        // }
+
+        // if (
+        //   currentCoords.y >=
+        //   initNode.position.y + initNode.dimension.height
+        // ) {
+        //   newY = initNode.position.y + initNode.dimension.height;
+        // }
+        // todo: mandatory swap
+
+        set_node({
+          ...initNode,
+          position: { x: newX, y: newY },
+          dimension: {
+            width: newWidth,
+            height: newHeight,
+          },
+        });
       }
     },
     [
@@ -293,6 +442,7 @@ const Whiteboard = () => {
       set_newNode,
       singleSelectedNode,
       set_node,
+      resizeData,
     ]
   );
 
@@ -428,14 +578,14 @@ const Whiteboard = () => {
             return <Node key={nodeID} nodeID={nodeID} />;
           })}
         </div>
-      </div>
 
+        <NodeControls />
+      </div>
       <ShapeCanvas ref={shapeCanvasRef} />
       <NewNodeCanvas ref={newNodeCanvasRef} />
       <SearchBoxCanvas ref={searchBoxCanvasRef} />
 
       <LineGrid />
-
       <NodesTree />
     </div>
   );

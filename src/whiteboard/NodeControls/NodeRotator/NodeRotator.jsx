@@ -26,6 +26,7 @@ const NodeRotator = ({ node }) => {
     document.body.style.userSelect = "none";
 
     set_mouseState("SINGLE_NODE_ROTATE");
+    // review: setting single selected on every click is SO important -> need updated value
     set_singleSelectedNode(node);
   };
 
