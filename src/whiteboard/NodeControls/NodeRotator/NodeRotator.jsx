@@ -2,13 +2,11 @@ import { useRef } from "react";
 
 import useMouse from "../../../stores/useMouse";
 import useSelection from "../../../stores/useSelection";
-import useTrees from "../../../stores/useTrees";
 
 import "./NodeRotator.css";
 
+// todo: REMINDER -> NodeControls is NOT part of Node
 const NodeRotator = ({ node }) => {
-  const set_nodesTree = useTrees((state) => state.set_nodesTree);
-
   const set_mouseState = useMouse((state) => state.set_mouseState);
   const set_singleSelectedNode = useSelection(
     (state) => state.set_singleSelectedNode
@@ -19,9 +17,6 @@ const NodeRotator = ({ node }) => {
   const handleMouseDown = (e) => {
     // local elements of a component need this
     e.stopPropagation();
-
-    // DEBUG: erase this later
-    set_nodesTree([]);
 
     document.body.style.userSelect = "none";
 

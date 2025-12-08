@@ -4,6 +4,7 @@ import useSelection from "../../stores/useSelection";
 import NodeRotator from "./NodeRotator/NodeRotator.jsx";
 import NodeResizer from "./NodeResizer/NodeResizer.jsx";
 
+// todo: REMINDER -> NodeControls is NOT part of NODE
 const NodeControls = () => {
   const selectedNodeID = useSelection((state) => state.singleSelectedNode?.id);
   const node = useNodes((state) => state.nodesMap[selectedNodeID]);

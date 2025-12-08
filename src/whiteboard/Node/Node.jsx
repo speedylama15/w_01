@@ -1,21 +1,16 @@
 import { memo, useCallback, useRef } from "react";
 
-// fix
 import Editor from "../../editor/Editor.jsx";
-// fix
 
 import useNodes from "../../stores/useNodes";
 import useMouse from "../../stores/useMouse";
 import useSelection from "../../stores/useSelection";
-import useTrees from "../../stores/useTrees.js";
 
 import "./Node.css";
 
 const Node = memo(({ nodeID }) => {
   const node = useNodes((state) => state.nodesMap[nodeID]);
   // isMultiSelected?
-
-  const set_nodesTree = useTrees((state) => state.set_nodesTree);
 
   const set_mouseState = useMouse((state) => state.set_mouseState);
   const set_singleSelectedNode = useSelection(
@@ -26,15 +21,10 @@ const Node = memo(({ nodeID }) => {
 
   const handleMouseDown = useCallback(
     (e) => {
-      // local elements of a component need this
       e.stopPropagation();
-
-      // DEBUG: erase this later
-      set_nodesTree([]);
 
       document.body.style.userSelect = "none";
 
-      // idea: maybe I should allow propagation so that necessary functionalities are triggered
       // set mouse state
       set_mouseState("SINGLE_NODE_MOVE");
       // set single selected node
@@ -42,7 +32,7 @@ const Node = memo(({ nodeID }) => {
 
       return;
     },
-    [node, set_mouseState, set_singleSelectedNode, set_nodesTree]
+    [node, set_mouseState, set_singleSelectedNode]
   );
 
   // debug: check on this seldomly

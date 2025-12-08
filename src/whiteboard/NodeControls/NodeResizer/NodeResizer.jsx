@@ -1,7 +1,6 @@
 import useMouse from "../../../stores/useMouse";
 import useResize from "../../../stores/useResize";
 import useSelection from "../../../stores/useSelection";
-import useTrees from "../../../stores/useTrees";
 
 import "./NodeResizer.css";
 
@@ -26,9 +25,8 @@ const getResizerCoords = (node, location) => {
   return data[location];
 };
 
+// todo: REMINDER -> NodeControls is NOT part of Node
 const NodeResizer = ({ node, location }) => {
-  const set_nodesTree = useTrees((state) => state.set_nodesTree);
-
   const set_mouseState = useMouse((state) => state.set_mouseState);
   const set_singleSelectedNode = useSelection(
     (state) => state.set_singleSelectedNode
@@ -39,9 +37,6 @@ const NodeResizer = ({ node, location }) => {
   const handleMouseDown = (e) => {
     // local elements of a component need this
     e.stopPropagation();
-
-    // DEBUG: erase this later
-    set_nodesTree([]);
 
     document.body.style.userSelect = "none";
 

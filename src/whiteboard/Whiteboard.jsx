@@ -12,11 +12,11 @@ import useMouse from "../stores/useMouse.js";
 import usePanning from "../stores/usePanning";
 import useNodes from "../stores/useNodes";
 import useWrapperRect from "../stores/useWrapperRect.js";
-import useTrees from "../stores/useTrees.js";
 import useSelection from "../stores/useSelection.js";
 import useResize from "../stores/useResize.js";
 
 import useObserveWrapperRect from "../hooks/useObserveWrapperRect.jsx";
+import useNodesTree from "../hooks/useNodesTree.jsx";
 
 import { getWorldCoords } from "../utils/getWorldCoords.js";
 import { getNodeAABB } from "../utils/getNodeAABB.js";
@@ -112,9 +112,6 @@ const Whiteboard = () => {
   const { scale, panOffsetCoords, set_scale, set_panOffsetCoords } =
     usePanning();
 
-  const set_nodesTree = useTrees((state) => state.set_nodesTree);
-  const reset_nodesTree = useTrees((state) => state.reset_nodesTree);
-
   const nodesMap = useNodes((state) => state.nodesMap);
   const add_node = useNodes((state) => state.add_node);
   const set_node = useNodes((state) => state.set_node);
@@ -142,14 +139,11 @@ const Whiteboard = () => {
 
   // <------- custom hooks ------->
   useObserveWrapperRect(wrapperRef);
+  useNodesTree();
 
   // <------- event handlers ------->
   const handleMouseDown = useCallback(
     (e) => {
-      // idea: perhaps this is the place in which I need to set up rTree
-      // idea: maybe create a util function to set up rTree
-      set_nodesTree([]);
-
       document.body.style.userSelect = "none";
 
       if (mouseState === "ADD_SQUARE") {
@@ -174,14 +168,7 @@ const Whiteboard = () => {
         set_singleSelectedNode(null);
       }
     },
-    [
-      mouseState,
-      panOffsetCoords,
-      scale,
-      wrapperRect,
-      set_nodesTree,
-      set_singleSelectedNode,
-    ]
+    [mouseState, panOffsetCoords, scale, wrapperRect, set_singleSelectedNode]
   );
 
   const handleMouseMove = useCallback(
@@ -476,9 +463,6 @@ const Whiteboard = () => {
   const handleMouseUp = useCallback(() => {
     document.body.style.userSelect = "auto";
 
-    // for visualization
-    reset_nodesTree();
-
     // a node to add MUST exist
     if (mouseState === "ADD_SQUARE" && newNode && startCoordsRef.current) {
       const { position, dimension } = newNode;
@@ -534,14 +518,7 @@ const Whiteboard = () => {
     if (mouseState === "SINGLE_NODE_RESIZE") {
       set_mouseState(null);
     }
-  }, [
-    mouseState,
-    add_node,
-    set_mouseState,
-    reset_nodesTree,
-    newNode,
-    set_newNode,
-  ]);
+  }, [mouseState, add_node, set_mouseState, newNode, set_newNode]);
 
   const handleWheel = useCallback(
     (e) => {

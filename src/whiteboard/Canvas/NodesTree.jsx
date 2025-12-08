@@ -18,6 +18,9 @@ const NodesTree = () => {
 
     const ctx = canvas.getContext("2d");
 
+    ctx.strokeStyle = "#22e304ff";
+    ctx.lineWidth = 3;
+
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
@@ -25,7 +28,6 @@ const NodesTree = () => {
     ctx.scale(scale, scale);
 
     nodesTree.all().forEach((box) => {
-      ctx.strokeStyle = "#00ddffff";
       ctx.strokeRect(
         box.minX,
         box.minY,
@@ -33,8 +35,6 @@ const NodesTree = () => {
         box.maxY - box.minY
       );
     });
-
-    ctx.restore();
   }, [scale, panOffsetCoords, nodesTree]);
 
   return (

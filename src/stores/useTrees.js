@@ -9,19 +9,15 @@ const useTrees = create((set) => {
   return {
     nodesTree: new RBush(),
 
-    set_nodesTree: (nodeIDs) =>
+    set_nodesTree: (selectedNode) =>
       set(() => {
         const tree = new RBush();
-        const map = useNodes.getState().nodesMap;
-        const newMap = { ...map };
-        // filter
-        nodeIDs.forEach((id) => delete newMap[id]);
+        const nodesMap = { ...useNodes.getState().nodesMap };
+        const boxes = [];
 
-        const boxes = Object.values(newMap).map((node) => {
-          return getNodeAABB(node);
+        Object.values(nodesMap).forEach((node) => {
+          if (node.id !== selectedNode?.id) boxes.push(getNodeAABB(node));
         });
-
-        console.log(boxes, "boxes");
 
         tree.load(boxes);
 
