@@ -73,8 +73,6 @@
 //       tableWrapper.append(table);
 //       table.append(colgroup);
 
-//       console.log(colgroup, table);
-
 //       return {
 //         dom: block,
 //         contentDOM: table,

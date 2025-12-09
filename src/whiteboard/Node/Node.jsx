@@ -5,6 +5,7 @@ import Editor from "../../editor/Editor.jsx";
 import useNodes from "../../stores/useNodes";
 import useMouse from "../../stores/useMouse";
 import useSelection from "../../stores/useSelection";
+import useTrees from "../../stores/useTrees.js";
 
 import "./Node.css";
 
@@ -17,10 +18,13 @@ const Node = memo(({ nodeID }) => {
     (state) => state.set_singleSelectedNode
   );
 
+  const set_nodesTree = useTrees((state) => state.set_nodesTree);
+
   const nodeRef = useRef(null);
 
   const handleMouseDown = useCallback(
     (e) => {
+      // debug
       e.stopPropagation();
 
       document.body.style.userSelect = "none";
@@ -29,10 +33,12 @@ const Node = memo(({ nodeID }) => {
       set_mouseState("SINGLE_NODE_MOVE");
       // set single selected node
       set_singleSelectedNode(node);
+      // todo: maybe here?
+      set_nodesTree(node);
 
       return;
     },
-    [node, set_mouseState, set_singleSelectedNode]
+    [node, set_mouseState, set_singleSelectedNode, set_nodesTree]
   );
 
   // debug: check on this seldomly
@@ -47,12 +53,13 @@ const Node = memo(({ nodeID }) => {
         position: "absolute",
         top: 0,
         left: 0,
-        zIndex: 3,
+        zIndex: 5,
         width: node.dimension.width,
-        height: node.dimension.height, // idea: unset
-        transform: `translate(${node.position.x}px, ${node.position.y}px)`,
+        height: node.dimension.height,
+        transform: `translate3d(${node.position.x}px, ${node.position.y}px, 0)`,
         transformOrigin: "0 0",
         padding: "24px",
+        willChange: "transform",
       }}
       onMouseDown={handleMouseDown}
     >
@@ -65,7 +72,15 @@ const Node = memo(({ nodeID }) => {
           overflow: "clip",
         }}
       >
-        <Editor />
+        <div
+          style={{
+            width: "100%",
+            height: "24px",
+            backgroundColor: "salmon",
+          }}
+        />
+
+        {/* <Editor /> */}
       </div>
     </div>
   );

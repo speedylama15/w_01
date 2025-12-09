@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import throttle from "lodash.throttle";
 
 import Node from "./Node/Node.jsx";
 import NodeControls from "./NodeControls/NodeControls.jsx";
@@ -16,7 +17,6 @@ import useSelection from "../stores/useSelection.js";
 import useResize from "../stores/useResize.js";
 
 import useObserveWrapperRect from "../hooks/useObserveWrapperRect.jsx";
-import useNodesTree from "../hooks/useNodesTree.jsx";
 
 import { getWorldCoords } from "../utils/getWorldCoords.js";
 import { getNodeAABB } from "../utils/getNodeAABB.js";
@@ -24,6 +24,7 @@ import { getRadian } from "../utils/getRadian.js";
 import { drawSquareWithBezierCurve } from "../utils/drawSquareWithBezierCurve.js";
 
 import "./Whiteboard.css";
+import useTrees from "../stores/useTrees.js";
 
 // debug: finding intersection
 // const handleMouseMove = useCallback(
@@ -103,11 +104,37 @@ import "./Whiteboard.css";
 //   [panOffsetCoords, scale]
 // );
 
+const getWrapperBox = (panOffsetCoords, scale, wrapperRect) => {
+  const minXY = { x: wrapperRect.x, y: wrapperRect.y };
+  const maxXY = {
+    x: wrapperRect.x + wrapperRect.width,
+    y: wrapperRect.y + wrapperRect.height,
+  };
+
+  const worldMinXY = getWorldCoords(minXY, panOffsetCoords, scale, wrapperRect);
+  const worldMaxXY = getWorldCoords(maxXY, panOffsetCoords, scale, wrapperRect);
+
+  const WRAPPERBOX = {
+    minX: worldMinXY.x,
+    minY: worldMinXY.y,
+    maxX: worldMaxXY.x,
+    maxY: worldMaxXY.y,
+  };
+
+  return WRAPPERBOX;
+};
+
 const Whiteboard = () => {
   // <------- states ------->
   const { mouseState, set_mouseState } = useMouse();
 
   const wrapperRect = useWrapperRect((state) => state.wrapperRect);
+
+  // todo
+  const nodesTree = useTrees((state) => state.nodesTree);
+  const visibleNodes = useNodes((state) => state.visibleNodes);
+  const set_visibleNodes = useNodes((state) => state.set_visibleNodes);
+  // todo
 
   const { scale, panOffsetCoords, set_scale, set_panOffsetCoords } =
     usePanning();
@@ -139,7 +166,7 @@ const Whiteboard = () => {
 
   // <------- custom hooks ------->
   useObserveWrapperRect(wrapperRef);
-  useNodesTree();
+  // useNodesTree();
 
   // <------- event handlers ------->
   const handleMouseDown = useCallback(
@@ -152,7 +179,7 @@ const Whiteboard = () => {
         // set the start coords
         // if start coords does not exist, nothing will happen
         startCoordsRef.current = getWorldCoords(
-          e,
+          { x: e.clientX, y: e.clientY },
           panOffsetCoords,
           scale,
           wrapperRect
@@ -176,7 +203,7 @@ const Whiteboard = () => {
       if (mouseState === "ADD_SQUARE" && startCoordsRef.current) {
         // startCoords MUST exist
         const currentCoords = getWorldCoords(
-          e,
+          { x: e.clientX, y: e.clientY },
           panOffsetCoords,
           scale,
           wrapperRect
@@ -218,7 +245,7 @@ const Whiteboard = () => {
       if (mouseState === "SINGLE_NODE_MOVE") {
         if (!startCoordsRef.current) {
           startCoordsRef.current = getWorldCoords(
-            e,
+            { x: e.clientX, y: e.clientY },
             panOffsetCoords,
             scale,
             wrapperRect
@@ -228,7 +255,7 @@ const Whiteboard = () => {
         const SEARCH_BOUNDARY = 500;
 
         const currentCoords = getWorldCoords(
-          e,
+          { x: e.clientX, y: e.clientY },
           panOffsetCoords,
           scale,
           wrapperRect
@@ -294,7 +321,6 @@ const Whiteboard = () => {
         set_node({ ...singleSelectedNode, rotation: radian });
       }
 
-      // todo
       if (mouseState === "SINGLE_NODE_RESIZE") {
         if (!resizeData) return;
 
@@ -307,7 +333,7 @@ const Whiteboard = () => {
         let newHeight = initNode.dimension.height;
 
         const currentCoords = getWorldCoords(
-          e,
+          { x: e.clientX, y: e.clientY },
           panOffsetCoords,
           scale,
           wrapperRect
@@ -566,6 +592,92 @@ const Whiteboard = () => {
     };
   }, [handleMouseMove, handleMouseUp, handleWheel]);
 
+  // todo
+  const visibleNodesRef = useRef(null);
+  const callbackID = useRef();
+  const indexRef = useRef(0);
+
+  const getVisibleNodes = useCallback(() => {
+    const WRAPPERBOX = getWrapperBox(panOffsetCoords, scale, wrapperRect);
+
+    let r = [];
+
+    const result = nodesTree.search(WRAPPERBOX);
+
+    const singleSelectedNode = useSelection.getState().singleSelectedNode;
+
+    // fix:
+    console.log("singleSelectedNode", singleSelectedNode);
+
+    // multiSelectedNodes
+    if (singleSelectedNode) {
+      r = [...result, singleSelectedNode];
+      return r;
+    } else {
+      return result;
+    }
+  }, [panOffsetCoords, scale, wrapperRect, nodesTree]);
+
+  const throttle_getVisibleNodes = useMemo(
+    () => throttle(getVisibleNodes, 100),
+    [getVisibleNodes]
+  );
+
+  useEffect(() => {
+    // useEffect invoked? -> fetch new set of visibleNodes -> cancel all callbacks
+    cancelIdleCallback(callbackID.current);
+
+    // reset the index
+    indexRef.current = 0;
+
+    visibleNodesRef.current = null;
+    set_visibleNodes([]);
+    // throttle
+    visibleNodesRef.current = throttle_getVisibleNodes();
+
+    const callback_progressiveRendering = (deadline) => {
+      while (
+        deadline.timeRemaining() &&
+        indexRef.current < visibleNodesRef.current.length - 1
+      ) {
+        const node = visibleNodesRef.current[indexRef.current];
+
+        set_visibleNodes([...useNodes.getState().visibleNodes, node]);
+
+        indexRef.current++;
+      }
+
+      if (indexRef.current >= visibleNodesRef.current.length - 1) {
+        cancelIdleCallback(callbackID.current);
+      }
+
+      if (indexRef.current < visibleNodesRef.current.length - 1) {
+        callbackID.current = requestIdleCallback(callback_progressiveRendering);
+      }
+    };
+
+    // there has to be nodes to render first
+    if (visibleNodesRef.current && visibleNodesRef.current.length > 100) {
+      // store the id
+      callbackID.current = requestIdleCallback(callback_progressiveRendering);
+    } else if (visibleNodesRef.current) {
+      set_visibleNodes(visibleNodesRef.current);
+    }
+
+    return () => {
+      cancelIdleCallback(callbackID.current);
+    };
+  }, [
+    panOffsetCoords,
+    scale,
+    wrapperRect,
+    nodesTree,
+    set_visibleNodes,
+    singleSelectedNode,
+    throttle_getVisibleNodes,
+  ]);
+  // todo
+
   // <------- DOM ------->
   return (
     <div
@@ -582,19 +694,22 @@ const Whiteboard = () => {
         }}
       >
         <div className="whiteboard-nodes">
-          {Object.keys(nodesMap).map((nodeID) => {
-            return <Node key={nodeID} nodeID={nodeID} />;
+          {visibleNodes.map((item) => {
+            const node = item.node || item;
+
+            return <Node key={node.id} nodeID={node.id} />;
           })}
         </div>
 
         <NodeControls />
       </div>
-      <ShapeCanvas ref={shapeCanvasRef} />
+
+      {/* <ShapeCanvas ref={shapeCanvasRef} /> */}
       <NewNodeCanvas ref={newNodeCanvasRef} />
       <SearchBoxCanvas ref={searchBoxCanvasRef} />
 
       <LineGrid />
-      <NodesTree />
+      {/* <NodesTree /> */}
     </div>
   );
 };

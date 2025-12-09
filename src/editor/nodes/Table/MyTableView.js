@@ -78,9 +78,6 @@ class MyTableView extends TableView {
       const node = $from.node(depth);
       const before = $from.before(depth);
 
-      // FIX
-      console.log("checklist item", $from.pos, node);
-
       // if non-CellSelection has been made, then reset the variable
       headDOM = null;
       anchorDOM = null;
@@ -117,8 +114,6 @@ class MyTableView extends TableView {
 
       if (node.type.name === "tableCell" || node.type.name === "tableHeader") {
         headDOM = editor.view.nodeDOM(before);
-
-        console.log("Head DOM", node.type.name, headDOM);
 
         const top = headDOM.offsetTop;
         const left = headDOM.offsetLeft;

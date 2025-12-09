@@ -71,8 +71,6 @@ const Image = Node.create({
     return (params) => {
       const { HTMLAttributes, editor, view, node, getPos } = params;
 
-      console.log({ HTMLAttributes, node });
-
       const block = document.createElement("div");
       block.className = "block block-image";
       block.setAttribute("data-id", HTMLAttributes["data-id"]);

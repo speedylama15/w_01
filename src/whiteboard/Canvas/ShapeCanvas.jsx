@@ -8,15 +8,9 @@ import useTrees from "../../stores/useTrees.js";
 import useSetCanvasDimension from "../../hooks/useSetCanvasDimension.jsx";
 
 import { drawSquareWithBezierCurve } from "../../utils/drawSquareWithBezierCurve";
+import { getWorldCoords } from "../../utils/getWorldCoords.js";
 
-const getWorldCoords = (coords, panOffsetCoords, scale, wrapperRect) => {
-  const x = (coords.x - wrapperRect.x - panOffsetCoords.x) / scale;
-  const y = (coords.y - wrapperRect.y - panOffsetCoords.y) / scale;
-
-  return { x, y };
-};
-
-const getVisibileNodes = (nodesTree, panOffsetCoords, scale, wrapperRect) => {
+const getVisibleNodes = (nodesTree, panOffsetCoords, scale, wrapperRect) => {
   const minXY = { x: wrapperRect.x, y: wrapperRect.y };
   const maxXY = {
     x: wrapperRect.x + wrapperRect.width,
@@ -71,7 +65,7 @@ const ShapeCanvas = ({ ref }) => {
     ctx.scale(scale, scale);
 
     if (wrapperRect.x) {
-      const nodes = getVisibileNodes(
+      const nodes = getVisibleNodes(
         nodesTree,
         panOffsetCoords,
         scale,

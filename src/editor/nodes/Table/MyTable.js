@@ -54,8 +54,6 @@ const MyTable = Table.extend({
       (plugin) => plugin.key !== "selectingCells$"
     );
 
-    console.log(plugins);
-
     return [];
   },
   // debug

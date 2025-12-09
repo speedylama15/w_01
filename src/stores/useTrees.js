@@ -5,9 +5,24 @@ import useNodes from "./useNodes";
 
 import { getNodeAABB } from "../utils/getNodeAABB";
 
+const getInitNodesTree = () => {
+  const tree = new RBush();
+  const nodesMap = useNodes.getState().nodesMap;
+  const boxes = [];
+
+  Object.values(nodesMap).forEach((node) => {
+    boxes.push(getNodeAABB(node));
+  });
+
+  tree.load(boxes);
+
+  return tree;
+};
+
 const useTrees = create((set) => {
   return {
-    nodesTree: new RBush(),
+    // nodesTree: new RBush(),
+    nodesTree: getInitNodesTree(),
 
     set_nodesTree: (selectedNode) =>
       set(() => {
