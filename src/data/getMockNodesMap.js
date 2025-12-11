@@ -12,7 +12,7 @@ export const getMockNodesMap = () => {
   const nodesMap = {};
 
   // const NUM_NODES = 5000;
-  const NUM_NODES = 30;
+  const NUM_NODES = 20;
   // const CANVAS_SIZE = 10000;
   const CANVAS_SIZE = 2000;
   // Fixed dimensions as requested in the template
@@ -41,8 +41,8 @@ export const getMockNodesMap = () => {
       content: { html: contentText },
       rotation: rotation,
       position: { x: x, y: y },
-      // Fixed dimensions used here
       dimension: { width: NODE_WIDTH, height: NODE_HEIGHT },
+      // zIndex
     };
   }
 

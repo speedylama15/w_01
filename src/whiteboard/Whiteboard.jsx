@@ -474,7 +474,7 @@ const Whiteboard = () => {
         <NodeControls />
       </div>
 
-      {/* <ShapeCanvas ref={shapeCanvasRef} /> */}
+      <ShapeCanvas ref={shapeCanvasRef} />
       <NewNodeCanvas ref={newNodeCanvasRef} />
       <SearchBoxCanvas ref={searchBoxCanvasRef} />
 
