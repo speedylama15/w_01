@@ -11,8 +11,10 @@ function getRandomInt(max) {
 export const getMockNodesMap = () => {
   const nodesMap = {};
 
-  const NUM_NODES = 5000;
-  const CANVAS_SIZE = 20000;
+  // const NUM_NODES = 5000;
+  const NUM_NODES = 30;
+  // const CANVAS_SIZE = 10000;
+  const CANVAS_SIZE = 2000;
   // Fixed dimensions as requested in the template
   const NODE_WIDTH = 400;
   const NODE_HEIGHT = 200;

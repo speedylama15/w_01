@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import throttle from "lodash.throttle";
+import { useCallback, useEffect, useRef } from "react";
 
 import Node from "./Node/Node.jsx";
 import NodeControls from "./NodeControls/NodeControls.jsx";
@@ -22,9 +21,9 @@ import { getWorldCoords } from "../utils/getWorldCoords.js";
 import { getNodeAABB } from "../utils/getNodeAABB.js";
 import { getRadian } from "../utils/getRadian.js";
 import { drawSquareWithBezierCurve } from "../utils/drawSquareWithBezierCurve.js";
+import { handleSingleResize } from "../utils/handleResize.js";
 
 import "./Whiteboard.css";
-import useTrees from "../stores/useTrees.js";
 
 // debug: finding intersection
 // const handleMouseMove = useCallback(
@@ -104,37 +103,11 @@ import useTrees from "../stores/useTrees.js";
 //   [panOffsetCoords, scale]
 // );
 
-const getWrapperBox = (panOffsetCoords, scale, wrapperRect) => {
-  const minXY = { x: wrapperRect.x, y: wrapperRect.y };
-  const maxXY = {
-    x: wrapperRect.x + wrapperRect.width,
-    y: wrapperRect.y + wrapperRect.height,
-  };
-
-  const worldMinXY = getWorldCoords(minXY, panOffsetCoords, scale, wrapperRect);
-  const worldMaxXY = getWorldCoords(maxXY, panOffsetCoords, scale, wrapperRect);
-
-  const WRAPPERBOX = {
-    minX: worldMinXY.x,
-    minY: worldMinXY.y,
-    maxX: worldMaxXY.x,
-    maxY: worldMaxXY.y,
-  };
-
-  return WRAPPERBOX;
-};
-
 const Whiteboard = () => {
   // <------- states ------->
   const { mouseState, set_mouseState } = useMouse();
 
   const wrapperRect = useWrapperRect((state) => state.wrapperRect);
-
-  // todo
-  const nodesTree = useTrees((state) => state.nodesTree);
-  const visibleNodes = useNodes((state) => state.visibleNodes);
-  const set_visibleNodes = useNodes((state) => state.set_visibleNodes);
-  // todo
 
   const { scale, panOffsetCoords, set_scale, set_panOffsetCoords } =
     usePanning();
@@ -150,7 +123,7 @@ const Whiteboard = () => {
     (state) => state.set_singleSelectedNode
   );
 
-  const resizeData = useResize((state) => state.resizeData);
+  const singleResizeLocation = useResize((state) => state.singleResizeLocation);
 
   // <------- refs ------->
 
@@ -192,6 +165,8 @@ const Whiteboard = () => {
       // when it bubbles up to document, document does not receive the updated mouseState
       // that's why inside of Node's mousedown, I have e.stopPropagation and just gave it document.body thing
       if (mouseState === null) {
+        // idea: maybe I should just selectedNodeID? and fetch the node from nodesMap?
+        // fix: but that would make components and dependency arrays to add nodesMap, which may cause unnecessary re-renders
         set_singleSelectedNode(null);
       }
     },
@@ -322,154 +297,29 @@ const Whiteboard = () => {
       }
 
       if (mouseState === "SINGLE_NODE_RESIZE") {
-        if (!resizeData) return;
+        if (!singleResizeLocation) return;
 
         const initNode = singleSelectedNode;
-        const { startCoords, location } = resizeData;
 
-        let newX = initNode.position.x;
-        let newY = initNode.position.y;
-        let newWidth = initNode.dimension.width;
-        let newHeight = initNode.dimension.height;
-
-        const currentCoords = getWorldCoords(
+        const mouseCoords = getWorldCoords(
           { x: e.clientX, y: e.clientY },
           panOffsetCoords,
           scale,
           wrapperRect
         );
 
-        if (location === "top") {
-          const deltaY = currentCoords.y - startCoords.y;
-          newY = currentCoords.y;
-          newHeight = Math.abs(initNode.dimension.height - deltaY);
-
-          if (
-            currentCoords.y >=
-            initNode.position.y + initNode.dimension.height
-          ) {
-            newY = initNode.position.y + initNode.dimension.height;
-          }
-        }
-
-        if (location === "bottom") {
-          const deltaY = -(currentCoords.y - startCoords.y);
-          newHeight = Math.abs(initNode.dimension.height - deltaY);
-
-          if (currentCoords.y <= initNode.position.y) {
-            newY = currentCoords.y;
-          }
-        }
-
-        if (location === "right") {
-          const deltaX = currentCoords.x - startCoords.x;
-          newWidth = Math.abs(initNode.dimension.width + deltaX);
-
-          if (currentCoords.x <= initNode.position.x) {
-            newX = currentCoords.x;
-          }
-        }
-
-        if (location === "left") {
-          const deltaX = -(currentCoords.x - startCoords.x);
-          newX = currentCoords.x;
-          newWidth = Math.abs(initNode.dimension.width + deltaX);
-
-          if (
-            currentCoords.x >=
-            initNode.position.x + initNode.dimension.width
-          ) {
-            newX = initNode.position.x + initNode.dimension.width;
-          }
-        }
-
-        if (location === "top-right") {
-          const deltaX = currentCoords.x - startCoords.x;
-          const deltaY = currentCoords.y - startCoords.y;
-          newY = currentCoords.y;
-          newWidth = Math.abs(initNode.dimension.width + deltaX);
-          newHeight = Math.abs(initNode.dimension.height - deltaY);
-
-          if (currentCoords.x <= initNode.position.x) {
-            newX = currentCoords.x;
-          }
-
-          if (
-            currentCoords.y >=
-            initNode.position.y + initNode.dimension.height
-          ) {
-            newY = initNode.position.y + initNode.dimension.height;
-          }
-        }
-
-        if (location === "top-left") {
-          newX = currentCoords.x;
-          newY = currentCoords.y;
-
-          const deltaX = -(currentCoords.x - startCoords.x);
-          const deltaY = currentCoords.y - startCoords.y;
-
-          newWidth = Math.abs(initNode.dimension.width + deltaX);
-          newHeight = Math.abs(initNode.dimension.height - deltaY);
-
-          if (
-            currentCoords.x >=
-            initNode.position.x + initNode.dimension.width
-          ) {
-            newX = initNode.position.x + initNode.dimension.width;
-          }
-
-          if (
-            currentCoords.y >=
-            initNode.position.y + initNode.dimension.height
-          ) {
-            newY = initNode.position.y + initNode.dimension.height;
-          }
-        }
-
-        if (location === "bottom-right") {
-          const deltaX = currentCoords.x - startCoords.x;
-          const deltaY = -(currentCoords.y - startCoords.y);
-
-          newWidth = Math.abs(initNode.dimension.width + deltaX);
-          newHeight = Math.abs(initNode.dimension.height - deltaY);
-
-          if (currentCoords.x <= initNode.position.x) {
-            newX = currentCoords.x;
-          }
-
-          if (currentCoords.y <= initNode.position.y) {
-            newY = currentCoords.y;
-          }
-        }
-
-        if (location === "bottom-left") {
-          newX = currentCoords.x;
-
-          const deltaX = -(currentCoords.x - startCoords.x);
-          const deltaY = -(currentCoords.y - startCoords.y);
-
-          newWidth = Math.abs(initNode.dimension.width + deltaX);
-          newHeight = Math.abs(initNode.dimension.height - deltaY);
-
-          if (
-            currentCoords.x >=
-            initNode.position.x + initNode.dimension.width
-          ) {
-            newX = initNode.position.x + initNode.dimension.width;
-          }
-
-          if (currentCoords.y <= initNode.position.y) {
-            newY = currentCoords.y;
-          }
-        }
+        const { minX, maxX, minY, maxY } = handleSingleResize(
+          initNode,
+          mouseCoords,
+          singleResizeLocation
+        );
 
         set_node({
           ...initNode,
-          position: { x: newX, y: newY },
+          position: { x: minX, y: minY },
           dimension: {
-            width: newWidth,
-            height: newHeight,
+            width: maxX - minX,
+            height: maxY - minY,
           },
         });
       }
@@ -479,10 +329,10 @@ const Whiteboard = () => {
       panOffsetCoords,
       scale,
       wrapperRect,
+      singleResizeLocation,
       set_newNode,
       singleSelectedNode,
       set_node,
-      resizeData,
     ]
   );
 
@@ -592,92 +442,6 @@ const Whiteboard = () => {
     };
   }, [handleMouseMove, handleMouseUp, handleWheel]);
 
-  // todo
-  const visibleNodesRef = useRef(null);
-  const callbackID = useRef();
-  const indexRef = useRef(0);
-
-  const getVisibleNodes = useCallback(() => {
-    const WRAPPERBOX = getWrapperBox(panOffsetCoords, scale, wrapperRect);
-
-    let r = [];
-
-    const result = nodesTree.search(WRAPPERBOX);
-
-    const singleSelectedNode = useSelection.getState().singleSelectedNode;
-
-    // fix:
-    console.log("singleSelectedNode", singleSelectedNode);
-
-    // multiSelectedNodes
-    if (singleSelectedNode) {
-      r = [...result, singleSelectedNode];
-      return r;
-    } else {
-      return result;
-    }
-  }, [panOffsetCoords, scale, wrapperRect, nodesTree]);
-
-  const throttle_getVisibleNodes = useMemo(
-    () => throttle(getVisibleNodes, 100),
-    [getVisibleNodes]
-  );
-
-  useEffect(() => {
-    // useEffect invoked? -> fetch new set of visibleNodes -> cancel all callbacks
-    cancelIdleCallback(callbackID.current);
-
-    // reset the index
-    indexRef.current = 0;
-
-    visibleNodesRef.current = null;
-    set_visibleNodes([]);
-    // throttle
-    visibleNodesRef.current = throttle_getVisibleNodes();
-
-    const callback_progressiveRendering = (deadline) => {
-      while (
-        deadline.timeRemaining() &&
-        indexRef.current < visibleNodesRef.current.length - 1
-      ) {
-        const node = visibleNodesRef.current[indexRef.current];
-
-        set_visibleNodes([...useNodes.getState().visibleNodes, node]);
-
-        indexRef.current++;
-      }
-
-      if (indexRef.current >= visibleNodesRef.current.length - 1) {
-        cancelIdleCallback(callbackID.current);
-      }
-
-      if (indexRef.current < visibleNodesRef.current.length - 1) {
-        callbackID.current = requestIdleCallback(callback_progressiveRendering);
-      }
-    };
-
-    // there has to be nodes to render first
-    if (visibleNodesRef.current && visibleNodesRef.current.length > 100) {
-      // store the id
-      callbackID.current = requestIdleCallback(callback_progressiveRendering);
-    } else if (visibleNodesRef.current) {
-      set_visibleNodes(visibleNodesRef.current);
-    }
-
-    return () => {
-      cancelIdleCallback(callbackID.current);
-    };
-  }, [
-    panOffsetCoords,
-    scale,
-    wrapperRect,
-    nodesTree,
-    set_visibleNodes,
-    singleSelectedNode,
-    throttle_getVisibleNodes,
-  ]);
-  // todo
-
   // <------- DOM ------->
   return (
     <div
@@ -694,11 +458,17 @@ const Whiteboard = () => {
         }}
       >
         <div className="whiteboard-nodes">
-          {visibleNodes.map((item) => {
-            const node = item.node || item;
-
+          {Object.values(nodesMap).map((node) => {
             return <Node key={node.id} nodeID={node.id} />;
           })}
+          {/* {visibleNodes.map((item) => {
+            const node = item.node || item;
+            const nodeID = node.id;
+
+            const n = nodesMap[nodeID];
+
+            return <Node key={n.id} nodeID={n.id} />;
+          })} */}
         </div>
 
         <NodeControls />

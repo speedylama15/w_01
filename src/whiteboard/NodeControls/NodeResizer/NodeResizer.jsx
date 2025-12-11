@@ -4,27 +4,6 @@ import useSelection from "../../../stores/useSelection";
 
 import "./NodeResizer.css";
 
-// fix: take into account of rotation later
-const getResizerCoords = (node, location) => {
-  const { position, dimension } = node;
-  const { x, y } = position;
-  const { width, height } = dimension;
-
-  // fix: I am going to have to fix this
-  const data = {
-    top: { x: 0, y: y },
-    right: { x: x + width, y: 0 },
-    bottom: { x: 0, y: y + height },
-    left: { x: x, y: 0 },
-    "top-left": { x, y },
-    "top-right": { x: x + width, y },
-    "bottom-left": { x, y: y + height },
-    "bottom-right": { x: x + width, y: y + height },
-  };
-
-  return data[location];
-};
-
 // todo: REMINDER -> NodeControls is NOT part of Node
 const NodeResizer = ({ node, location }) => {
   const set_mouseState = useMouse((state) => state.set_mouseState);
@@ -32,7 +11,9 @@ const NodeResizer = ({ node, location }) => {
     (state) => state.set_singleSelectedNode
   );
 
-  const set_resizeData = useResize((state) => state.set_resizeData);
+  const set_singleResizeLocation = useResize(
+    (state) => state.set_singleResizeLocation
+  );
 
   const handleMouseDown = (e) => {
     // local elements of a component need this
@@ -42,11 +23,7 @@ const NodeResizer = ({ node, location }) => {
 
     set_mouseState("SINGLE_NODE_RESIZE");
     set_singleSelectedNode(node);
-
-    // normally, I would not be able to set start coords because I need panOffsetCoords and scale
-    // they will trigger unnecessary re-renders
-    // But here, those are not needed
-    set_resizeData({ startCoords: getResizerCoords(node, location), location });
+    set_singleResizeLocation(location);
 
     return;
   };

@@ -27,6 +27,8 @@ const Node = memo(({ nodeID }) => {
       // debug
       e.stopPropagation();
 
+      console.log("mouse down inside of node");
+
       document.body.style.userSelect = "none";
 
       // set mouse state
@@ -42,7 +44,7 @@ const Node = memo(({ nodeID }) => {
   );
 
   // debug: check on this seldomly
-  console.log("RENDER", node.id);
+  // console.log("RENDER", node.id);
 
   return (
     <div
@@ -72,15 +74,15 @@ const Node = memo(({ nodeID }) => {
           overflow: "clip",
         }}
       >
-        <div
+        {/* <div
           style={{
             width: "100%",
             height: "24px",
             backgroundColor: "salmon",
           }}
-        />
+        /> */}
 
-        {/* <Editor /> */}
+        <Editor />
       </div>
     </div>
   );

@@ -26,8 +26,6 @@ const useNodes = create((set) => {
     newNode: null,
     set_newNode: (node) => set(() => ({ newNode: node })),
 
-    visibleNodeIDs: [],
-    set_visibleNodeIDs: (ids) => set(() => ({ visibleNodeIDs: ids })),
     visibleNodes: [],
     set_visibleNodes: (nodes) => set(() => ({ visibleNodes: nodes })),
   };

@@ -20,7 +20,8 @@ const NodeControls = () => {
           width: `${node.dimension.width}px`,
           height: `${node.dimension.height}px`,
           transform: `translate(${node.position.x}px, ${node.position.y}px) rotate(${node.rotation}rad)`,
-          zIndex: 1,
+          // idea: z index of this should be +5 of the selected node's z index
+          zIndex: 10,
         }}
       >
         <NodeRotator node={node} />
