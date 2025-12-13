@@ -12,7 +12,7 @@ export const getMockNodesMap = () => {
   const nodesMap = {};
 
   // const NUM_NODES = 5000;
-  const NUM_NODES = 20;
+  const NUM_NODES = 3;
   // const CANVAS_SIZE = 10000;
   const CANVAS_SIZE = 2000;
   // Fixed dimensions as requested in the template
@@ -28,7 +28,8 @@ export const getMockNodesMap = () => {
     const y = getRandomInt(CANVAS_SIZE);
 
     // Apply a small random rotation to ensure the 'rotate' logic is tested
-    const rotation = getRandomInt(4) * 15; // 0, 15, 30, 45 degrees
+    // const rotation = getRandomInt(4) * 15; // 0, 15, 30, 45 degrees
+    const rotation = 0;
 
     // Vary the content slightly
     const contentText = `Node ${i}: Requirement for Feature ${getRandomInt(50)} - Status: ${["Draft", "Complete", "Review"][getRandomInt(3)]}`;

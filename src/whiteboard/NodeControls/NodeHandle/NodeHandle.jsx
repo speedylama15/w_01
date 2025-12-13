@@ -1,38 +1,46 @@
 import { memo } from "react";
 
-import useApp from "../../../store/useApp";
-import useEdge from "../../../store/useEdge";
-
-import { getHandleCoords } from "../../../utils/getHandleCoords";
+import useEdges from "../../../stores/useEdges";
+import useMouse from "../../../stores/useMouse";
+import useSelection from "../../../stores/useSelection";
 
 import "./NodeHandle.css";
 
 // todo: REMINDER -> NodeControls is NOT part of Node
-const NodeHandle = memo(({ node, handleLocation }) => {
-  const handleCoords = getHandleCoords(node, handleLocation);
-
-  const set_mouseState = useApp((state) => state.set_mouseState);
-  const set_edgeData = useEdge((state) => state.set_edgeData);
+const NodeHandle = memo(({ node, location }) => {
+  const set_mouseState = useMouse((state) => state.set_mouseState);
+  const set_singleSelectedNode = useSelection(
+    (state) => state.set_singleSelectedNode
+  );
+  const set_newEdge = useEdges((state) => state.set_newEdge);
 
   const handleMouseDown = (e) => {
     e.stopPropagation();
 
-    set_mouseState("edge_create");
-    set_edgeData({
-      id: `edge-${Math.random()}`,
+    document.body.style.userSelect = "none";
+
+    set_mouseState("EDGE_CREATE");
+    set_singleSelectedNode(node);
+
+    const edgeData = {
       sourceID: node.id,
-      sourceLoc: handleLocation,
+      sourceLoc: location,
       targetID: null,
       targetLoc: null,
-      targetXY: handleCoords,
-      offset: 0,
-    });
+      // for mouse coords
+      endCoord: null,
+      localOffset: null,
+    };
+
+    set_newEdge(edgeData);
+
+    return;
   };
 
   return (
     <div
       className="node-handle"
-      data-handle-location={handleLocation}
+      data-handle-location={location}
       onMouseDown={handleMouseDown}
     />
   );

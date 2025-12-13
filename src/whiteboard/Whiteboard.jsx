@@ -2,10 +2,9 @@ import { useCallback, useEffect, useRef } from "react";
 
 import Node from "./Node/Node.jsx";
 import NodeControls from "./NodeControls/NodeControls.jsx";
+import Edge from "./Edge/Edge.jsx";
 import LineGrid from "./Canvas/LineGrid.jsx";
-import NodesTree from "./Canvas/NodesTree.jsx";
 import NewNodeCanvas from "./Canvas/NewNodeCanvas.jsx";
-import ShapeCanvas from "./Canvas/ShapeCanvas.jsx";
 import SearchBoxCanvas from "./Canvas/SearchBoxCanvas.jsx";
 
 import useMouse from "../stores/useMouse.js";
@@ -14,6 +13,7 @@ import useNodes from "../stores/useNodes";
 import useWrapperRect from "../stores/useWrapperRect.js";
 import useSelection from "../stores/useSelection.js";
 import useResize from "../stores/useResize.js";
+import useEdges from "../stores/useEdges.js";
 
 import useObserveWrapperRect from "../hooks/useObserveWrapperRect.jsx";
 
@@ -118,6 +118,12 @@ const Whiteboard = () => {
   const newNode = useNodes((state) => state.newNode);
   const set_newNode = useNodes((state) => state.set_newNode);
 
+  const edgesMap = useEdges((state) => state.edgesMap);
+  const add_edge = useEdges((state) => state.add_edge);
+  const set_edge = useEdges((state) => state.set_edge);
+  const newEdge = useEdges((state) => state.newEdge);
+  const set_newEdge = useEdges((state) => state.set_newEdge);
+
   const singleSelectedNode = useSelection((state) => state.singleSelectedNode);
   const set_singleSelectedNode = useSelection(
     (state) => state.set_singleSelectedNode
@@ -126,9 +132,7 @@ const Whiteboard = () => {
   const singleResizeLocation = useResize((state) => state.singleResizeLocation);
 
   // <------- refs ------->
-
   const wrapperRef = useRef();
-  const shapeCanvasRef = useRef();
   const newNodeCanvasRef = useRef();
   const searchBoxCanvasRef = useRef();
 
@@ -323,6 +327,12 @@ const Whiteboard = () => {
           },
         });
       }
+
+      // todo
+      if (mouseState === "EDGE_CREATE") {
+        // debug
+        // console.log("creating a brand new edge", newEdge);
+      }
     },
     [
       mouseState,
@@ -333,6 +343,7 @@ const Whiteboard = () => {
       set_newNode,
       singleSelectedNode,
       set_node,
+      newEdge,
     ]
   );
 
@@ -461,25 +472,23 @@ const Whiteboard = () => {
           {Object.values(nodesMap).map((node) => {
             return <Node key={node.id} nodeID={node.id} />;
           })}
-          {/* {visibleNodes.map((item) => {
-            const node = item.node || item;
-            const nodeID = node.id;
+        </div>
 
-            const n = nodesMap[nodeID];
-
-            return <Node key={n.id} nodeID={n.id} />;
-          })} */}
+        <div className="whiteboard-edges">
+          <svg style={{ overflow: "visible" }}>
+            {Object.values(edgesMap).map((edge) => {
+              return <Edge key={edge.id} edgeID={edge.id} />;
+            })}
+          </svg>
         </div>
 
         <NodeControls />
       </div>
 
-      <ShapeCanvas ref={shapeCanvasRef} />
       <NewNodeCanvas ref={newNodeCanvasRef} />
       <SearchBoxCanvas ref={searchBoxCanvasRef} />
 
       <LineGrid />
-      {/* <NodesTree /> */}
     </div>
   );
 };

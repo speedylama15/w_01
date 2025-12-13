@@ -27,8 +27,6 @@ const Node = memo(({ nodeID }) => {
       // debug
       e.stopPropagation();
 
-      console.log("mouse down inside of node");
-
       document.body.style.userSelect = "none";
 
       // set mouse state
@@ -60,8 +58,11 @@ const Node = memo(({ nodeID }) => {
         height: node.dimension.height,
         transform: `translate3d(${node.position.x}px, ${node.position.y}px, 0)`,
         transformOrigin: "0 0",
-        padding: "24px",
-        willChange: "transform",
+
+        // debug
+        // backgroundColor: "#ffc80163",
+        // padding: "12px",
+        // padding: 0,
       }}
       onMouseDown={handleMouseDown}
     >
@@ -72,16 +73,18 @@ const Node = memo(({ nodeID }) => {
           transform: `rotate(${node.rotation}rad)`,
           transformOrigin: "center",
           overflow: "clip",
+
+          // debug
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#58ffcaff",
+          // borderRadius: "7px",
+          borderRadius: "50%",
+          // padding: "12px",
+          border: "1px solid #000",
         }}
       >
-        {/* <div
-          style={{
-            width: "100%",
-            height: "24px",
-            backgroundColor: "salmon",
-          }}
-        /> */}
-
         <Editor />
       </div>
     </div>
