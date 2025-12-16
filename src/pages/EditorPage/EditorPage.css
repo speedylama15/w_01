@@ -1,0 +1,11 @@
+.editor-page {
+  background-color: #87ceeb;
+  min-height: calc(100vh - 84px);
+}
+
+.editor-node {
+  background-color: #f2d6b3;
+  width: 500px;
+  height: 400px;
+  transform: translate(50px, 50px);
+}

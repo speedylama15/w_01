@@ -4,7 +4,7 @@ const name = "paragraph";
 
 const Paragraph = Node.create({
   name,
-  marks: "bold italic underline strike superscript highlight textStyle",
+  // marks: "bold italic underline strike superscript highlight textStyle",
   group: "block paragraph",
   content: "inline*",
   priority: 200,
@@ -18,12 +18,15 @@ const Paragraph = Node.create({
     };
   },
 
-  parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "p" }];
-  },
-
   addAttributes() {
     return {
+      divType: {
+        default: "block",
+        parseHTML: (element) => element.getAttribute("data-div-type"),
+        renderHTML: (attributes) => ({
+          "data-div-type": attributes.divType,
+        }),
+      },
       contentType: {
         default: name,
         parseHTML: (element) => element.getAttribute("data-content-type"),
@@ -38,14 +41,11 @@ const Paragraph = Node.create({
           "data-indent-level": attributes.indentLevel,
         }),
       },
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
     };
+  },
+
+  parseHTML() {
+    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "p" }];
   },
 
   renderHTML({ HTMLAttributes }) {

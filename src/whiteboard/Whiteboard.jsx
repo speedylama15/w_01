@@ -6,6 +6,7 @@ import Edge from "./Edge/Edge.jsx";
 import LineGrid from "./Canvas/LineGrid.jsx";
 import NewNodeCanvas from "./Canvas/NewNodeCanvas.jsx";
 import SearchBoxCanvas from "./Canvas/SearchBoxCanvas.jsx";
+import WhiteboardCanvas from "./Canvas/WhiteboardCanvas.jsx";
 
 import useMouse from "../stores/useMouse.js";
 import usePanning from "../stores/usePanning";
@@ -135,6 +136,7 @@ const Whiteboard = () => {
   const wrapperRef = useRef();
   const newNodeCanvasRef = useRef();
   const searchBoxCanvasRef = useRef();
+  const whiteboardCanvasRef = useRef();
 
   // setting start coords inside of Node or local components is BAD
   // IMPORTANT: because getting coords requires panOffsetCoords and scale which constantly change
@@ -328,10 +330,8 @@ const Whiteboard = () => {
         });
       }
 
-      // todo
       if (mouseState === "EDGE_CREATE") {
-        // debug
-        // console.log("creating a brand new edge", newEdge);
+        //
       }
     },
     [
@@ -343,7 +343,6 @@ const Whiteboard = () => {
       set_newNode,
       singleSelectedNode,
       set_node,
-      newEdge,
     ]
   );
 
@@ -468,7 +467,7 @@ const Whiteboard = () => {
           transformOrigin: "0 0",
         }}
       >
-        <div className="whiteboard-nodes">
+        {/* <div className="whiteboard-nodes">
           {Object.values(nodesMap).map((node) => {
             return <Node key={node.id} nodeID={node.id} />;
           })}
@@ -480,13 +479,16 @@ const Whiteboard = () => {
               return <Edge key={edge.id} edgeID={edge.id} />;
             })}
           </svg>
-        </div>
+        </div> */}
 
         <NodeControls />
       </div>
 
       <NewNodeCanvas ref={newNodeCanvasRef} />
       <SearchBoxCanvas ref={searchBoxCanvasRef} />
+      {/* todo */}
+      <WhiteboardCanvas ref={whiteboardCanvasRef} />
+      {/* todo */}
 
       <LineGrid />
     </div>

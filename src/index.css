@@ -5,6 +5,11 @@
   margin: 0;
   padding: 0;
   font-family: "IBM Plex Mono", monospace;
+  /* font-family: -apple-system, Helvetica, Arial, sans-serif; */
+  /* font-family: "Poppins", sans-serif; */
+  /* font-family: "Playfair Display", serif; */
+  /* font-family: "Outfit", sans-serif; */
+  /* font-family: "Google Sans", sans-serif; */
 }
 
 :root {
@@ -13,9 +18,6 @@
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
   background-color: #dcebfe;
   text-rendering: optimizeLegibility;
 }

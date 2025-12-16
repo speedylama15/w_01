@@ -2,55 +2,16 @@ import { Node, mergeAttributes } from "@tiptap/core";
 
 const name = "numberedList";
 
-// REVIEW: need to add copy rules
-// REVIEW: need to add commands related to Bullet List
-// REVIEW: need to make sure that unicodes are consistent
+// todo: marks
+// todo: copy and paste rules
 // FIX: make sure add more classes inside of NumberedList.css's reset
 
 const NumberedList = Node.create({
   name,
-  // FIX: need add link
-  marks: "bold italic underline strike superscript highlight textStyle",
   group: "block list",
   content: "inline*",
   defining: true,
 
-  addOptions() {
-    return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
-        class: `content content-${name}`,
-      },
-    };
-  },
-
-  addAttributes() {
-    return {
-      contentType: {
-        default: name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
-      indentLevel: {
-        default: 0,
-        parseHTML: (element) => element.getAttribute("data-indent-level"),
-        renderHTML: (attributes) => ({
-          "data-indent-level": attributes.indentLevel,
-        }),
-      },
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
-    };
-  },
-
-  // REVIEW: maybe I need to checkup the node in which 1. has been typed
   addInputRules() {
     return [
       {
@@ -65,14 +26,49 @@ const NumberedList = Node.create({
           chain()
             .deleteRange(range)
             .setNode(this.name, {
-              indentLevel,
+              divType: "block",
               contentType: name,
-              nodeType: "block",
+              indentLevel,
             })
             .run();
         },
       },
     ];
+  },
+
+  addOptions() {
+    return {
+      blockAttrs: { class: `block block-${name}` },
+      contentAttrs: {
+        class: `content content-${name}`,
+      },
+    };
+  },
+
+  addAttributes() {
+    return {
+      divType: {
+        default: "block",
+        parseHTML: (element) => element.getAttribute("data-div-type"),
+        renderHTML: (attributes) => ({
+          "data-div-type": attributes.divType,
+        }),
+      },
+      contentType: {
+        default: name,
+        parseHTML: (element) => element.getAttribute("data-content-type"),
+        renderHTML: (attributes) => ({
+          "data-content-type": attributes.contentType,
+        }),
+      },
+      indentLevel: {
+        default: 0,
+        parseHTML: (element) => element.getAttribute("data-indent-level"),
+        renderHTML: (attributes) => ({
+          "data-indent-level": attributes.indentLevel,
+        }),
+      },
+    };
   },
 
   parseHTML() {

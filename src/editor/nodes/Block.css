@@ -1,28 +1,81 @@
-.content-bulletList,
-.content-numberedList {
-  display: inline-block;
+.block {
+  background-color: #f9aba2;
+  padding: 2px 4px;
+  border-radius: 7px;
+  margin-bottom: 2px;
 }
 
-.block-bulletList > .content::before,
-.block-numberedList > .content::before {
-  position: relative;
-  display: inline-block;
-  min-width: 28px;
-  margin-right: 5px;
-  text-align: center;
+.content {
+  vertical-align: middle;
 }
 
-.block-bulletList > .content::before {
-  font-family: none;
-  top: -1px;
+paragraph {
+  display: block;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+heading1,
+heading2,
+heading3 {
+  display: block;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+heading1 {
+  font-size: 36px;
+}
+
+heading2 {
+  font-size: 28px;
+}
+
+heading3 {
+  font-size: 22px;
 }
 
 list-item {
-  font-size: 18px;
-  font-weight: 300;
-  line-height: 1.4;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
+.content-bulletList {
+  position: relative;
+  display: inline-flex;
+}
+
+.content-bulletList::before {
+  display: flex;
+  justify-content: center;
+  font-family: none;
+  /* todo: make this a variable 통합*/
+  font-size: 16px;
+  width: fit-content;
+  min-width: 28px;
+  /* todo: make this a variable 통합*/
+  line-height: 1.6;
+}
+
+.content-numberedList {
+  position: relative;
+  display: inline-flex;
+}
+
+.content-numberedList::before {
+  display: flex;
+  /* todo: make this a variable 통합*/
+  font-size: 16px;
+  width: fit-content;
+  min-width: 24px;
+  text-align: center;
+  padding-left: 4px;
+  margin-right: 4px;
+  /* todo: make this a variable 통합*/
+  line-height: 1.6;
+}
+
+/*
 div[data-indent-level="0"] {
   margin-left: 0px;
 }
@@ -65,4 +118,5 @@ div[data-indent-level="9"] {
 
 div[data-indent-level="10"] {
   margin-left: 300px;
-}
+} 
+*/

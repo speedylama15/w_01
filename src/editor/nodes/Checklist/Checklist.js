@@ -4,13 +4,75 @@ import createDOMChecklist from "./createDOMChecklist";
 
 const name = "checklist";
 
+// todo: marks
+// todo: copy and paste rules
+
 const Checklist = Node.create({
   name,
-  // FIX: need add link
-  marks: "bold italic underline strike superscript highlight textStyle",
   group: "block list",
   content: "inline*",
   defining: true,
+
+  addNodeView() {
+    return ({ HTMLAttributes, editor, view, node, getPos }) => {
+      const width = 22;
+      const height = 22;
+
+      const { dispatch } = view;
+
+      const { block, checkbox, listItem } = createDOMChecklist(
+        HTMLAttributes,
+        width,
+        height
+      );
+
+      const handleClick = () => {
+        const { state } = editor;
+        const { tr } = state;
+
+        const isChecked = JSON.parse(node.attrs?.isChecked);
+
+        tr.setNodeAttribute(getPos(), "isChecked", !isChecked);
+
+        dispatch(tr);
+      };
+
+      checkbox.addEventListener("mousedown", handleClick);
+
+      return {
+        dom: block,
+        contentDOM: listItem,
+        destroy: () => {
+          checkbox.removeEventListener("click", handleClick);
+        },
+      };
+    };
+  },
+
+  addInputRules() {
+    return [
+      {
+        find: /^\s*(\[([( |x])?\])\s$/,
+        handler: ({ range, chain, state }) => {
+          const { selection } = state;
+          const { $from } = selection;
+
+          const node = $from.node($from.depth);
+          const indentLevel = node?.attrs.indentLevel;
+
+          chain()
+            .deleteRange(range)
+            .setNode("checklist", {
+              divType: "block",
+              contentType: "checklist",
+              indentLevel,
+              isChecked: false,
+            })
+            .run();
+        },
+      },
+    ];
+  },
 
   addOptions() {
     return {
@@ -23,6 +85,13 @@ const Checklist = Node.create({
 
   addAttributes() {
     return {
+      divType: {
+        default: "block",
+        parseHTML: (element) => element.getAttribute("data-div-type"),
+        renderHTML: (attributes) => ({
+          "data-div-type": attributes.divType,
+        }),
+      },
       contentType: {
         default: name,
         parseHTML: (element) => element.getAttribute("data-content-type"),
@@ -37,13 +106,6 @@ const Checklist = Node.create({
           "data-indent-level": attributes.indentLevel,
         }),
       },
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
       isChecked: {
         default: false,
         parseHTML: (element) =>
@@ -52,20 +114,6 @@ const Checklist = Node.create({
           "data-is-checked": attributes.isChecked,
         }),
       },
-    };
-  },
-
-  addNodeView() {
-    return ({ HTMLAttributes, editor, view, node, getPos }) => {
-      const { block, listItem } = createDOMChecklist(
-        HTMLAttributes,
-        editor,
-        view,
-        node,
-        getPos
-      );
-
-      return { dom: block, contentDOM: listItem };
     };
   },
 

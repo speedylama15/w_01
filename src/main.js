@@ -3,6 +3,12 @@ import contextMenu from "electron-context-menu";
 
 const path = require("node:path");
 
+// Disable security warnings
+process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
+
+// Disable CORS
+app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");
+
 // fix: remove this later
 contextMenu({
   showInspectElement: true,
@@ -20,8 +26,24 @@ const createWindow = () => {
     height: 800,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+      // debug
+      webSecurity: false,
     },
   });
+
+  // debug CSP for Google Fonts
+  mainWindow.webContents.session.webRequest.onHeadersReceived(
+    (details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          "Content-Security-Policy": [
+            "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';",
+          ],
+        },
+      });
+    }
+  );
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);

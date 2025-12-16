@@ -1,14 +1,28 @@
-import { mergeAttributes, Node, canInsertNode } from "@tiptap/core";
+import { mergeAttributes, Node, textblockTypeInputRule } from "@tiptap/core";
 
-// REVIEW: make sure not to have 0 at renderHTML when there is no content
+const name = "heading1";
 
-const name = "video";
+// todo: marks
 
-const Video = Node.create({
+const Heading1 = Node.create({
   name,
-  group: "block video",
-  draggable: false,
-  selectable: true,
+  group: "block heading",
+  content: "inline*",
+  defining: true,
+
+  addInputRules() {
+    return [
+      textblockTypeInputRule({
+        find: new RegExp(`^(#{1})\\s$`),
+        type: this.type,
+        getAttributes: {
+          divType: "block",
+          contentType: name,
+          indentLevel: 0,
+        },
+      }),
+    ];
+  },
 
   addOptions() {
     return {
@@ -21,11 +35,11 @@ const Video = Node.create({
 
   addAttributes() {
     return {
-      videoSrc: {
-        default: "",
-        parseHTML: (element) => element.getAttribute("src"),
+      divType: {
+        default: "block",
+        parseHTML: (element) => element.getAttribute("data-div-type"),
         renderHTML: (attributes) => ({
-          src: attributes.videoSrc,
+          "data-div-type": attributes.divType,
         }),
       },
       contentType: {
@@ -42,31 +56,20 @@ const Video = Node.create({
           "data-indent-level": attributes.indentLevel,
         }),
       },
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
     };
   },
 
   parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "video" }];
+    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h1" }];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
-      [
-        "div",
-        this.options.contentAttrs,
-        ["video", { src: HTMLAttributes.src, controls: "true" }],
-      ],
+      ["div", this.options.contentAttrs, ["heading1", {}, 0]],
     ];
   },
 });
 
-export default Video;
+export default Heading1;

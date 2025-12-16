@@ -1,15 +1,28 @@
 import { mergeAttributes, Node, textblockTypeInputRule } from "@tiptap/core";
 
-const name = "heading1";
+const name = "heading2";
 
-const Heading1 = Node.create({
+// todo: marks
+
+const Heading2 = Node.create({
   name,
-  // REVIEW: this does not need a link
-  marks: "bold italic underline strike superscript highlight textStyle",
   group: "block heading",
   content: "inline*",
-  // prioritizes the content over the container when structural editing operations occur
   defining: true,
+
+  addInputRules() {
+    return [
+      textblockTypeInputRule({
+        find: new RegExp(`^(#{2})\\s$`),
+        type: this.type,
+        getAttributes: {
+          divType: "block",
+          contentType: name,
+          indentLevel: 0,
+        },
+      }),
+    ];
+  },
 
   addOptions() {
     return {
@@ -20,26 +33,15 @@ const Heading1 = Node.create({
     };
   },
 
-  addInputRules() {
-    return [
-      textblockTypeInputRule({
-        find: new RegExp(`^(#{1})\\s$`),
-        type: this.type,
-        getAttributes: {
-          indentLevel: 0,
-          contentType: name,
-          nodeType: "block",
-        },
-      }),
-    ];
-  },
-
-  parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h1" }];
-  },
-
   addAttributes() {
     return {
+      divType: {
+        default: "block",
+        parseHTML: (element) => element.getAttribute("data-div-type"),
+        renderHTML: (attributes) => ({
+          "data-div-type": attributes.divType,
+        }),
+      },
       contentType: {
         default: name,
         parseHTML: (element) => element.getAttribute("data-content-type"),
@@ -54,23 +56,20 @@ const Heading1 = Node.create({
           "data-indent-level": attributes.indentLevel,
         }),
       },
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
     };
+  },
+
+  parseHTML() {
+    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h2" }];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
-      ["div", this.options.contentAttrs, ["heading1", {}, 0]],
+      ["div", this.options.contentAttrs, ["heading2", {}, 0]],
     ];
   },
 });
 
-export default Heading1;
+export default Heading2;

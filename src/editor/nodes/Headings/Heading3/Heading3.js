@@ -2,13 +2,27 @@ import { mergeAttributes, Node, textblockTypeInputRule } from "@tiptap/core";
 
 const name = "heading3";
 
+// todo: marks
+
 const Heading3 = Node.create({
   name,
-  // REVIEW: this does not need a link
-  marks: "bold italic underline strike superscript highlight textStyle",
   group: "block heading",
   content: "inline*",
   defining: true,
+
+  addInputRules() {
+    return [
+      textblockTypeInputRule({
+        find: new RegExp(`^(#{3})\\s$`),
+        type: this.type,
+        getAttributes: {
+          divType: "block",
+          contentType: name,
+          indentLevel: 0,
+        },
+      }),
+    ];
+  },
 
   addOptions() {
     return {
@@ -19,28 +33,15 @@ const Heading3 = Node.create({
     };
   },
 
-  addInputRules() {
-    return [
-      textblockTypeInputRule({
-        find: new RegExp(`^(#{3})\\s$`),
-        type: this.type,
-        getAttributes: {
-          indentLevel: 0,
-          contentType: name,
-          nodeType: "block",
-        },
-      }),
-    ];
-  },
-
-  parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h3" }];
-  },
-
-  // FIX: indent cannot occur. Remains at 0
-  // FIX: Enter -> create a paragraph
   addAttributes() {
     return {
+      divType: {
+        default: "block",
+        parseHTML: (element) => element.getAttribute("data-div-type"),
+        renderHTML: (attributes) => ({
+          "data-div-type": attributes.divType,
+        }),
+      },
       contentType: {
         default: name,
         parseHTML: (element) => element.getAttribute("data-content-type"),
@@ -55,14 +56,11 @@ const Heading3 = Node.create({
           "data-indent-level": attributes.indentLevel,
         }),
       },
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
     };
+  },
+
+  parseHTML() {
+    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h3" }];
   },
 
   renderHTML({ HTMLAttributes }) {

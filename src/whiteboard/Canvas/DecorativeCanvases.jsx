@@ -27,12 +27,6 @@ const DecorativeCanvas = ({ ref }) => {
     ctx.scale(scale, scale);
   }, [ref, wrapperRect, panOffsetCoords, scale]);
 
-  // idea: when the top is clicked, invoke the bottom canvas' onClick as well
-  const handleTopCanvasClick = (e) => {
-    handleBottomCanvasClick(e);
-  };
-  const handleBottomCanvasClick = () => {};
-
   return (
     <>
       <canvas id="decorative-canvas-top" />;

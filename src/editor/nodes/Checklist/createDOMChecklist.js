@@ -1,31 +1,15 @@
 const createBlock = (HTMLAttributes) => {
   const block = document.createElement("div");
   block.className = "block block-checklist";
-  block.setAttribute("data-id", HTMLAttributes["data-id"]);
-  block.setAttribute("data-node-type", HTMLAttributes["data-node-type"]);
-  block.setAttribute("data-is-checked", HTMLAttributes["data-is-checked"]);
-  block.setAttribute("data-content-type", HTMLAttributes["data-content-type"]);
-  block.setAttribute("data-indent-level", HTMLAttributes["data-indent-level"]);
+
+  Object.entries(HTMLAttributes).forEach((entry) => {
+    const key = entry[0];
+    const value = entry[1];
+
+    block.setAttribute(key, value);
+  });
 
   return block;
-};
-
-const createCheckmark = () => {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "none");
-  svg.setAttribute("class", "checkmark");
-
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", "M20 6L9 17L4 12");
-  path.setAttribute("stroke", "currentColor");
-  path.setAttribute("stroke-width", "2");
-  path.setAttribute("stroke-linecap", "round");
-  path.setAttribute("stroke-linejoin", "round");
-
-  svg.appendChild(path);
-
-  return svg;
 };
 
 const createContent = () => {
@@ -36,38 +20,46 @@ const createContent = () => {
   return content;
 };
 
-const createCheckbox = () => {
+const createCheckbox = (width, height) => {
   const button = document.createElement("button");
   button.className = "checkbox";
+  button.style.width = width + "px";
+  button.style.minWidth = width + "px";
+  button.style.height = height + "px";
+  button.style.minHeight = height + "px";
 
   return button;
 };
 
-const createDOMChecklist = (HTMLAttributes, editor, view, node, getPos) => {
-  const { dispatch } = view;
+const createCheckmark = (width, height) => {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("class", "checkmark");
 
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", "M 18 6 L 9 17 L 4 12");
+  path.setAttribute("stroke", "currentColor");
+  path.setAttribute("stroke-width", "2");
+  path.setAttribute("stroke-linecap", "round");
+  path.setAttribute("stroke-linejoin", "round");
+
+  svg.appendChild(path);
+
+  return svg;
+};
+
+const createDOMChecklist = (HTMLAttributes, width, height) => {
   const block = createBlock(HTMLAttributes);
   const content = createContent();
-  const checkbox = createCheckbox();
-  const svg = createCheckmark();
+  const checkbox = createCheckbox(width, height);
+  const svg = createCheckmark(width, height);
   const listItem = document.createElement("list-item");
 
   block.appendChild(content);
   content.appendChild(checkbox);
-  content.appendChild(listItem);
   checkbox.appendChild(svg);
-
-  // FIX: remove event listener
-  checkbox.addEventListener("mousedown", () => {
-    const { state } = editor;
-    const { tr } = state;
-
-    const isChecked = JSON.parse(node.attrs?.isChecked);
-
-    tr.setNodeAttribute(getPos(), "isChecked", !isChecked);
-
-    dispatch(tr);
-  });
+  content.appendChild(listItem);
 
   return { block, checkbox, listItem };
 };
