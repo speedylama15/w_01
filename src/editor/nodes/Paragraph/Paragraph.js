@@ -7,7 +7,7 @@ const Paragraph = Node.create({
   marks: "bold italic underline strike superscript highlight textStyle",
   group: "block paragraph",
   content: "inline*",
-  priority: 101,
+  priority: 200,
 
   addOptions() {
     return {

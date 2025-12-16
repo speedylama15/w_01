@@ -60,9 +60,14 @@ const Node = memo(({ nodeID }) => {
         transformOrigin: "0 0",
 
         // debug
-        // backgroundColor: "#ffc80163",
-        // padding: "12px",
-        // padding: 0,
+        backgroundColor: "#d2f6ffff",
+        padding:
+          node.dimension.width > 24 && node.dimension.height > 24
+            ? "12px"
+            : "0px",
+        borderRadius: "7px",
+        // borderRadius: "50%",
+        outline: "2px solid blue",
       }}
       onMouseDown={handleMouseDown}
     >
@@ -75,14 +80,10 @@ const Node = memo(({ nodeID }) => {
           overflow: "clip",
 
           // debug
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#58ffcaff",
-          // borderRadius: "7px",
-          borderRadius: "50%",
-          // padding: "12px",
-          border: "1px solid #000",
+          // display: "flex",
+          // justifyContent: "center",
+          // alignItems: "center",
+          // borderRadius: "50%",
         }}
       >
         <Editor />

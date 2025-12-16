@@ -1,6 +1,6 @@
 .editor {
   /* fix */
-  padding: 24px;
+  padding: 12px;
 }
 
 .editor-content {
@@ -16,7 +16,7 @@
 
 .block-paragraph {
   /* fix */
-  text-align: center;
+  /* text-align: center; */
 }
 
 paragraph {
