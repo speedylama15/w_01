@@ -1,14 +1,37 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
-const name = "paragraph";
+const name = "blockquote";
 
 // todo: marks
 
-const Paragraph = Node.create({
+const Blockquote = Node.create({
   name,
-  group: "block paragraph",
+  group: "block blockquote",
   content: "inline*",
-  priority: 200,
+
+  addInputRules() {
+    return [
+      {
+        find: /^\s*>\s$/,
+        handler: ({ range, chain, state }) => {
+          const { selection } = state;
+          const { $from } = selection;
+
+          const node = $from.node($from.depth);
+          const indentLevel = node?.attrs.indentLevel;
+
+          chain()
+            .deleteRange(range)
+            .setNode(this.name, {
+              divType: "block",
+              contentType: name,
+              indentLevel,
+            })
+            .run();
+        },
+      },
+    ];
+  },
 
   addOptions() {
     return {
@@ -46,16 +69,16 @@ const Paragraph = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "p" }];
+    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "blockquote" }];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
-      ["div", this.options.contentAttrs, ["paragraph", {}, 0]],
+      ["div", this.options.contentAttrs, ["blockquote", {}, 0]],
     ];
   },
 });
 
-export default Paragraph;
+export default Blockquote;

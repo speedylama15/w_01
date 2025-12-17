@@ -7,9 +7,10 @@ import Paragraph from "./nodes/Paragraph/Paragraph";
 import Heading1 from "./nodes/Headings/Heading1/Heading1";
 import Heading2 from "./nodes/Headings/Heading2/Heading2";
 import Heading3 from "./nodes/Headings/Heading3/Heading3";
-import BulletList from "./nodes/BulletList/BulletList";
-import NumberedList from "./nodes/NumberedList/NumberedList";
-import Checklist from "./nodes/Checklist/Checklist";
+import BulletList from "./nodes/Lists/BulletList/BulletList";
+import NumberedList from "./nodes/Lists/NumberedList/NumberedList";
+import Checklist from "./nodes/Lists/Checklist/Checklist";
+import Blockquote from "./nodes/Blockquote/Blockquote";
 
 // mark
 import { TextStyle, Color } from "@tiptap/extension-text-style";
@@ -35,9 +36,11 @@ import "./nodes/Headings/Heading1/Heading1.css";
 import "./nodes/Headings/Heading2/Heading2.css";
 import "./nodes/Headings/Heading3/Heading3.css";
 
-import "./nodes/BulletList/BulletList.css";
-import "./nodes/NumberedList/NumberedList.css";
-import "./nodes/Checklist/Checklist.css";
+import "./nodes/Lists/BulletList/BulletList.css";
+import "./nodes/Lists/NumberedList/NumberedList.css";
+import "./nodes/Lists/Checklist/Checklist.css";
+
+import "./nodes/Blockquote/Blockquote.css";
 
 const Editor = () => {
   const editorRef = useRef();
@@ -54,6 +57,7 @@ const Editor = () => {
       BulletList,
       NumberedList,
       Checklist,
+      Blockquote,
       Text,
 
       // REVIEW: mark
@@ -78,6 +82,7 @@ const Editor = () => {
           BulletList.name,
           NumberedList.name,
           Checklist.name,
+          Blockquote.name,
         ],
       }),
     ],
