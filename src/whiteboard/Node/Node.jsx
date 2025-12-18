@@ -61,12 +61,7 @@ const Node = memo(({ nodeID }) => {
 
         // debug
         backgroundColor: "#d2f6ffff",
-        padding:
-          node.dimension.width > 24 && node.dimension.height > 24
-            ? "12px"
-            : "0px",
         borderRadius: "7px",
-        // borderRadius: "50%",
         outline: "2px solid blue",
       }}
       onMouseDown={handleMouseDown}
@@ -78,12 +73,6 @@ const Node = memo(({ nodeID }) => {
           transform: `rotate(${node.rotation}rad)`,
           transformOrigin: "center",
           overflow: "clip",
-
-          // debug
-          // display: "flex",
-          // justifyContent: "center",
-          // alignItems: "center",
-          // borderRadius: "50%",
         }}
       >
         <Editor />

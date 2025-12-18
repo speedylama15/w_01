@@ -467,19 +467,11 @@ const Whiteboard = () => {
           transformOrigin: "0 0",
         }}
       >
-        {/* <div className="whiteboard-nodes">
+        <div className="whiteboard-nodes">
           {Object.values(nodesMap).map((node) => {
             return <Node key={node.id} nodeID={node.id} />;
           })}
         </div>
-
-        <div className="whiteboard-edges">
-          <svg style={{ overflow: "visible" }}>
-            {Object.values(edgesMap).map((edge) => {
-              return <Edge key={edge.id} edgeID={edge.id} />;
-            })}
-          </svg>
-        </div> */}
 
         <NodeControls />
       </div>

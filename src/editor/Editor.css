@@ -1,6 +1,15 @@
+.ProseMirror {
+  word-wrap: break-word;
+  white-space: break-spaces;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0;
+}
+
 .editor {
   /* fix */
-  padding: 12px;
+  /* background-color: #4677cf; */
+  /* padding: 12px; */
 }
 
 .editor-content {
@@ -11,7 +20,5 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  overflow-wrap: break-word;
-  word-break: break-word;
   outline: none;
 }

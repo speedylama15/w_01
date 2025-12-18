@@ -18,6 +18,19 @@ import { getMockNodesMap } from "./getMockNodesMap";
 //   },
 // };
 
-const nodesMap = getMockNodesMap();
+// const nodesMap = getMockNodesMap();
+
+const nodesMap = {
+  "node-1": {
+    id: "node-1",
+    type: "note",
+    shape: "square",
+    values: [],
+    content: { html: "OH BOY!" }, // IDEA: html
+    rotation: 0,
+    position: { x: 555, y: 0 },
+    dimension: { width: 500, height: 400 },
+  },
+};
 
 export default nodesMap;

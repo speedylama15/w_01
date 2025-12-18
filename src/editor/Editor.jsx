@@ -42,11 +42,13 @@ import "./nodes/Lists/Checklist/Checklist.css";
 
 import "./nodes/Blockquote/Blockquote.css";
 
+import { content } from "../data/content";
+
 const Editor = () => {
   const editorRef = useRef();
 
   const editor = useEditor({
-    content: "",
+    content,
     extensions: [
       // REVIEW: node
       Document,
