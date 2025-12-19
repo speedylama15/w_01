@@ -60,7 +60,7 @@ const Node = memo(({ nodeID }) => {
         transformOrigin: "0 0",
 
         // debug
-        backgroundColor: "#d2f6ffff",
+        // backgroundColor: "#d2f6ffff",
         borderRadius: "7px",
         outline: "2px solid blue",
       }}

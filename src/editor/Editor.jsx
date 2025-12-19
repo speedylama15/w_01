@@ -11,6 +11,8 @@ import BulletList from "./nodes/Lists/BulletList/BulletList";
 import NumberedList from "./nodes/Lists/NumberedList/NumberedList";
 import Checklist from "./nodes/Lists/Checklist/Checklist";
 import Blockquote from "./nodes/Blockquote/Blockquote";
+import Verse from "./nodes/Verses/Verse/Verse";
+import VerseWithCitation from "./nodes/Verses/VerseWithCitation/VerseWithCitation";
 
 // mark
 import { TextStyle, Color } from "@tiptap/extension-text-style";
@@ -18,7 +20,6 @@ import Bold from "@tiptap/extension-bold";
 import Italic from "@tiptap/extension-italic";
 import Highlight from "@tiptap/extension-highlight";
 import Strike from "@tiptap/extension-strike";
-import Superscript from "@tiptap/extension-superscript";
 import Underline from "@tiptap/extension-underline";
 // mark
 
@@ -42,13 +43,14 @@ import "./nodes/Lists/Checklist/Checklist.css";
 
 import "./nodes/Blockquote/Blockquote.css";
 
-import { content } from "../data/content";
+import "./nodes/Verses/Verse/Verse.css";
+import "./nodes/Verses/VerseWithCitation/VerseWithCitation.css";
 
 const Editor = () => {
   const editorRef = useRef();
 
   const editor = useEditor({
-    content,
+    content: JSON.parse(localStorage.getItem("editor")) || "",
     extensions: [
       // REVIEW: node
       Document,
@@ -60,6 +62,8 @@ const Editor = () => {
       NumberedList,
       Checklist,
       Blockquote,
+      Verse,
+      VerseWithCitation,
       Text,
 
       // REVIEW: mark
@@ -69,7 +73,6 @@ const Editor = () => {
       Bold,
       Italic,
       Strike,
-      Superscript,
       Underline,
 
       // REVIEW: functionality
@@ -85,13 +88,26 @@ const Editor = () => {
           NumberedList.name,
           Checklist.name,
           Blockquote.name,
+          Verse.name,
+          VerseWithCitation.name,
         ],
       }),
     ],
 
+    editorProps: {
+      attributes: {
+        /* review: solution */
+        style: "overflow-wrap: inherit;",
+      },
+    },
+
     onCreate({ editor }) {
       editor.view.dom.classList.remove("tiptap");
       editor.view.dom.classList.add("editor-contenteditable");
+    },
+
+    onUpdate({ editor }) {
+      localStorage.setItem("editor", JSON.stringify(editor.getJSON()));
     },
   });
 
@@ -102,6 +118,7 @@ const Editor = () => {
       // fix
       // fix: also need to be able to focus onto the editor
       onClick={() => console.log(editor.getJSON())}
+      style={{ overflowWrap: "anywhere" }}
     >
       <EditorContent editor={editor} className="editor-content" />
     </div>

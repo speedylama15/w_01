@@ -1,0 +1,8 @@
+.content-verseWithCitation::before {
+  display: inline-block;
+  content: attr(data-citation);
+  font-size: 16px;
+  font-weight: 500;
+  min-width: fit-content;
+  margin-right: 7px;
+}

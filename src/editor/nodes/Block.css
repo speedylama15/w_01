@@ -9,7 +9,10 @@
   vertical-align: middle;
 }
 
-paragraph {
+paragraph,
+blockquote,
+verse,
+verse-with-citation {
   display: block;
   font-size: 16px;
   line-height: 1.6;
@@ -64,9 +67,10 @@ list-item {
 
 .content-numberedList::before {
   display: flex;
+  /* review: solution */
+  flex-shrink: 0;
   /* todo: make this a variable 통합*/
   font-size: 16px;
-  width: fit-content;
   min-width: 24px;
   text-align: center;
   padding-left: 4px;
@@ -79,6 +83,16 @@ blockquote {
   line-height: 1.6;
   padding-left: 12px;
   border-left: 3px solid #000;
+}
+
+.content-verse {
+  position: relative;
+  display: inline-flex;
+}
+
+.content-verseWithCitation {
+  position: relative;
+  display: inline-flex;
 }
 
 /*

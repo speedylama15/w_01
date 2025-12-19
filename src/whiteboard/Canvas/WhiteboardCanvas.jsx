@@ -26,147 +26,77 @@ const WhiteboardCanvas = ({ ref }) => {
     const draw = async () => {
       await document.fonts.load('18px "DM Mono"');
 
-      if (ref?.current) {
-        const canvas = ref.current;
-        const ctx = canvas.getContext("2d");
-        const dpr = window.devicePixelRatio || 1;
+      const canvas = ref.current;
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
 
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.scale(dpr, dpr);
-        ctx.translate(panOffsetCoords.x, panOffsetCoords.y);
-        ctx.scale(scale, scale);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.scale(dpr, dpr);
+      ctx.translate(panOffsetCoords.x, panOffsetCoords.y);
+      ctx.scale(scale, scale);
 
-        // Set font once
-        ctx.font = '16px "DM Mono"';
-        ctx.fillStyle = "black";
-        ctx.textBaseline = "top";
+      // Set font once
+      ctx.font = 'normal 16px "DM Mono"';
+      ctx.fillStyle = "black";
+      ctx.textBaseline = "top";
 
-        const { x, y } = node.position;
-        const { width, height } = node.dimension;
+      const { x, y } = node.position;
+      const { width, height } = node.dimension;
 
-        ctx.strokeRect(x, y, width, height);
+      ctx.strokeRect(x, y, width, height);
 
-        const ePad = { x: 12, y: 12 };
-        const bPad = { x: 4, y: 2 };
-        const m = 2;
+      const nodeWidth = width;
 
-        // const nodeWidth = width - ePad.x * 2;
-        // const nodeHeight = height - ePad.y * 2;
-        // let initX = x + ePad.x;
-        // let initY = y + ePad.y;
+      let lineNum = 0;
 
-        const nodeWidth = width;
-        const nodeHeight = height;
-        let initX = x;
-        let initY = y;
+      JSON.parse(localStorage.getItem("editor")).content.forEach((block) => {
+        const blockContent = block.content;
 
-        let lineNum = 0;
+        blockContent.forEach((content) => {
+          const textContent = content.text;
 
-        node.content.content.forEach((block) => {
-          const blockContent = block.content;
+          const { width: textWidth } = ctx.measureText(textContent);
 
-          blockContent.forEach((content) => {
-            const textContent = content.text;
+          // todo
+          if (textWidth < nodeWidth) {
+            ctx.fillText(textContent, x, y + 16 * 1.6 * lineNum);
 
-            const { width: textWidth } = ctx.measureText(textContent);
+            lineNum++;
+          } else {
+            const words = textContent.match(/\S+|\s/g) || [];
 
-            // todo
-            if (textWidth < nodeWidth) {
-              ctx.fillText(textContent, initX, initY + 16 * 1.6 * lineNum);
+            let currLine = "";
+            let prevLine = "";
 
-              lineNum++;
-            } else {
-              const words = textContent.match(/\S+|\s/g) || [];
+            words.forEach((word, i) => {
+              currLine += word;
 
-              let currString = "";
-              let prevString = "";
+              const currLineWidth = ctx.measureText(currLine).width;
+              const wordWidth = ctx.measureText(word).width;
 
-              words.forEach((word, i) => {
-                currString += word;
+              if (currLineWidth > nodeWidth) {
+                if (word !== " ") {
+                  if (prevLine !== "") {
+                    ctx.fillText(prevLine, x, y + 16 * 1.6 * lineNum);
+                    lineNum++;
+                    currLine = "";
+                    prevLine = "";
+                  }
 
-                const { width: currWidth } = ctx.measureText(currString);
-                const { width: wordWidth } = ctx.measureText(word);
-
-                // review: breakage is guaranteed
-                if (currWidth > nodeWidth) {
-                  if (word === " ") {
-                    const prevWord = words[i - 1];
-                    const prevWordPlusSpace = prevWord + word;
-                    const { width: prevWordPlusSpaceWidth } =
-                      ctx.measureText(prevWordPlusSpace);
-
-                    if (prevWordPlusSpaceWidth > nodeWidth) {
-                      // if the previous word + " " exceeds node width
-                      // -> prevWord stays and only the space to next line
-                      ctx.fillText(prevWord, initX, initY + 16 * 1.6 * lineNum);
-
-                      lineNum++;
-
-                      currString = word;
-                      prevString = currString;
-                    } else if (prevWord === " ") {
-                      // if the previous word is a " "
-                      // -> just move the space to the next line
-                      ctx.fillText(
-                        prevString,
-                        initX,
-                        initY + 16 * 1.6 * lineNum
-                      );
-
-                      lineNum++;
-
-                      currString = word;
-                      prevString = currString;
-                    } else {
-                      // if " " causes exceeding, retrieve the previous word
-                      // -> prevWord + " " to next line
-                      prevString = prevString.slice(0, -prevWord.length);
-                      ctx.fillText(
-                        prevString,
-                        initX,
-                        initY + 16 * 1.6 * lineNum
-                      );
-
-                      lineNum++;
-
-                      currString = prevWord + word;
-                      prevString = currString;
-                    }
-                  } else if (wordWidth > nodeWidth) {
-                    // if the previous word exceeds the node's width
-                    // -> word break
-
-                    if (prevString.length > 0) {
-                      ctx.fillText(
-                        prevString,
-                        initX,
-                        initY + 16 * 1.6 * lineNum
-                      );
-
-                      lineNum++;
-
-                      // currString = "";
-                      // prevString = "";
-                    }
-
+                  if (wordWidth > nodeWidth) {
                     let currWord = "";
                     let prevWord = "";
 
+                    // break the word
                     for (let i = 0; i < word.length; i++) {
                       const char = word[i];
-
                       currWord += char;
 
-                      const { width: currWordWidth } =
-                        ctx.measureText(currWord);
+                      const currWordWidth = ctx.measureText(currWord).width;
 
                       if (currWordWidth > nodeWidth) {
-                        ctx.fillText(
-                          prevWord,
-                          initX,
-                          initY + 16 * 1.6 * lineNum
-                        );
+                        ctx.fillText(prevWord, x, y + 16 * 1.6 * lineNum);
 
                         lineNum++;
 
@@ -177,41 +107,62 @@ const WhiteboardCanvas = ({ ref }) => {
                       }
 
                       if (i === word.length - 1) {
-                        currString = prevWord;
-                        prevString = prevWord;
+                        currLine = currWord;
+                        prevLine = currWord;
                       }
                     }
-                  } else {
-                    // if word causes overflow
-                    // -> word jumps to next line
-                    ctx.fillText(prevString, initX, initY + 16 * 1.6 * lineNum);
-
-                    lineNum++;
-
-                    currString = word;
-                    prevString = word;
+                  } else if (wordWidth <= nodeWidth) {
+                    currLine = word;
+                    prevLine = currLine;
                   }
-                } else {
-                  prevString = currString;
                 }
 
-                if (i === words.length - 1) {
-                  ctx.fillText(prevString, initX, initY + 16 * 1.6 * lineNum);
+                // review: " " broke it
+                if (word === " ") {
+                  const prevWord = words[i - 1];
+                  const prevWordPlusSpace = prevWord + word;
+                  const prevWordPlusSpaceWidth =
+                    ctx.measureText(prevWordPlusSpace).width;
 
-                  lineNum += 1;
+                  if (prevWord === " ") {
+                    ctx.fillText(prevLine, x, y + 16 * 1.6 * lineNum);
+                    lineNum++;
+                    currLine = word;
+                    prevLine = currLine;
+                  } else if (prevWordPlusSpaceWidth < nodeWidth) {
+                    const slicedPrevLine = prevLine.slice(0, -prevWord.length);
+
+                    ctx.fillText(slicedPrevLine, x, y + 16 * 1.6 * lineNum);
+                    lineNum++;
+                    currLine = prevWord + word;
+                    prevLine = currLine;
+                  } else if (prevWordPlusSpaceWidth >= nodeWidth) {
+                    ctx.fillText(prevLine, x, y + 16 * 1.6 * lineNum);
+                    lineNum++;
+                    currLine = word;
+                    prevLine = currLine;
+                  }
                 }
-              });
+              } else {
+                prevLine = currLine;
+              }
 
-              // debug
-              console.log("words", words);
-            }
-            // todo
-          });
+              // reaches the end of the block
+              // render all the remaining line
+              if (i === words.length - 1) {
+                ctx.fillText(currLine, x, y + 16 * 1.6 * lineNum);
+
+                lineNum += 1;
+              }
+            });
+          }
         });
-      }
+      });
     };
 
-    draw();
+    if (wrapperRect.x && ref?.current) {
+      draw();
+    }
   }, [ref, wrapperRect, panOffsetCoords, scale]);
 
   return <canvas id="whiteboard-canvas" ref={ref} />;
