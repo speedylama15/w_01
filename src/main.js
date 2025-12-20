@@ -38,7 +38,15 @@ const createWindow = () => {
         responseHeaders: {
           ...details.responseHeaders,
           "Content-Security-Policy": [
-            "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';",
+            `
+              default-src * 'unsafe-inline' 'unsafe-eval'; 
+              script-src * 'unsafe-inline' 'unsafe-eval' blob:; 
+              worker-src * blob:; 
+              connect-src * https:; 
+              img-src * data: blob:; 
+              media-src * data: blob:; 
+              frame-src *; style-src * 'unsafe-inline';
+            `,
           ],
         },
       });

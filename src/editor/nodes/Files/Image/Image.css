@@ -1,0 +1,22 @@
+/* block needs to be 100% and align the image */
+.block-image {
+  display: flex;
+  justify-content: center;
+}
+
+/* content needs the accurate width */
+.content-image {
+}
+
+.image-wrapper {
+  width: 100%;
+}
+
+.ProseMirror-selectednode img {
+  outline: 3px solid #1254ee;
+}
+
+img {
+  width: 100%;
+  border-radius: 7px;
+}

@@ -13,6 +13,11 @@ import Checklist from "./nodes/Lists/Checklist/Checklist";
 import Blockquote from "./nodes/Blockquote/Blockquote";
 import Verse from "./nodes/Verses/Verse/Verse";
 import VerseWithCitation from "./nodes/Verses/VerseWithCitation/VerseWithCitation";
+import Image from "./nodes/Files/Image/Image";
+import Audio from "./nodes/Files/Audio/Audio";
+import Video from "./nodes/Files/Video/Video";
+import PDF from "./nodes/Files/PDF/PDF";
+import Divider from "./nodes/Divider/Divider";
 
 // mark
 import { TextStyle, Color } from "@tiptap/extension-text-style";
@@ -46,6 +51,13 @@ import "./nodes/Blockquote/Blockquote.css";
 import "./nodes/Verses/Verse/Verse.css";
 import "./nodes/Verses/VerseWithCitation/VerseWithCitation.css";
 
+import "./nodes/Files/Image/Image.css";
+import "./nodes/Files/Audio/Audio.css";
+import "./nodes/Files/Video/Video.css";
+import "./nodes/Files/PDF/PDF.css";
+
+import "./nodes/Divider/Divider.css";
+
 const Editor = () => {
   const editorRef = useRef();
 
@@ -64,6 +76,11 @@ const Editor = () => {
       Blockquote,
       Verse,
       VerseWithCitation,
+      Image,
+      Audio,
+      Video,
+      PDF,
+      Divider,
       Text,
 
       // REVIEW: mark
@@ -90,6 +107,11 @@ const Editor = () => {
           Blockquote.name,
           Verse.name,
           VerseWithCitation.name,
+          Image.name,
+          Audio.name,
+          Video.name,
+          PDF.name,
+          Divider.name,
         ],
       }),
     ],
@@ -118,7 +140,6 @@ const Editor = () => {
       // fix
       // fix: also need to be able to focus onto the editor
       onClick={() => console.log(editor.getJSON())}
-      style={{ overflowWrap: "anywhere" }}
     >
       <EditorContent editor={editor} className="editor-content" />
     </div>

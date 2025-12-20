@@ -1,0 +1,22 @@
+/* block needs to be 100% and align the image */
+.block-video {
+  display: flex;
+  justify-content: center;
+}
+
+/* content needs the accurate width */
+.content-video {
+}
+
+.video-wrapper {
+  width: 100%;
+}
+
+.ProseMirror-selectednode video {
+  outline: 3px solid #1254ee;
+}
+
+video {
+  width: 100%;
+  border-radius: 7px;
+}

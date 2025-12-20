@@ -1,0 +1,15 @@
+div.block-divider.ProseMirror-selectednode {
+  outline: 3px solid #84b9ff;
+}
+
+.divider-wrapper {
+  padding: 5px;
+}
+
+hr {
+  display: block;
+  background: #5f616b;
+  height: 0.5px;
+  border: none;
+  border-radius: 12px;
+}

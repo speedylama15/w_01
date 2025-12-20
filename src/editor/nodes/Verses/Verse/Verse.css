@@ -1,7 +1,8 @@
 .content-verse::before {
   display: inline-block;
   content: attr(data-verse-number);
-  font-size: 14px;
-  vertical-align: super;
+  font-size: 12px;
+  min-width: fit-content;
   margin-right: 7px;
+  vertical-align: super;
 }

@@ -1,0 +1,22 @@
+/* block needs to be 100% and align the image */
+.block-audio {
+  display: flex;
+  justify-content: center;
+}
+
+/* content needs the accurate width */
+.content-audio {
+}
+
+.audio-wrapper {
+  width: 100%;
+}
+
+.ProseMirror-selectednode audio {
+  outline: 3px solid #1254ee;
+}
+
+audio {
+  width: 100%;
+  border-radius: 7px;
+}

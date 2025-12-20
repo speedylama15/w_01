@@ -64,6 +64,7 @@
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "paper": "^0.12.18",
+    "pdfjs-dist": "^5.4.449",
     "rbush": "^4.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
