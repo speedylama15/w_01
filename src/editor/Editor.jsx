@@ -119,7 +119,7 @@ const Editor = () => {
     editorProps: {
       attributes: {
         /* review: solution */
-        style: "overflow-wrap: inherit;",
+        style: "overflow-wrap: anywhere;",
       },
     },
 

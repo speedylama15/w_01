@@ -1,0 +1,20 @@
+/* block needs to be 100% and align the image */
+.block-pdf {
+  display: flex;
+  justify-content: center;
+}
+
+/* content needs the accurate width */
+.content-pdf {
+}
+
+.pdf-wrapper {
+}
+
+.ProseMirror-selectednode canvas {
+  outline: 3px solid #1254ee;
+}
+
+canvas {
+  border-radius: 7px;
+}

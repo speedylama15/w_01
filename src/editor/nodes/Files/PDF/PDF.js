@@ -1,14 +1,56 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import * as pdfjsLib from "pdfjs-dist";
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
 
 const name = "pdf";
 
 // todo: marks
 // todo: add node view for resizing and alignment funtionalities
 
-// fix
-const src = "https://arxiv.org/pdf/2301.07041.pdf";
+const renderPDF = async (
+  canvas,
+  src = "https://arxiv.org/pdf/2301.07041.pdf",
+  pageNum = 1,
+  width = 400
+) => {
+  // fix: warning fake worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "//mozilla.github.io/pdf.js/build/pdf.worker.mjs";
+
+  const pdf = await pdfjsLib.getDocument(src).promise;
+
+  // fix: make this an attribute
+  const page = await pdf.getPage(pageNum);
+
+  const context = canvas.getContext("2d");
+
+  const viewport = page.getViewport({ scale: 1 });
+  // fix: make this an attribute
+  const scale = width / viewport.width;
+  const scaledViewport = page.getViewport({ scale });
+
+  canvas.width = scaledViewport.width;
+  canvas.height = scaledViewport.height;
+
+  await page.render({
+    canvasContext: context,
+    viewport: scaledViewport,
+  }).promise;
+};
+
+// review
+const getHTML_Attributes = (HTMLAttributes) => {
+  const html_attributes = {};
+
+  Object.entries(HTMLAttributes).forEach((entry) => {
+    const key = entry[0];
+    const value = entry[1];
+
+    if (key !== "src") html_attributes[key] = value;
+  });
+
+  return html_attributes;
+};
+// review
 
 const PDF = Node.create({
   name,
@@ -17,8 +59,60 @@ const PDF = Node.create({
   inline: false,
   selectable: true,
 
-  // fix
-  //   priority: 100000,
+  addNodeView() {
+    return ({ HTMLAttributes }) => {
+      const block = document.createElement("div");
+      const content = document.createElement("div");
+      const wrapper = document.createElement("div");
+      const canvas = document.createElement("canvas");
+
+      const { blockAttrs, contentAttrs } = this.options;
+      const html_attributes = getHTML_Attributes(HTMLAttributes);
+
+      Object.entries(html_attributes).forEach((entry) => {
+        const key = entry[0];
+        const value = entry[1];
+
+        block.setAttribute(key, value);
+      });
+
+      Object.entries(blockAttrs).forEach((entry) => {
+        const key = entry[0];
+        const value = entry[1];
+
+        block.setAttribute(key, value);
+      });
+
+      Object.entries(contentAttrs).forEach((entry) => {
+        const key = entry[0];
+        const value = entry[1];
+
+        content.setAttribute(key, value);
+      });
+
+      // review: set the width of content and wrapper divs
+      const width = HTMLAttributes["data-pdf-width"];
+      content.style.width = width + "px";
+      wrapper.style.width = width + "px";
+      wrapper.className = "pdf-wrapper";
+
+      block.append(content);
+      content.append(wrapper);
+      wrapper.append(canvas);
+
+      // review: width of canvas is set here
+      const src = HTMLAttributes.src;
+      const pageNum = HTMLAttributes["data-pdf-page-num"];
+      renderPDF(canvas, src, pageNum, width);
+
+      console.log(HTMLAttributes);
+
+      return {
+        dom: block,
+        destroy: () => {},
+      };
+    };
+  },
 
   addOptions() {
     return {
@@ -54,7 +148,7 @@ const PDF = Node.create({
       },
       pdfSrc: {
         // fix
-        default: src,
+        default: "https://arxiv.org/pdf/2301.07041.pdf",
         parseHTML: (element) => element.getAttribute("src"),
         renderHTML: (attributes) => ({
           src: attributes.pdfSrc,
@@ -68,11 +162,17 @@ const PDF = Node.create({
         }),
       },
       pdfWidth: {
-        // review: maybe I should have it be 100%
-        default: "100%",
+        default: 500,
         parseHTML: (element) => element.getAttribute("data-pdf-width"),
         renderHTML: (attributes) => ({
           "data-pdf-width": attributes.pdfWidth,
+        }),
+      },
+      pdfPageNum: {
+        default: 1,
+        parseHTML: (element) => element.getAttribute("data-pdf-page-num"),
+        renderHTML: (attributes) => ({
+          "data-pdf-page-num": attributes.pdfPageNum,
         }),
       },
     };
@@ -82,15 +182,8 @@ const PDF = Node.create({
     return [{ tag: `div[data-content-type="${name}"]` }];
   },
 
+  // fix: renderHTML needs to be better...
   renderHTML({ HTMLAttributes }) {
-    // fix
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      "//mozilla.github.io/pdf.js/build/pdf.worker.mjs";
-    const result = pdfjsLib.getDocument("https://arxiv.org/pdf/2301.07041.pdf");
-    console.log(result);
-
-    // fix
-
     const html_attributes = {};
 
     Object.entries(HTMLAttributes).forEach((entry) => {
@@ -107,21 +200,8 @@ const PDF = Node.create({
         "div",
         {
           ...this.options.contentAttrs,
-          style: `width: ${HTMLAttributes["data-pdf-width"]};`,
         },
-        [
-          "div",
-          { class: "pdf-wrapper" },
-          [
-            "iframe",
-            {
-              src: HTMLAttributes.src,
-              width: 500,
-              height: 700,
-              type: "application/pdf",
-            },
-          ],
-        ],
+        ["div", { class: "pdf-wrapper" }, []],
       ],
     ];
   },
