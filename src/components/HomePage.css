@@ -1,29 +1,71 @@
-.edit {
-  --s: 450px;
-  --p: 15px;
+/* .home-page {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
 }
 
-.edit i,
-.edit::before {
-  content: "";
-  float: left;
-  height: 100%;
-  width: 50%;
-  shape-outside: radial-gradient(
-    farthest-side at right,
-    transparent calc(100% - var(--p)),
-    #fff 0
-  );
-}
-.edit i {
-  float: right;
-  shape-outside: radial-gradient(
-    farthest-side at left,
-    transparent calc(100% - var(--p)),
-    #fff 0
-  );
+.home-page_note {
+  width: 640px;
+  height: 500px;
+  margin: 100px auto;
+  background-color: #ffebcd;
 }
 
-.edit_p {
-  text-align: center;
+.home-page_block {
+  position: relative;
+  width: 100%;
 }
+
+.home-page_content {
+  position: relative;
+}
+
+.home-page_tableWrapper {
+  background-color: #49ceff;
+  position: relative;
+  overflow: scroll;
+  padding: 3px 4px;
+}
+
+table {
+}
+
+td {
+  height: 50px;
+  min-width: 150px;
+  min-height: 36px;
+}
+
+.home-page_overlay {
+  position: absolute;
+  top: 0.5px;
+  left: 0;
+  background-color: #ebb18763;
+  width: 150px;
+  height: 50px;
+  outline: 2px solid #ffa800;
+}
+
+.home-page_overlay > #horizontal {
+  position: absolute;
+  top: 0px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 5px;
+  border: 1px solid #000;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.home-page_overlay > #vertical {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%) rotate(90deg);
+  width: 24px;
+  height: 5px;
+  border: 1px solid #000;
+  border-radius: 5px;
+  background-color: #fff;
+} */

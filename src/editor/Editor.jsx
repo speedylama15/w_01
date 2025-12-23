@@ -18,6 +18,11 @@ import Audio from "./nodes/Files/Audio/Audio";
 import Video from "./nodes/Files/Video/Video";
 import PDF from "./nodes/Files/PDF/PDF";
 import Divider from "./nodes/Divider/Divider";
+import Table from "./nodes/Table/Table";
+import TableRow from "./nodes/Table/TableRow";
+import TableHeader from "./nodes/Table/TableHeader";
+import TableCell from "./nodes/Table/TableCell";
+import ParagraphItem from "./nodes/Table/content/ParagraphItem";
 
 // mark
 import { TextStyle, Color } from "@tiptap/extension-text-style";
@@ -32,6 +37,8 @@ import Underline from "@tiptap/extension-underline";
 import UniqueID from "@tiptap/extension-unique-id";
 import HardBreak from "@tiptap/extension-hard-break";
 // functionality
+
+import { Plugins } from "./nodes/Table/Plugins";
 
 import "./Editor.css";
 import "./nodes/Block.css";
@@ -58,6 +65,11 @@ import "./nodes/Files/PDF/PDF.css";
 
 import "./nodes/Divider/Divider.css";
 
+import "./nodes/Table/Table.css";
+import "./nodes/Table/TableRow.css";
+import "./nodes/Table/TableHeader.css";
+import "./nodes/Table/TableCell.css";
+
 const Editor = () => {
   const editorRef = useRef();
 
@@ -81,6 +93,11 @@ const Editor = () => {
       Video,
       PDF,
       Divider,
+      Table,
+      TableRow,
+      TableHeader,
+      TableCell,
+      ParagraphItem,
       Text,
 
       // REVIEW: mark
@@ -112,8 +129,16 @@ const Editor = () => {
           Video.name,
           PDF.name,
           Divider.name,
+          Table.name,
+          TableRow.name,
+          TableHeader.name,
+          TableCell.name,
+          ParagraphItem.name,
         ],
       }),
+
+      // review: plugin
+      Plugins,
     ],
 
     editorProps: {

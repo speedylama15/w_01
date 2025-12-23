@@ -1,0 +1,33 @@
+.block-table {
+  /* idea: or maybe I can just place the overflow here and the padding */
+}
+
+.content-table {
+  position: relative;
+}
+
+.tableWrapper {
+  background-color: #ff8614;
+  /* fix: no padding at the block level for table */
+  /* review: the padding exists on the table wrapper level */
+  padding: 4px 4px;
+  width: 100%;
+  overflow: scroll;
+}
+
+table {
+  position: relative;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+td,
+th {
+  background-color: #c7ecb8;
+  padding: 7px;
+  border: 1px solid #000;
+  vertical-align: top;
+}
+
+paragraph-item {
+}

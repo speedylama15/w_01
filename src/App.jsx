@@ -18,6 +18,8 @@ function App() {
           <Route path="/whiteboard" exact element={<WhiteboardPage />} />
         </Routes>
       </HashRouter>
+
+      {/* <div className="table-overlay"></div> */}
     </div>
   );
 }

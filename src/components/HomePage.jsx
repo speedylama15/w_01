@@ -1,48 +1,43 @@
-import * as pdfjsLib from "pdfjs-dist";
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { DOMParser } from "@tiptap/pm/model";
 
 import "./HomePage.css";
-import { useEffect, useRef, useState } from "react";
+
+const arr = [new Array(7).fill(0), new Array(7).fill(0), new Array(7).fill(0)];
 
 const HomePage = () => {
-  const [currPage, setCurrPage] = useState(1);
-  const [pages, setPages] = useState([]);
-
-  const canvasRef = useRef();
-
-  useEffect(() => {
-    const fetchPDF = async () => {
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "//mozilla.github.io/pdf.js/build/pdf.worker.mjs";
-
-      const pdf = await pdfjsLib.getDocument(
-        "https://arxiv.org/pdf/2301.07041.pdf"
-      ).promise;
-
-      const page = await pdf.getPage(currPage);
-
-      const canvas = canvasRef.current;
-      const context = canvas.getContext("2d");
-
-      const viewport = page.getViewport({ scale: 1 });
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      await page.render({
-        canvasContext: context,
-        viewport: viewport,
-      }).promise;
-    };
-
-    fetchPDF();
-  }, []);
+  const handleClick = useCallback(() => {}, []);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <h1>PDF File</h1>
+    <div className="home-page">
+      <div className="home-page_note">
+        <div className="home-page_block">
+          <div className="home-page_content">
+            <div className="home-page_tableWrapper">
+              <table>
+                <tbody>
+                  {arr.map((el, i) => (
+                    <tr key={`row-${i}`}>
+                      {el.map((item, i) => (
+                        <td key={`cell-${i}`} />
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-      <div style={{ margin: "auto" }}>
-        <canvas ref={canvasRef} />
+              <div className="home-page_overlay">
+                <button id="horizontal"></button>
+                <button id="vertical"></button>
+              </div>
+            </div>
+
+            {/* <div className="home-page_overlay">
+              <button id="horizontal"></button>
+              <button id="vertical"></button>
+            </div> */}
+          </div>
+        </div>
       </div>
     </div>
   );
