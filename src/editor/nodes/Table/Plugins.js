@@ -3,67 +3,45 @@ import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { CellSelection } from "@tiptap/pm/tables";
 import { getNearestBlockDepth } from "../../utils/getNearestBlockDepth";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { getDepth } from "../../utils/getDepth";
 
 const TableSelectionPluginKey = new PluginKey("TableSelectionPluginKey");
 
-const createOverlay = (offsetWidth, offsetHeight, offsetTop, offsetLeft) => {
-  const div = document.createElement("div");
-  div.style.cssText = `
-    position: absolute; 
-    top: ${offsetTop}px;
-    left: ${offsetLeft}px;
-    background-color: transparent;
-    border: 2px solid #00d52eff;
-    border-radius: 2px;
-    width: ${offsetWidth}px;
-    height: ${offsetHeight}px;
-    z-index: 100;
-    transform: translate(0px, 0.5px);
-  `;
-
-  const h_button = document.createElement("button");
-  const v_button = document.createElement("button");
-
-  div.append(h_button);
-  div.append(v_button);
-
-  h_button.style.cssText = `
-    position: absolute;
-    top: 0px;
-    left: 50%;
-    transform: translate(-50%, calc(-50% - 1px));
-    width: 20px;
-    height: 7px;
-    border: 1px solid #18b100ff;
-    background-color: #fff;
-    border-radius: 3px;
-  `;
-
-  v_button.style.cssText = `
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translate(calc(-50% - 1px), -50%) rotate(90deg);
-    width: 20px;
-    height: 7px;
-    border: 1px solid #18b100ff;
-    background-color: #fff;
-    border-radius: 3px;
-  `;
-
-  return div;
-};
-
 const TableSelectionPlugin = new Plugin({
   key: TableSelectionPluginKey,
+
+  // for actual dispatch
+  // tr.setNodeMarkup
+  appendTransaction(transactions, oldState, newState) {},
 
   state: {
     init() {
       return DecorationSet.empty;
     },
 
-    // value is DecorationSet
+    // returning new state
     apply(tr, value, oldState, newState) {
+      const selectSingleCell = tr.getMeta("select-single-cell");
+      const selectOthers = tr.getMeta("select-others");
+
+      if (selectSingleCell) {
+        const { cellID, cellBefore, cellNode } = selectSingleCell;
+
+        const deco = Decoration.node(
+          cellBefore,
+          cellBefore + cellNode.nodeSize,
+          {
+            "data-cell-id": cellID,
+          }
+        );
+
+        return DecorationSet.create(newState.doc, [deco]);
+      }
+
+      if (selectOthers) {
+        return DecorationSet.empty;
+      }
+
       return value;
     },
   },
@@ -74,30 +52,49 @@ const TableSelectionPlugin = new Plugin({
     },
 
     handleClick(view, pos, e) {
-      const { dispatch } = view;
       const { tr } = view.state;
+      const { dispatch } = view;
+      const { $from } = view.state.selection;
 
       const td = e.target.closest("td");
 
       if (td) {
-        const table = td.closest("table");
-        const tableQuery = table.querySelector(".table-overlay");
+        // gives the start of the cell/td DOM
+        const cellStart = view.posAtDOM(td);
+        const cellBefore = cellStart - 1;
+        const cellNode = view.state.doc.nodeAt(cellBefore);
 
-        const { offsetWidth, offsetHeight, offsetTop, offsetLeft } = td;
+        const cellID = td.getAttribute("data-id");
+        const depth = getDepth($from, "block");
+        const tableNode = $from.node(depth);
+        const tableBefore = $from.before(depth);
 
-        tableQuery.style.display = "flex";
-        tableQuery.style.width = offsetWidth + "px";
-        tableQuery.style.height = offsetHeight + "px";
-        tableQuery.style.top = offsetTop + "px";
-        tableQuery.style.left = offsetLeft + "px";
+        tr.setMeta("select-single-cell", {
+          tableBefore,
+          tableNode,
+          cellID,
+          cellBefore,
+          cellNode,
+        });
+
+        dispatch(tr);
+      } else {
+        tr.setMeta("select-others", true);
+        dispatch(tr);
       }
+
+      return true;
+    },
+
+    handleDOMEvents: {
+      // mousedown(view, e) {},
+      // mousemove(view, e) {},
+      // mouseup(view, e) {},
     },
   },
 
   view() {
     return {
-      // never dispatch
-      // for read-only
       update(view, prevState) {},
     };
   },

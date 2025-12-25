@@ -8,8 +8,8 @@ const m_TableHeader = TableHeader.extend({
     return {
       colspan: { default: 1 },
       rowspan: { default: 1 },
-      nodeType: {
-        default: "block",
+      divType: {
+        default: this.name,
         parseHTML: (element) => element.getAttribute("data-div-type"),
         renderHTML: (attributes) => ({
           "data-div-type": attributes.divType,

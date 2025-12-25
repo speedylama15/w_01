@@ -28,11 +28,10 @@ class m_TableView extends TableView {
 
     tableWrapper.className = "tableWrapper";
 
-    tableWrapper.append(this.table);
-
     return tableWrapper;
   }
 
+  // fix: better design
   createOverlay(
     offsetWidth = 0,
     offsetHeight = 0,
@@ -53,6 +52,8 @@ class m_TableView extends TableView {
       border-radius: 2px;
       width: ${offsetWidth}px;
       height: ${offsetHeight}px;
+      transform: translate(0.5px, 0.5px);
+      pointer-events: none;
     `;
 
     const h_button = document.createElement("button");
@@ -61,6 +62,7 @@ class m_TableView extends TableView {
     div.append(h_button);
     div.append(v_button);
 
+    h_button.className = "h_button";
     h_button.style.cssText = `
       position: absolute;
       top: 0px;
@@ -73,6 +75,7 @@ class m_TableView extends TableView {
       border-radius: 3px;
     `;
 
+    v_button.className = "v_button";
     v_button.style.cssText = `
       position: absolute;
       top: 50%;
@@ -88,8 +91,10 @@ class m_TableView extends TableView {
     return div;
   }
 
-  constructor(node, cellMinWidth, HTMLAttributes) {
+  constructor(node, cellMinWidth, HTMLAttributes, editor) {
     super(node, cellMinWidth);
+
+    this.editor = editor;
 
     const block = this.createBlock(HTMLAttributes);
     const content = this.createContent();
@@ -98,13 +103,41 @@ class m_TableView extends TableView {
 
     block.append(content);
     content.append(tableWrapper);
-    // tableWrapper.append(tableOverlay);
-    this.table.append(tableOverlay);
-
-    // debug: tbody
-    console.log("contentDOM", this.contentDOM);
+    tableWrapper.append(this.table);
+    tableWrapper.append(tableOverlay);
 
     this.dom = block;
+  }
+
+  update(node, decorations, innerDecorations) {
+    const isSelected = innerDecorations.find().length > 0;
+
+    if (isSelected) {
+      const cellID = innerDecorations.find()[0].type.attrs["data-cell-id"];
+      const cellDOM = this.table.querySelector(`[data-id="${cellID}"]`);
+
+      if (!cellID) return true;
+
+      const blockDOM = this.dom;
+      const overlayDOM = blockDOM.querySelector(".table-overlay");
+
+      const { offsetWidth, offsetHeight, offsetLeft, offsetTop } = cellDOM;
+
+      overlayDOM.style.display = "flex";
+      overlayDOM.style.width = offsetWidth + "px";
+      overlayDOM.style.height = offsetHeight + "px";
+      overlayDOM.style.left = offsetLeft + 4 + "px";
+      overlayDOM.style.top = offsetTop + 4 + "px";
+
+      return true;
+    } else {
+      const blockDOM = this.dom;
+      const overlayDOM = blockDOM.querySelector(".table-overlay");
+
+      overlayDOM.style.display = "none";
+
+      return true;
+    }
   }
 }
 

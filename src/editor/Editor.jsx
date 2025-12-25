@@ -69,6 +69,7 @@ import "./nodes/Table/Table.css";
 import "./nodes/Table/TableRow.css";
 import "./nodes/Table/TableHeader.css";
 import "./nodes/Table/TableCell.css";
+import { CellSelection } from "@tiptap/pm/tables";
 
 const Editor = () => {
   const editorRef = useRef();
@@ -164,7 +165,7 @@ const Editor = () => {
       className="editor"
       // fix
       // fix: also need to be able to focus onto the editor
-      onClick={() => console.log(editor.getJSON())}
+      // onClick={() => console.log(editor.getJSON())}
     >
       <EditorContent editor={editor} className="editor-content" />
     </div>

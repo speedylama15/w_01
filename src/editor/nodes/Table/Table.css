@@ -7,6 +7,7 @@
 }
 
 .tableWrapper {
+  position: relative;
   background-color: #ff8614;
   /* fix: no padding at the block level for table */
   /* review: the padding exists on the table wrapper level */
@@ -27,7 +28,19 @@ th {
   padding: 7px;
   border: 1px solid #000;
   vertical-align: top;
+  user-select: none;
+}
+
+.selected-cell {
+  background-color: #49cbff;
 }
 
 paragraph-item {
+}
+
+.h_button:hover {
+  background-color: #000;
+}
+
+.v_button {
 }
