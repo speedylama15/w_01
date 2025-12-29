@@ -24,11 +24,30 @@ table {
 
 td,
 th {
+  position: relative;
   background-color: #c7ecb8;
   padding: 7px;
   border: 1px solid #000;
   vertical-align: top;
-  user-select: none;
+}
+
+td[data-cell-hover-id] .col-resizer {
+  display: flex;
+}
+
+.col-resizer {
+  position: absolute;
+  /* fix */
+  display: block;
+  top: 0;
+  right: 0;
+  background: rgb(221, 0, 255);
+  width: 3px;
+  height: 100%;
+  z-index: 2;
+  cursor: col-resize;
+  margin-left: 0px;
+  transform: translateX(2px);
 }
 
 .selected-cell {
@@ -38,9 +57,8 @@ th {
 paragraph-item {
 }
 
-.h_button:hover {
-  background-color: #000;
-}
-
-.v_button {
+.table-x-button:hover,
+.table-y-button:hover {
+  background-color: #a7ff93 !important;
+  cursor: pointer;
 }

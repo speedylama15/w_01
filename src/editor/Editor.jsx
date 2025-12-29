@@ -155,6 +155,8 @@ const Editor = () => {
     },
 
     onUpdate({ editor }) {
+      console.log("onupdate editor");
+
       localStorage.setItem("editor", JSON.stringify(editor.getJSON()));
     },
   });

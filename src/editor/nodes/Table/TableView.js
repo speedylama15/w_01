@@ -46,7 +46,7 @@ class m_TableView extends TableView {
       position: absolute; 
       top: ${offsetTop}px;
       left: ${offsetLeft}px;
-      z-index: 100;
+      z-index: 3;
       background-color: transparent;
       border: 2px solid #00d52eff;
       border-radius: 2px;
@@ -56,14 +56,14 @@ class m_TableView extends TableView {
       pointer-events: none;
     `;
 
-    const h_button = document.createElement("button");
-    const v_button = document.createElement("button");
+    const tableXButton = document.createElement("button");
+    const tableYButton = document.createElement("button");
 
-    div.append(h_button);
-    div.append(v_button);
+    div.append(tableXButton);
+    div.append(tableYButton);
 
-    h_button.className = "h_button";
-    h_button.style.cssText = `
+    tableXButton.className = "table-x-button";
+    tableXButton.style.cssText = `
       position: absolute;
       top: 0px;
       left: 50%;
@@ -73,10 +73,11 @@ class m_TableView extends TableView {
       border: 1px solid #18b100ff;
       background-color: #fff;
       border-radius: 3px;
+      pointer-events: auto;
     `;
 
-    v_button.className = "v_button";
-    v_button.style.cssText = `
+    tableYButton.className = "table-y-button";
+    tableYButton.style.cssText = `
       position: absolute;
       top: 50%;
       left: 0;
@@ -86,7 +87,17 @@ class m_TableView extends TableView {
       border: 1px solid #18b100ff;
       background-color: #fff;
       border-radius: 3px;
+      pointer-events: auto;
     `;
+
+    return div;
+  }
+
+  // fix: delete?
+  createColResizer() {
+    const div = document.createElement("div");
+
+    div.className = "col-resizer";
 
     return div;
   }
@@ -103,42 +114,57 @@ class m_TableView extends TableView {
 
     block.append(content);
     content.append(tableWrapper);
+
     tableWrapper.append(this.table);
+    this.table.setAttribute("data-id", HTMLAttributes["data-id"]);
     tableWrapper.append(tableOverlay);
 
     this.dom = block;
   }
 
-  update(node, decorations, innerDecorations) {
-    const isSelected = innerDecorations.find().length > 0;
+  // return true -> Keep and update the existing DOM
+  // return false -> Destroy and recreate everything from scratch
+  // update() {
+  //   return true;
+  // }
 
-    if (isSelected) {
-      const cellID = innerDecorations.find()[0].type.attrs["data-cell-id"];
-      const cellDOM = this.table.querySelector(`[data-id="${cellID}"]`);
-
-      if (!cellID) return true;
-
-      const blockDOM = this.dom;
-      const overlayDOM = blockDOM.querySelector(".table-overlay");
-
-      const { offsetWidth, offsetHeight, offsetLeft, offsetTop } = cellDOM;
-
-      overlayDOM.style.display = "flex";
-      overlayDOM.style.width = offsetWidth + "px";
-      overlayDOM.style.height = offsetHeight + "px";
-      overlayDOM.style.left = offsetLeft + 4 + "px";
-      overlayDOM.style.top = offsetTop + 4 + "px";
-
-      return true;
-    } else {
-      const blockDOM = this.dom;
-      const overlayDOM = blockDOM.querySelector(".table-overlay");
-
-      overlayDOM.style.display = "none";
-
-      return true;
-    }
-  }
+  // return true = Ignore this DOM change - ProseMirror won't try to reparse it
+  // Return false = Handle this DOM change - ProseMirror will reparse and potentially update the document
+  // Use true for mutations you caused yourself (like updating <col> widths) to prevent ProseMirror from interfering.
+  // ignoreMutation() {
+  //   return true;
+  // }
 }
 
 export default m_TableView;
+
+// update(node, decorations, innerDecorations) {
+//   const isSelected = innerDecorations.find().length > 0;
+
+//   if (isSelected) {
+//     const cellID = innerDecorations.find()[0].type.attrs["data-cell-id"];
+//     const cellDOM = this.table.querySelector(`[data-id="${cellID}"]`);
+
+//     if (!cellID) return true;
+
+//     const blockDOM = this.dom;
+//     const overlayDOM = blockDOM.querySelector(".table-overlay");
+
+//     const { offsetWidth, offsetHeight, offsetLeft, offsetTop } = cellDOM;
+
+//     overlayDOM.style.display = "flex";
+//     overlayDOM.style.width = offsetWidth + "px";
+//     overlayDOM.style.height = offsetHeight + "px";
+//     overlayDOM.style.left = offsetLeft + 4 + "px";
+//     overlayDOM.style.top = offsetTop + 4 + "px";
+
+//     return true;
+//   } else {
+//     const blockDOM = this.dom;
+//     const overlayDOM = blockDOM.querySelector(".table-overlay");
+
+//     overlayDOM.style.display = "none";
+
+//     return true;
+//   }
+// }

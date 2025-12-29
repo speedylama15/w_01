@@ -1,14 +1,19 @@
 import { TableCell } from "@tiptap/extension-table";
 
 const m_TableCell = TableCell.extend({
-  content: "item+",
+  content: "item",
 
   addAttributes() {
     return {
-      // fix
       colspan: { default: 1 },
       rowspan: { default: 1 },
-      // fix
+      colWidth: {
+        default: 150,
+        parseHTML: (element) => element.getAttribute("colWidth"),
+        renderHTML: (attributes) => ({
+          colWidth: attributes.colWidth,
+        }),
+      },
       divType: {
         default: this.name,
         parseHTML: (element) => element.getAttribute("data-div-type"),
@@ -18,6 +23,45 @@ const m_TableCell = TableCell.extend({
       },
     };
   },
+
+  addNodeView() {
+    return ({
+      HTMLAttributes,
+      decorations,
+      editor,
+      extension,
+      getPos,
+      innerDecorations,
+      node,
+      view,
+    }) => {
+      const td = document.createElement("td");
+
+      Object.entries(HTMLAttributes).forEach((entry) => {
+        const key = entry[0];
+        const value = entry[1];
+
+        td.setAttribute(key, value);
+      });
+
+      const contentDOM = document.createElement("div");
+      contentDOM.className = "cell-content";
+      td.append(contentDOM);
+
+      const colResizer = document.createElement("div");
+      colResizer.className = "col-resizer";
+      td.append(colResizer);
+
+      return {
+        dom: td,
+        contentDOM: contentDOM,
+      };
+    };
+  },
+
+  // parseHTML() {
+  //   return [{ tag: "td" }, { tag: "th" }];
+  // },
 });
 
 export default m_TableCell;
