@@ -38,7 +38,7 @@ import UniqueID from "@tiptap/extension-unique-id";
 import HardBreak from "@tiptap/extension-hard-break";
 // functionality
 
-import { Plugins } from "./nodes/Table/Plugins";
+import { Plugins } from "./plugins/Plugins";
 
 import "./Editor.css";
 import "./nodes/Block.css";

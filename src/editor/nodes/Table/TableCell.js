@@ -5,13 +5,13 @@ const m_TableCell = TableCell.extend({
 
   addAttributes() {
     return {
-      colspan: { default: 1 },
-      rowspan: { default: 1 },
-      colWidth: {
+      // colspan: { default: 1 },
+      // rowspan: { default: 1 },
+      colwidth: {
         default: 150,
-        parseHTML: (element) => element.getAttribute("colWidth"),
+        parseHTML: (element) => element.getAttribute("colwidth"),
         renderHTML: (attributes) => ({
-          colWidth: attributes.colWidth,
+          colwidth: attributes.colwidth,
         }),
       },
       divType: {
@@ -50,6 +50,7 @@ const m_TableCell = TableCell.extend({
 
       const colResizer = document.createElement("div");
       colResizer.className = "col-resizer";
+      colResizer.contentEditable = false;
       td.append(colResizer);
 
       return {

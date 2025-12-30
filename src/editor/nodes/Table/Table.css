@@ -31,14 +31,15 @@ th {
   vertical-align: top;
 }
 
-td[data-cell-hover-id] .col-resizer {
+td.display-resizer .col-resizer {
   display: flex;
 }
 
 .col-resizer {
   position: absolute;
   /* fix */
-  display: block;
+  /* display: block; */
+  display: none;
   top: 0;
   right: 0;
   background: rgb(221, 0, 255);
