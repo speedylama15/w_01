@@ -2,16 +2,17 @@ import { TableCell } from "@tiptap/extension-table";
 
 const m_TableCell = TableCell.extend({
   content: "item",
+  draggable: false,
 
   addAttributes() {
     return {
-      // colspan: { default: 1 },
-      // rowspan: { default: 1 },
+      colspan: { default: 1 },
+      rowspan: { default: 1 },
       colwidth: {
-        default: 150,
+        default: [150],
         parseHTML: (element) => element.getAttribute("colwidth"),
         renderHTML: (attributes) => ({
-          colwidth: attributes.colwidth,
+          colwidth: [attributes.colwidth],
         }),
       },
       divType: {

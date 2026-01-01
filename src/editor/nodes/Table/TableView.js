@@ -1,5 +1,7 @@
 import { TableView } from "@tiptap/extension-table";
-import { CellSelectingKey } from "./CellSelecting";
+import { CellSelection } from "@tiptap/pm/tables";
+import { TextSelection } from "@tiptap/pm/state";
+import { getDepth } from "../../utils/getDepth";
 
 class m_TableView extends TableView {
   createBlock(HTMLAttributes) {
@@ -151,41 +153,51 @@ class m_TableView extends TableView {
 
   // return true -> Keep instance and update the existing DOM
   // return false -> Destroy and recreate everything from scratch
-  update(node, decorations, innerDecorations) {
-    const selectionBoxState = CellSelectingKey.getState(this.editor.state);
+  // update(node, decorations, innerDecorations) {
+  //   const { selection } = this.editor.state;
 
-    console.log("update", selectionBoxState);
+  //   if (selection instanceof TextSelection) {
+  //     const { $from } = selection;
 
-    // const isSelected = innerDecorations.find().length > 0;
+  //     const depth = getDepth($from, "tableCell");
+  //     const node = $from.node(depth);
 
-    // if (isSelected) {
-    //   const cellID =
-    //     innerDecorations.find()[0].type.attrs["data-display-selection-box"];
-    //   const cellDOM = this.table.querySelector(`[data-id="${cellID}"]`);
+  //     console.log("update TEXT SELECTION", $from); // debug
+  //   }
 
-    //   if (!cellID) return true;
+  //   if (selection instanceof CellSelection) {
+  //     const { view } = this.editor;
+  //     const { $anchorCell, $headCell } = selection;
 
-    //   const blockDOM = this.dom;
-    //   const overlayDOM = blockDOM.querySelector(".table-overlay");
+  //     const anchorDOM = view.nodeDOM($anchorCell.pos);
+  //     const headDOM = view.nodeDOM($headCell.pos);
 
-    //   const { offsetWidth, offsetHeight, offsetLeft, offsetTop } = cellDOM;
+  //     const overlay = this.dom.querySelector(".table-overlay");
 
-    //   overlayDOM.style.display = "flex";
-    //   overlayDOM.style.width = offsetWidth + "px";
-    //   overlayDOM.style.height = offsetHeight + "px";
-    //   overlayDOM.style.left = offsetLeft + 4 + "px";
-    //   overlayDOM.style.top = offsetTop + 4 + "px";
+  //     const x = Math.min(anchorDOM.offsetLeft, headDOM.offsetLeft);
+  //     const y = Math.min(anchorDOM.offsetTop, headDOM.offsetTop);
+  //     const r = Math.max(
+  //       anchorDOM.offsetLeft + anchorDOM.offsetWidth,
+  //       headDOM.offsetLeft + headDOM.offsetWidth
+  //     );
+  //     const b = Math.max(
+  //       anchorDOM.offsetTop + anchorDOM.offsetHeight,
+  //       headDOM.offsetTop + headDOM.offsetHeight
+  //     );
+  //     const width = r - x;
+  //     const height = b - y;
 
-    //   return true;
-    // } else {
-    //   const blockDOM = this.dom;
-    //   const overlayDOM = blockDOM.querySelector(".table-overlay");
+  //     overlay.style.display = "flex";
+  //     overlay.style.top = y + 4 + "px";
+  //     overlay.style.left = x + 4 + "px";
+  //     overlay.style.width = width + "px";
+  //     overlay.style.height = height + "px";
 
-    //   overlayDOM.style.display = "none";
+  //     console.log("update CELL SELECTION", r, b); // debug
+  //   }
 
-    //   return true;
-    // }
-  }
+  //   return true;
+  // }
 
   // return true = Ignore this DOM change - ProseMirror won't try to reparse it
   // Return false = Handle this DOM change - ProseMirror will reparse and potentially update the document

@@ -5,6 +5,16 @@ import { clampMin } from "../../../utils/clampMin";
 
 export const ColumnResizingKey = new PluginKey("ColumnResizingKey");
 
+const hideResizer = (isResizerDisplayed, dispatch, tr) => {
+  if (isResizerDisplayed) {
+    dispatch(tr.setMeta("hide-resizer", true));
+
+    return;
+  } else {
+    return;
+  }
+};
+
 export const ColumnResizing = new Plugin({
   key: ColumnResizingKey,
 
@@ -34,11 +44,23 @@ export const ColumnResizing = new Plugin({
       const displayResizer = tr.getMeta("display-resizer");
 
       if (hideResizer) {
-        return { ...value, resizerDecorationSet: DecorationSet.empty };
+        return {
+          isDraggingResizer: false,
+          isResizerDisplayed: false,
+
+          cellIndex: null,
+          startX: null,
+          startWidth: null,
+
+          tableID: null,
+          tableStartWidth: null,
+
+          resizerDecorationSet: DecorationSet.empty,
+        };
       }
 
       if (displayResizer) {
-        const { isResizerDisplayed, cellIndex, cells } = displayResizer;
+        const { cellIndex, cells } = displayResizer;
 
         const decorations = cells.map((cell) => {
           return Decoration.node(cell.from, cell.to, {
@@ -47,15 +69,27 @@ export const ColumnResizing = new Plugin({
         });
 
         return {
-          ...value,
+          isDraggingResizer: false,
+          isResizerDisplayed: true,
+
           cellIndex,
-          isResizerDisplayed,
+          startX: null,
+          startWidth: null,
+
+          tableID: null,
+          tableStartWidth: null,
+
           resizerDecorationSet: DecorationSet.create(newState.doc, decorations),
         };
       }
 
       // if resizing, then resizerDecorationSet MUST be maintained!
-      if (resizeData) return resizeData;
+      if (resizeData) {
+        return {
+          ...value,
+          ...resizeData,
+        };
+      }
 
       return value;
     },
@@ -72,13 +106,16 @@ export const ColumnResizing = new Plugin({
         const { dispatch } = view;
         const { tr } = view.state;
 
+        const { isResizerDisplayed, cellIndex } = ColumnResizingKey.getState(
+          view.state
+        );
+
+        if (!isResizerDisplayed) return false;
+        if (cellIndex === null) return false;
         const resizer = e.target.closest(".col-resizer");
         if (!resizer) return false;
         const table = resizer.closest("table");
         if (!table) return false;
-
-        // obtain the cellIndex
-        const { cellIndex } = ColumnResizingKey.getState(view.state);
 
         const row = table.querySelector("tr");
         const cell = row.children[cellIndex]; // idea: DOM
@@ -94,6 +131,7 @@ export const ColumnResizing = new Plugin({
 
         dispatch(tr);
 
+        // for mouse move
         const move = (e) => {
           const { dispatch } = view;
           const { tr } = view.state;
@@ -142,6 +180,7 @@ export const ColumnResizing = new Plugin({
           dispatch(tr);
         };
 
+        // for mouse up
         const finish = () => {
           // review: remove document's event listeners
           document.removeEventListener("mousemove", move);
@@ -152,11 +191,6 @@ export const ColumnResizing = new Plugin({
 
           tr.setMeta("resize-data", {
             isDraggingResizer: false,
-            cellIndex: null,
-            startX: null,
-            startWidth: null,
-            tableID: null,
-            tableStartWidth: null,
           });
 
           dispatch(tr);
@@ -175,10 +209,20 @@ export const ColumnResizing = new Plugin({
       mousemove(view, e) {
         const { dispatch } = view;
         const { tr } = view.state;
+        tr.scrollIntoView = false;
+
+        const { isResizerDisplayed, isDraggingResizer } =
+          ColumnResizingKey.getState(view.state);
+
+        // when is resizer is getting dragged
+        // that means resizer is already rendered and cellIndex exists
+        // the purpose of editor's mousemove is to figure out the cellIndex and to render the resizer
+        if (isDraggingResizer) return;
 
         const td = e.target.closest("td");
         if (!td) {
-          dispatch(tr.setMeta("hide-resizer", true));
+          if (isResizerDisplayed) dispatch(tr.setMeta("hide-resizer", true));
+
           return;
         }
 
@@ -191,7 +235,8 @@ export const ColumnResizing = new Plugin({
         const rightGap = Math.abs(e.clientX - right);
 
         if (leftGap > GAP && rightGap > GAP) {
-          dispatch(tr.setMeta("hide-resizer", true));
+          if (isResizerDisplayed) dispatch(tr.setMeta("hide-resizer", true));
+
           return;
         }
 
@@ -199,17 +244,18 @@ export const ColumnResizing = new Plugin({
         if (rightGap <= GAP) CELLINDEX = td.cellIndex;
 
         if (CELLINDEX < 0) {
-          dispatch(tr.setMeta("hide-resizer", true));
+          if (isResizerDisplayed) dispatch(tr.setMeta("hide-resizer", true));
+
           return;
         }
 
         // get the table
         const table = td.closest("table");
         if (!table) {
-          dispatch(tr.setMeta("hide-resizer", true));
+          if (isResizerDisplayed) dispatch(tr.setMeta("hide-resizer", true));
+
           return;
         }
-
         // get the rows in that index
         const cells = Array.from(table.querySelectorAll("tr"))
           .map((tr) => {

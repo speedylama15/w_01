@@ -69,7 +69,6 @@ import "./nodes/Table/Table.css";
 import "./nodes/Table/TableRow.css";
 import "./nodes/Table/TableHeader.css";
 import "./nodes/Table/TableCell.css";
-import { CellSelection } from "@tiptap/pm/tables";
 
 const Editor = () => {
   const editorRef = useRef();
@@ -94,7 +93,7 @@ const Editor = () => {
       Video,
       PDF,
       Divider,
-      Table,
+      Table.configure({ resizable: true }),
       TableRow,
       TableHeader,
       TableCell,
@@ -155,20 +154,14 @@ const Editor = () => {
     },
 
     onUpdate({ editor }) {
-      console.log("onupdate editor");
+      // console.log("onupdate editor"); // debug
 
       localStorage.setItem("editor", JSON.stringify(editor.getJSON()));
     },
   });
 
   return (
-    <div
-      ref={editorRef}
-      className="editor"
-      // fix
-      // fix: also need to be able to focus onto the editor
-      // onClick={() => console.log(editor.getJSON())}
-    >
+    <div ref={editorRef} className="editor">
       <EditorContent editor={editor} className="editor-content" />
     </div>
   );

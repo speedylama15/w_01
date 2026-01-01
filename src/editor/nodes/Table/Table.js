@@ -8,10 +8,6 @@ const m_Table = Table.extend({
   name,
   group: "block",
 
-  addProseMirrorPlugins() {
-    return [];
-  },
-
   addKeyboardShortcuts() {
     return {
       "/": ({ editor }) => {

@@ -6,8 +6,6 @@ const m_TableHeader = TableHeader.extend({
 
   addAttributes() {
     return {
-      colspan: { default: 1 },
-      rowspan: { default: 1 },
       divType: {
         default: this.name,
         parseHTML: (element) => element.getAttribute("data-div-type"),

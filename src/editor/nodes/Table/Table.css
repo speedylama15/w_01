@@ -11,7 +11,7 @@
   background-color: #ff8614;
   /* fix: no padding at the block level for table */
   /* review: the padding exists on the table wrapper level */
-  padding: 4px 4px;
+  padding: 4px;
   width: 100%;
   overflow: scroll;
 }
@@ -35,31 +35,27 @@ td.display-resizer .col-resizer {
   display: flex;
 }
 
-.col-resizer {
-  position: absolute;
-  /* fix */
-  /* display: block; */
-  display: none;
-  top: 0;
-  right: 0;
-  background: rgb(221, 0, 255);
-  width: 3px;
-  height: 100%;
-  z-index: 2;
-  cursor: col-resize;
-  margin-left: 0px;
-  transform: translateX(2px);
-}
-
-.selected-cell {
-  background-color: #49cbff;
-}
-
 paragraph-item {
 }
 
-.table-x-button:hover,
-.table-y-button:hover {
-  background-color: #a7ff93 !important;
-  cursor: pointer;
+.resize-cursor {
+  cursor: col-resize;
+}
+
+.column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  z-index: 100;
+  background-color: #8b5600b1;
+  width: 3px;
+  height: 100%;
+}
+
+.selectedCell {
+  background-color: bisque;
+}
+
+.single-selected-cell {
+  background-color: indianred;
 }
