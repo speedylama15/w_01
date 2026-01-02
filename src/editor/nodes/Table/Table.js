@@ -14,7 +14,7 @@ const m_Table = Table.extend({
         return editor
           .chain()
           .focus()
-          .insertTable({ rows: 3, cols: 7, withHeaderRow: false })
+          .insertTable({ rows: 3, cols: 7, withHeaderRow: true })
           .run();
       },
     };
@@ -61,7 +61,7 @@ const m_Table = Table.extend({
       // todo: option-ize it
       const cellMinWidth = 150;
 
-      return new m_TableView(node, cellMinWidth, HTMLAttributes, editor);
+      return new m_TableView(node, 150, view, getPos, HTMLAttributes);
     };
   },
 

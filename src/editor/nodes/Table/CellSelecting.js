@@ -1,19 +1,29 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
-import { CellSelection } from "@tiptap/pm/tables";
+import { CellSelection, TableMap } from "@tiptap/pm/tables";
+import { columnResizingPluginKey } from "prosemirror-tables";
 
-const getOverlayDOM = (nodeID) => {
+import { getDepth } from "../../utils/getDepth";
+import { getDepthByContent } from "../../utils/getDepthByContent";
+
+const getTableControls = (nodeID) => {
   const tableBlockDOM = document.querySelector(`div[data-id="${nodeID}"]`);
 
-  return tableBlockDOM.querySelector(".table-overlay");
+  const selectionBox = tableBlockDOM.querySelector(".table-selection-box");
+  const columnButton = tableBlockDOM.querySelector(".table-column-button");
+  const rowButton = tableBlockDOM.querySelector(".table-row-button");
+
+  return { selectionBox, columnButton, rowButton };
 };
 
-const hideTableOverlay = (nodeID) => {
-  const overlay = getOverlayDOM(nodeID);
+const hideTableControls = (nodeID) => {
+  const { selectionBox, columnButton, rowButton } = getTableControls(nodeID);
 
-  overlay.style.display = "none";
+  selectionBox.style.display = "none";
+  columnButton.style.display = "none";
+  rowButton.style.display = "none";
 };
 
-const displaySingleCellTableOverlay = (view, nodeID, pos) => {
+const displayTextSelectedTableControls = (view, nodeID, pos) => {
   const cellDOM = view.nodeDOM(pos);
 
   if (!cellDOM) return;
@@ -25,23 +35,41 @@ const displaySingleCellTableOverlay = (view, nodeID, pos) => {
     offsetHeight: height,
   } = cellDOM;
 
-  const overlay = getOverlayDOM(nodeID);
+  const { selectionBox, columnButton, rowButton } = getTableControls(nodeID);
 
-  overlay.style.display = "flex";
-  overlay.style.top = y + 4 + "px";
-  overlay.style.left = x + 4 + "px";
-  overlay.style.width = width + "px";
-  overlay.style.height = height + "px";
+  let gap = 0;
+
+  selectionBox.style.display = "flex";
+  selectionBox.style.top = y + gap + "px";
+  selectionBox.style.left = x + gap + "px";
+  selectionBox.style.width = width + "px";
+  selectionBox.style.height = height + "px";
+
+  columnButton.style.display = "flex";
+  columnButton.style.top = gap + "px";
+  columnButton.style.left =
+    cellDOM.offsetLeft + cellDOM.offsetWidth / 2 + gap + "px";
+  columnButton.setAttribute("data-table-button-index", cellDOM.cellIndex);
+
+  rowButton.style.display = "flex";
+  rowButton.style.top =
+    cellDOM.offsetTop + cellDOM.offsetHeight / 2 + gap + "px";
+  rowButton.style.left = gap + "px";
+  rowButton.setAttribute(
+    "data-table-button-index",
+    cellDOM.parentElement.rowIndex
+  );
 };
 
-const displayMultiCellsTableOverlay = (view, nodeID) => {
+const displayCellSelectedTableControls = (view, nodeID) => {
   const { selection } = view.state;
+
   const { $anchorCell, $headCell } = selection;
 
   const anchorDOM = view.nodeDOM($anchorCell.pos);
   const headDOM = view.nodeDOM($headCell.pos);
 
-  const overlay = getOverlayDOM(nodeID);
+  const { selectionBox, columnButton, rowButton } = getTableControls(nodeID);
 
   const x = Math.min(anchorDOM.offsetLeft, headDOM.offsetLeft);
   const y = Math.min(anchorDOM.offsetTop, headDOM.offsetTop);
@@ -56,57 +84,28 @@ const displayMultiCellsTableOverlay = (view, nodeID) => {
   const width = r - x;
   const height = b - y;
 
-  overlay.style.display = "flex";
-  overlay.style.top = y + 4 + "px";
-  overlay.style.left = x + 4 + "px";
-  overlay.style.width = width + "px";
-  overlay.style.height = height + "px";
-};
+  let gap = 0;
 
-export const getDepthByContentType = ($from, contentType) => {
-  let depth = $from.depth;
+  selectionBox.style.display = "flex";
+  selectionBox.style.top = y + gap + "px";
+  selectionBox.style.left = x + gap + "px";
+  selectionBox.style.width = width + "px";
+  selectionBox.style.height = height + "px";
 
-  for (let i = $from.depth; i >= 0; i--) {
-    const node = $from.node(i);
+  columnButton.style.display = "flex";
+  columnButton.style.top = gap + "px";
+  columnButton.style.left =
+    headDOM.offsetLeft + headDOM.offsetWidth / 2 + gap + "px";
+  columnButton.setAttribute("data-table-button-index", headDOM.cellIndex);
 
-    if (!node) {
-      // fix
-      console.log("something has gone wrong");
-
-      break;
-    }
-
-    if (node.attrs.contentType === contentType || node.type.name === "doc") {
-      depth = i;
-
-      break;
-    }
-  }
-
-  return depth;
-};
-
-export const getDepth = ($from, divType) => {
-  let depth = $from.depth;
-
-  for (let i = $from.depth; i >= 0; i--) {
-    const node = $from.node(i);
-
-    if (!node) {
-      // fix
-      console.log("something has gone wrong");
-
-      break;
-    }
-
-    if (node.attrs.divType === divType || node.type.name === "doc") {
-      depth = i;
-
-      break;
-    }
-  }
-
-  return depth;
+  rowButton.style.display = "flex";
+  rowButton.style.top =
+    headDOM.offsetTop + headDOM.offsetHeight / 2 + gap + "px";
+  rowButton.style.left = gap + "px";
+  rowButton.setAttribute(
+    "data-table-button-index",
+    headDOM.parentElement.rowIndex
+  );
 };
 
 export const CellSelectingKey = new PluginKey("CellSelectingKey");
@@ -114,41 +113,94 @@ export const CellSelectingKey = new PluginKey("CellSelectingKey");
 export const CellSelecting = new Plugin({
   key: CellSelectingKey,
 
-  props: {},
+  props: {
+    handleDOMEvents: {
+      mousedown(view, e) {
+        const { tr } = view.state;
+        const { dispatch } = view;
+
+        const tableButton = e.target.closest(".table-button");
+
+        if (!tableButton) return;
+
+        const tableDOM = e.target.closest(`div[data-content-type="table"]`);
+
+        if (!tableDOM) return;
+
+        e.preventDefault();
+
+        const type = tableButton.dataset.tableButtonType;
+        const index = parseInt(tableButton.dataset.tableButtonIndex);
+
+        const tableStart = view.posAtDOM(tableDOM);
+        const tableBefore = tableStart - 1;
+        const tableNode = view.state.doc.nodeAt(tableBefore);
+        const tableMap = TableMap.get(tableNode);
+
+        if (type === "column") {
+          const cellPos = tableStart + tableMap.map[index];
+
+          const $cell = view.state.doc.resolve(cellPos);
+          const colSelection = CellSelection.colSelection($cell);
+
+          tr.setSelection(colSelection);
+
+          dispatch(tr);
+
+          return;
+        }
+
+        if (type === "row") {
+          const cellPos = tableStart + tableMap.map[tableMap.width * index];
+
+          const $cell = view.state.doc.resolve(cellPos);
+          const rowSelection = CellSelection.rowSelection($cell);
+
+          tr.setSelection(rowSelection);
+
+          dispatch(tr);
+
+          return;
+        }
+      },
+    },
+  },
 
   view() {
     // need to know the tableID in which displayed the overlay
     // query for the blockTableDOM and hide the overlay
     let prevTableID = null;
 
-    // todo: maybe I should use prevState instead of using prevTableID?
-    // idea: I want the selection box to also resize when the columns are getting resized
-    // idea: but update() does not get invoked when resizing is actively occurring
-    // todo: so how do I manually trigger update() when mouse is resizing?
-    // todo: maybe it can make use of state and simply inspect it? But again, manual trigger is needed
     return {
-      update(view, prevState) {
+      update(view) {
+        const resizeState = columnResizingPluginKey.getState(view.state); // idea: make use of this
+
+        if (resizeState?.dragging && prevTableID) {
+          hideTableControls(prevTableID);
+          return;
+        }
+
         const { selection } = view.state;
         const { $from } = selection;
 
         // pretty much guaranteed that a table will exist
         if (selection instanceof CellSelection) {
-          const depth = getDepthByContentType($from, "table");
-          const node = $from.node(depth);
+          const tableDepth = getDepthByContent($from, "table");
+          const tableNode = $from.node(tableDepth);
 
-          if (node.type.name !== "table") return;
+          if (tableNode.type.name !== "table") return;
 
           // this cannot be null
-          const currTableID = node.attrs.id;
+          const currTableID = tableNode.attrs.id;
 
           // prev = "a" curr = "b"
           if (prevTableID !== null && prevTableID !== currTableID) {
             // destroy prev table
             // set prevTableID to currTableID
             // render curr table overlay
-            hideTableOverlay(prevTableID);
+            hideTableControls(prevTableID);
             prevTableID = currTableID;
-            displayMultiCellsTableOverlay(view, currTableID);
+            displayCellSelectedTableControls(view, currTableID);
             return;
           }
 
@@ -157,7 +209,7 @@ export const CellSelecting = new Plugin({
             // set prevTableID = currID
             // render table A's overlay
             prevTableID = currTableID;
-            displayMultiCellsTableOverlay(view, currTableID);
+            displayCellSelectedTableControls(view, currTableID);
             return;
           }
 
@@ -166,7 +218,7 @@ export const CellSelecting = new Plugin({
             // set prevTableID = currID
             // render table A's overlay
             prevTableID = currTableID;
-            displayMultiCellsTableOverlay(view, currTableID);
+            displayCellSelectedTableControls(view, currTableID);
             return;
           }
 
@@ -174,12 +226,10 @@ export const CellSelecting = new Plugin({
         }
 
         if (selection instanceof TextSelection) {
-          const tableDepth = getDepthByContentType($from, "table");
+          const tableDepth = getDepthByContent($from, "table");
           const tableNode = $from.node(tableDepth);
-          const cellDepth = getDepth($from, "tableCell");
-          const cellNode = $from.node(cellDepth);
-
-          // todo: tableHeader
+          const cellDepth =
+            getDepth($from, "tableCell") || getDepth($from, "tableHeader");
 
           if (tableNode.type.name !== "table") {
             const currTableID = null;
@@ -188,7 +238,7 @@ export const CellSelecting = new Plugin({
             // set prevTableID = null
             // destroy table A's overlay
             if (prevTableID !== null) {
-              hideTableOverlay(prevTableID);
+              hideTableControls(prevTableID);
               prevTableID = currTableID;
               return;
             }
@@ -209,9 +259,9 @@ export const CellSelecting = new Plugin({
             // destroy prev table
             // set prevTableID to currTableID
             // render curr table overlay
-            hideTableOverlay(prevTableID);
+            hideTableControls(prevTableID);
             prevTableID = currTableID;
-            displaySingleCellTableOverlay(view, currTableID, cellBefore);
+            displayTextSelectedTableControls(view, currTableID, cellBefore);
             return;
           }
 
@@ -220,7 +270,7 @@ export const CellSelecting = new Plugin({
             // set prevTableID = currID
             // render table A's overlay
             prevTableID = currTableID;
-            displaySingleCellTableOverlay(view, currTableID, cellBefore);
+            displayTextSelectedTableControls(view, currTableID, cellBefore);
             return;
           }
 
@@ -229,7 +279,7 @@ export const CellSelecting = new Plugin({
             // set prevTableID = currID
             // render table A's overlay
             prevTableID = currTableID;
-            displaySingleCellTableOverlay(view, currTableID, cellBefore);
+            displayTextSelectedTableControls(view, currTableID, cellBefore);
             return;
           }
 

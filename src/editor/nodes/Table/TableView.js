@@ -1,5 +1,8 @@
 import { TableView } from "@tiptap/extension-table";
 
+import { getDepth } from "../../utils/getDepth";
+import { getDepthByContent } from "../../utils/getDepthByContent";
+
 class m_TableView extends TableView {
   createBlock(HTMLAttributes) {
     const block = document.createElement("div");
@@ -31,77 +34,67 @@ class m_TableView extends TableView {
     return tableWrapper;
   }
 
-  // todo: better design
-  createOverlay(
+  createSelectionBox(
     offsetWidth = 0,
     offsetHeight = 0,
     offsetTop = 0,
     offsetLeft = 0
   ) {
     const div = document.createElement("div");
-    div.className = "table-overlay";
+    div.className = "table-selection-box";
+
+    const cellButton = document.createElement("button");
+    cellButton.className = "cell-button";
 
     div.style.cssText = `
-      display: none;
-      position: absolute; 
       top: ${offsetTop}px;
       left: ${offsetLeft}px;
-      z-index: 3;
-      background-color: transparent;
-      border: 2px solid #00d52eff;
-      border-radius: 2px;
       width: ${offsetWidth}px;
       height: ${offsetHeight}px;
-      transform: translate(0.5px, 0.5px);
-      pointer-events: none;
     `;
 
-    const tableXButton = document.createElement("button");
-    const tableYButton = document.createElement("button");
-
-    div.append(tableXButton);
-    div.append(tableYButton);
-
-    tableXButton.className = "table-x-button";
-    tableXButton.style.cssText = `
-      position: absolute;
-      top: 0px;
-      left: 50%;
-      transform: translate(-50%, calc(-50% - 1px));
-      width: 20px;
-      height: 7px;
-      border: 1px solid #18b100ff;
-      background-color: #fff;
-      border-radius: 3px;
-      pointer-events: auto;
-    `;
-
-    tableYButton.className = "table-y-button";
-    tableYButton.style.cssText = `
-      position: absolute;
-      top: 50%;
-      left: 0;
-      transform: translate(calc(-50% - 1px), -50%) rotate(90deg);
-      width: 20px;
-      height: 7px;
-      border: 1px solid #18b100ff;
-      background-color: #fff;
-      border-radius: 3px;
-      pointer-events: auto;
-    `;
+    div.append(cellButton);
 
     return div;
   }
 
-  constructor(node, cellMinWidth, HTMLAttributes, editor) {
+  createColumnButton() {
+    const button = document.createElement("button");
+
+    button.className = "table-button table-column-button";
+    button.setAttribute("data-table-button-type", "column");
+    button.setAttribute("data-table-button-index", null);
+
+    return button;
+  }
+
+  createRowButton() {
+    const div = document.createElement("div");
+    const button = document.createElement("button");
+
+    div.className = "table-row-button-container";
+
+    button.className = "table-button table-row-button";
+    button.setAttribute("data-table-button-type", "row");
+    button.setAttribute("data-table-button-index", null);
+
+    div.append(button);
+
+    return div;
+  }
+
+  constructor(node, cellMinWidth, view, getPos, HTMLAttributes) {
     super(node, cellMinWidth);
 
-    this.editor = editor;
+    this.view = view;
 
     const block = this.createBlock(HTMLAttributes);
     const content = this.createContent();
     const tableWrapper = this.createTableWrapper();
-    const tableOverlay = this.createOverlay();
+
+    const selectionBox = this.createSelectionBox();
+    const columnButton = this.createColumnButton();
+    const rowButton = this.createRowButton();
 
     block.append(content);
     content.append(tableWrapper);
@@ -109,8 +102,9 @@ class m_TableView extends TableView {
     // assign the ID to the table as well // debug: do I need this tho?
     this.table.setAttribute("data-id", HTMLAttributes["data-id"]);
 
+    tableWrapper.append(rowButton);
     tableWrapper.append(this.table);
-    tableWrapper.append(tableOverlay);
+    tableWrapper.append(selectionBox, columnButton);
 
     this.dom = block;
   }
@@ -118,6 +112,12 @@ class m_TableView extends TableView {
   // return true -> Keep instance and update the existing DOM
   // return false -> Destroy and recreate everything from scratch
   // update(node, decorations, innerDecorations) {
+  //   // update method does not have access to the editor...
+  //   // maybe I can make use of state? Bring in the state? // idea
+
+  //   // it needs to be able to know if the selection is Cell or Text
+  //   // but update() does not have access to the most up to date selection... // fix
+
   //   return true;
   // }
 
