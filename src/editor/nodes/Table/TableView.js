@@ -1,7 +1,4 @@
 import { TableView } from "@tiptap/extension-table";
-import { CellSelection } from "@tiptap/pm/tables";
-import { TextSelection } from "@tiptap/pm/state";
-import { getDepth } from "../../utils/getDepth";
 
 class m_TableView extends TableView {
   createBlock(HTMLAttributes) {
@@ -34,29 +31,7 @@ class m_TableView extends TableView {
     return tableWrapper;
   }
 
-  createColgroup(node) {
-    let tableWidth = 0;
-
-    this.colgroup.innerHTML = "";
-    this.colgroup.id = "colgroup";
-
-    node.content.content[0].content.content.forEach((content) => {
-      const col = document.createElement("col");
-
-      col.style.cssText = `
-        width: ${content.attrs.colwidth}px;
-        min-width: 150px;
-      `;
-
-      this.colgroup.append(col);
-
-      tableWidth += parseInt(content.attrs.colwidth);
-    });
-
-    return tableWidth;
-  }
-
-  // fix: better design
+  // todo: better design
   createOverlay(
     offsetWidth = 0,
     offsetHeight = 0,
@@ -118,15 +93,6 @@ class m_TableView extends TableView {
     return div;
   }
 
-  // fix: delete?
-  createColResizer() {
-    const div = document.createElement("div");
-
-    div.className = "col-resizer";
-
-    return div;
-  }
-
   constructor(node, cellMinWidth, HTMLAttributes, editor) {
     super(node, cellMinWidth);
 
@@ -136,14 +102,12 @@ class m_TableView extends TableView {
     const content = this.createContent();
     const tableWrapper = this.createTableWrapper();
     const tableOverlay = this.createOverlay();
-    const tableWidth = this.createColgroup(node);
 
     block.append(content);
     content.append(tableWrapper);
 
+    // assign the ID to the table as well // debug: do I need this tho?
     this.table.setAttribute("data-id", HTMLAttributes["data-id"]);
-    this.table.style.width = `${tableWidth}px`;
-    this.table.style.minWidth = `${tableWidth}px`;
 
     tableWrapper.append(this.table);
     tableWrapper.append(tableOverlay);
@@ -154,57 +118,15 @@ class m_TableView extends TableView {
   // return true -> Keep instance and update the existing DOM
   // return false -> Destroy and recreate everything from scratch
   // update(node, decorations, innerDecorations) {
-  //   const { selection } = this.editor.state;
-
-  //   if (selection instanceof TextSelection) {
-  //     const { $from } = selection;
-
-  //     const depth = getDepth($from, "tableCell");
-  //     const node = $from.node(depth);
-
-  //     console.log("update TEXT SELECTION", $from); // debug
-  //   }
-
-  //   if (selection instanceof CellSelection) {
-  //     const { view } = this.editor;
-  //     const { $anchorCell, $headCell } = selection;
-
-  //     const anchorDOM = view.nodeDOM($anchorCell.pos);
-  //     const headDOM = view.nodeDOM($headCell.pos);
-
-  //     const overlay = this.dom.querySelector(".table-overlay");
-
-  //     const x = Math.min(anchorDOM.offsetLeft, headDOM.offsetLeft);
-  //     const y = Math.min(anchorDOM.offsetTop, headDOM.offsetTop);
-  //     const r = Math.max(
-  //       anchorDOM.offsetLeft + anchorDOM.offsetWidth,
-  //       headDOM.offsetLeft + headDOM.offsetWidth
-  //     );
-  //     const b = Math.max(
-  //       anchorDOM.offsetTop + anchorDOM.offsetHeight,
-  //       headDOM.offsetTop + headDOM.offsetHeight
-  //     );
-  //     const width = r - x;
-  //     const height = b - y;
-
-  //     overlay.style.display = "flex";
-  //     overlay.style.top = y + 4 + "px";
-  //     overlay.style.left = x + 4 + "px";
-  //     overlay.style.width = width + "px";
-  //     overlay.style.height = height + "px";
-
-  //     console.log("update CELL SELECTION", r, b); // debug
-  //   }
-
   //   return true;
   // }
 
   // return true = Ignore this DOM change - ProseMirror won't try to reparse it
   // Return false = Handle this DOM change - ProseMirror will reparse and potentially update the document
   // Use true for mutations you caused yourself (like updating <col> widths) to prevent ProseMirror from interfering.
-  ignoreMutation() {
-    return true;
-  }
+  // ignoreMutation() {
+  //   return true;
+  // }
 }
 
 export default m_TableView;

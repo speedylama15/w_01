@@ -1,5 +1,4 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
-import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { CellSelection } from "@tiptap/pm/tables";
 
 const getOverlayDOM = (nodeID) => {
@@ -35,7 +34,7 @@ const displaySingleCellTableOverlay = (view, nodeID, pos) => {
   overlay.style.height = height + "px";
 };
 
-const displayTableOverlay = (view, nodeID) => {
+const displayMultiCellsTableOverlay = (view, nodeID) => {
   const { selection } = view.state;
   const { $anchorCell, $headCell } = selection;
 
@@ -64,7 +63,7 @@ const displayTableOverlay = (view, nodeID) => {
   overlay.style.height = height + "px";
 };
 
-export const getDepthViaContent = ($from, contentType) => {
+export const getDepthByContentType = ($from, contentType) => {
   let depth = $from.depth;
 
   for (let i = $from.depth; i >= 0; i--) {
@@ -122,6 +121,11 @@ export const CellSelecting = new Plugin({
     // query for the blockTableDOM and hide the overlay
     let prevTableID = null;
 
+    // todo: maybe I should use prevState instead of using prevTableID?
+    // idea: I want the selection box to also resize when the columns are getting resized
+    // idea: but update() does not get invoked when resizing is actively occurring
+    // todo: so how do I manually trigger update() when mouse is resizing?
+    // todo: maybe it can make use of state and simply inspect it? But again, manual trigger is needed
     return {
       update(view, prevState) {
         const { selection } = view.state;
@@ -129,7 +133,7 @@ export const CellSelecting = new Plugin({
 
         // pretty much guaranteed that a table will exist
         if (selection instanceof CellSelection) {
-          const depth = getDepthViaContent($from, "table");
+          const depth = getDepthByContentType($from, "table");
           const node = $from.node(depth);
 
           if (node.type.name !== "table") return;
@@ -144,7 +148,7 @@ export const CellSelecting = new Plugin({
             // render curr table overlay
             hideTableOverlay(prevTableID);
             prevTableID = currTableID;
-            displayTableOverlay(view, currTableID);
+            displayMultiCellsTableOverlay(view, currTableID);
             return;
           }
 
@@ -153,7 +157,7 @@ export const CellSelecting = new Plugin({
             // set prevTableID = currID
             // render table A's overlay
             prevTableID = currTableID;
-            displayTableOverlay(view, currTableID);
+            displayMultiCellsTableOverlay(view, currTableID);
             return;
           }
 
@@ -162,7 +166,7 @@ export const CellSelecting = new Plugin({
             // set prevTableID = currID
             // render table A's overlay
             prevTableID = currTableID;
-            displayTableOverlay(view, currTableID);
+            displayMultiCellsTableOverlay(view, currTableID);
             return;
           }
 
@@ -170,7 +174,7 @@ export const CellSelecting = new Plugin({
         }
 
         if (selection instanceof TextSelection) {
-          const tableDepth = getDepthViaContent($from, "table");
+          const tableDepth = getDepthByContentType($from, "table");
           const tableNode = $from.node(tableDepth);
           const cellDepth = getDepth($from, "tableCell");
           const cellNode = $from.node(cellDepth);

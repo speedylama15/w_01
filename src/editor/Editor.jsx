@@ -93,7 +93,7 @@ const Editor = () => {
       Video,
       PDF,
       Divider,
-      Table.configure({ resizable: true }),
+      Table.configure({ resizable: true, cellMinWidth: 150 }),
       TableRow,
       TableHeader,
       TableCell,

@@ -26,16 +26,7 @@ const m_TableCell = TableCell.extend({
   },
 
   addNodeView() {
-    return ({
-      HTMLAttributes,
-      decorations,
-      editor,
-      extension,
-      getPos,
-      innerDecorations,
-      node,
-      view,
-    }) => {
+    return ({ HTMLAttributes }) => {
       const td = document.createElement("td");
 
       Object.entries(HTMLAttributes).forEach((entry) => {
@@ -49,21 +40,12 @@ const m_TableCell = TableCell.extend({
       contentDOM.className = "cell-content";
       td.append(contentDOM);
 
-      const colResizer = document.createElement("div");
-      colResizer.className = "col-resizer";
-      colResizer.contentEditable = false;
-      td.append(colResizer);
-
       return {
         dom: td,
         contentDOM: contentDOM,
       };
     };
   },
-
-  // parseHTML() {
-  //   return [{ tag: "td" }, { tag: "th" }];
-  // },
 });
 
 export default m_TableCell;
