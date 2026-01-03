@@ -108,10 +108,68 @@ const displayCellSelectedTableControls = (view, nodeID) => {
   );
 };
 
+const cloneColumn = (e, index, tableDOM) => {
+  const queriedTable = tableDOM.querySelector("table");
+  const table = queriedTable.cloneNode(false);
+
+  const queriedColgroup = tableDOM.querySelector("colgroup");
+  const colgroup = queriedColgroup.cloneNode(false);
+  const col = queriedColgroup.children[index].cloneNode(true);
+
+  const queriedTbody = queriedTable.querySelector("tbody");
+  const tbody = document.createElement("tbody");
+
+  Array.from(queriedTbody.children).forEach((tr) => {
+    const cell = tr.children[index];
+
+    if (cell) {
+      const clonedTr = tr.cloneNode(false);
+      clonedTr.append(cell.cloneNode(true));
+      tbody.append(clonedTr);
+    }
+  });
+
+  table.append(colgroup);
+  colgroup.append(col);
+  table.append(tbody);
+
+  document.body.appendChild(table);
+  table.style.display = "block";
+  table.style.position = "absolute";
+  table.style.zIndex = 10000;
+  table.style.top = 0;
+  table.style.left = 0;
+  table.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+};
+
 export const CellSelectingKey = new PluginKey("CellSelectingKey");
 
 export const CellSelecting = new Plugin({
   key: CellSelectingKey,
+
+  state: {
+    init() {
+      return {
+        isReordering: false,
+        isReordered: false,
+        index: null,
+        targetIndex: null,
+        orientation: null, // column or row
+      };
+    },
+
+    apply(tr, value, oldState, newState) {
+      const tableReorder = tr.getMeta("table-reorder");
+
+      if (tableReorder) {
+        // const { index, orientation, cellSelection } = tableReorder;
+
+        return tableReorder;
+      }
+
+      return value;
+    },
+  },
 
   props: {
     handleDOMEvents: {
@@ -121,47 +179,90 @@ export const CellSelecting = new Plugin({
 
         const tableButton = e.target.closest(".table-button");
 
-        if (!tableButton) return;
+        if (tableButton) {
+          const tableDOM = e.target.closest(`div[data-content-type="table"]`);
 
-        const tableDOM = e.target.closest(`div[data-content-type="table"]`);
+          if (!tableDOM) return;
 
-        if (!tableDOM) return;
+          // e.preventDefault();
+          e.stopPropagation();
 
-        e.preventDefault();
+          const type = tableButton.dataset.tableButtonType;
+          const index = parseInt(tableButton.dataset.tableButtonIndex);
 
-        const type = tableButton.dataset.tableButtonType;
-        const index = parseInt(tableButton.dataset.tableButtonIndex);
+          const tableStart = view.posAtDOM(tableDOM);
+          const tableBefore = tableStart - 1;
+          const tableNode = view.state.doc.nodeAt(tableBefore);
+          const tableMap = TableMap.get(tableNode);
 
-        const tableStart = view.posAtDOM(tableDOM);
-        const tableBefore = tableStart - 1;
-        const tableNode = view.state.doc.nodeAt(tableBefore);
-        const tableMap = TableMap.get(tableNode);
+          if (type === "column") {
+            const cellPos = tableStart + tableMap.map[index];
 
-        if (type === "column") {
-          const cellPos = tableStart + tableMap.map[index];
+            const $cell = view.state.doc.resolve(cellPos);
+            const colSelection = CellSelection.colSelection($cell);
 
-          const $cell = view.state.doc.resolve(cellPos);
-          const colSelection = CellSelection.colSelection($cell);
+            tr.setSelection(colSelection)
+              // for dropdown menu
+              .setMeta("tableDropdown", {
+                isOpen: true,
+                buttonType: type,
+                buttonIndex: index,
+                buttonRect: tableButton.getBoundingClientRect(),
+              })
+              // for dnd reorder
+              .setMeta("table-reorder", {
+                isReordering: true,
+                index,
+                orientation: type,
+                cellSelection: colSelection,
+                tableDOM,
+              });
 
-          tr.setSelection(colSelection);
+            dispatch(tr);
 
-          dispatch(tr);
+            return;
+          }
 
-          return;
+          if (type === "row") {
+            const cellPos = tableStart + tableMap.map[tableMap.width * index];
+
+            const $cell = view.state.doc.resolve(cellPos);
+            const rowSelection = CellSelection.rowSelection($cell);
+
+            tr.setSelection(rowSelection).setMeta("tableDropdown", {
+              isOpen: true,
+              buttonType: type,
+              buttonIndex: index,
+              buttonRect: tableButton.getBoundingClientRect(),
+            });
+
+            dispatch(tr);
+
+            return;
+          }
         }
+      },
 
-        if (type === "row") {
-          const cellPos = tableStart + tableMap.map[tableMap.width * index];
+      mousemove(view, e) {
+        const state = CellSelectingKey.getState(view.state);
 
-          const $cell = view.state.doc.resolve(cellPos);
-          const rowSelection = CellSelection.rowSelection($cell);
-
-          tr.setSelection(rowSelection);
-
-          dispatch(tr);
-
-          return;
+        if (state?.cellSelection && state?.orientation === "column") {
+          //
         }
+      },
+
+      mouseup(view) {
+        const { tr } = view.state;
+        const { dispatch } = view;
+
+        tr.setMeta("table-reorder", {
+          isReordering: false,
+          index: null,
+          orientation: null,
+          cellSelection: null,
+        });
+
+        dispatch(tr);
       },
     },
   },
@@ -170,6 +271,8 @@ export const CellSelecting = new Plugin({
     // need to know the tableID in which displayed the overlay
     // query for the blockTableDOM and hide the overlay
     let prevTableID = null;
+
+    const testVal = "I am hungry";
 
     return {
       update(view) {

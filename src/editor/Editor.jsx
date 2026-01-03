@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useMemo, useRef } from "react";
+import { useEditor, EditorContent, EditorContext } from "@tiptap/react";
 
 import Text from "@tiptap/extension-text";
 import Document from "./nodes/Document/Document";
@@ -37,6 +37,10 @@ import Underline from "@tiptap/extension-underline";
 import UniqueID from "@tiptap/extension-unique-id";
 import HardBreak from "@tiptap/extension-hard-break";
 // functionality
+
+// component
+import TableDropdownMenu from "./components/TableDropdownMenu/TableDropdownMenu.jsx";
+// component
 
 import { Plugins } from "./plugins/Plugins";
 
@@ -158,10 +162,18 @@ const Editor = () => {
     },
   });
 
+  const memoizedEditor = useMemo(() => {
+    return editor;
+  }, [editor]);
+
   return (
-    <div ref={editorRef} className="editor">
-      <EditorContent editor={editor} className="editor-content" />
-    </div>
+    <EditorContext.Provider value={memoizedEditor}>
+      <div ref={editorRef} className="editor">
+        <EditorContent editor={editor} className="editor-content" />
+      </div>
+
+      <TableDropdownMenu />
+    </EditorContext.Provider>
   );
 };
 
