@@ -8,7 +8,6 @@
 .tableWrapper {
   display: flex;
   position: relative;
-  background-color: #ff8614;
   width: 100%;
   overflow: scroll;
 }
@@ -17,12 +16,12 @@ table {
   position: relative;
   table-layout: fixed;
   border-collapse: collapse;
+  background-color: #c5dde8;
 }
 
 td,
 th {
   position: relative;
-  background-color: #c7ecb8;
   padding: 7px;
   border: 1px solid #000;
   vertical-align: top;
@@ -105,7 +104,7 @@ paragraph-item {
 }
 
 .selectedCell {
-  background-color: bisque;
+  background-color: #ffe4c4;
 }
 
 .single-selected-cell {
@@ -127,4 +126,32 @@ paragraph-item {
 .cell-button:hover {
   cursor: pointer;
   background-color: #c7ecb8;
+}
+
+.hide-cell {
+  background-color: #124fca;
+}
+
+.hide-cell > * {
+  visibility: hidden;
+}
+
+.hovered-cell_left::before {
+  content: "";
+  background-color: #ff0000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+}
+
+.hovered-cell_right::before {
+  content: "";
+  background-color: #ff0000;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 3px;
+  height: 100%;
 }

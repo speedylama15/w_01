@@ -4,6 +4,12 @@ import { columnResizingPluginKey } from "prosemirror-tables";
 
 import { getDepth } from "../../utils/getDepth";
 import { getDepthByContent } from "../../utils/getDepthByContent";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
+
+const HIDE_CELLS_TO_REORDER = "hide-cells-to-reorder";
+const REORDER_HOVERED_CELLS = "reorder-hovered-cells";
+// REORDER_HIDE_CELLS
+// REORDER_HOVERED_CELLS
 
 const getTableControls = (nodeID) => {
   const tableBlockDOM = document.querySelector(`div[data-id="${nodeID}"]`);
@@ -141,11 +147,11 @@ const cloneColumn = (e, index, tableBlockDOM) => {
     tableWrapper.append(table, tableSelectionBox);
     table.append(colgroup, tbody);
 
-    tableWrapper.style.display = "none"; // fix
+    tableWrapper.style.display = "none";
+    tableWrapper.style.width = parseInt(col.style.width) + 1 + "px";
     tableWrapper.style.position = "absolute";
-    tableWrapper.style.zIndex = 10000; // fix
+    tableWrapper.style.zIndex = 100;
     tableWrapper.style.opacity = "0.5";
-    tableWrapper.style.width = parseInt(col.style.width) + 1 + "px"; // fix
 
     document.body.appendChild(tableWrapper);
 
@@ -153,6 +159,35 @@ const cloneColumn = (e, index, tableBlockDOM) => {
   } catch (error) {
     console.log(error);
   }
+};
+
+const getHoveredCellNodes = (
+  view,
+  tableMap,
+  tableNode,
+  tableStart,
+  cellIndex,
+  sourceIndex
+) => {
+  let nodes = [];
+
+  for (let row = 0; row < tableMap.height; row++) {
+    const pos = tableMap.positionAt(row, cellIndex, tableNode) + tableStart;
+    const cellNode = view.state.doc.nodeAt(pos);
+
+    if (!cellNode) {
+      nodes = [];
+      break;
+    } else {
+      nodes.push({
+        from: pos,
+        to: pos + cellNode.nodeSize,
+        direction: sourceIndex > cellIndex ? "left" : "right",
+      });
+    }
+  }
+
+  return nodes;
 };
 
 export const CellSelectingKey = new PluginKey("CellSelectingKey");
@@ -163,20 +198,63 @@ export const CellSelecting = new Plugin({
   state: {
     init() {
       return {
-        isReordering: false,
-        isReordered: false,
-        index: null,
-        targetIndex: null,
-        orientation: null, // column or row
+        cellsToHide: DecorationSet.empty,
+        hoveredCells: DecorationSet.empty,
       };
     },
 
     apply(tr, value, oldState, newState) {
-      const tableReorder = tr.getMeta("table-reorder");
+      const hideCellsToReorder = tr.getMeta(HIDE_CELLS_TO_REORDER);
+      const reorderHoveredCells = tr.getMeta(REORDER_HOVERED_CELLS);
 
-      if (tableReorder) return tableReorder;
+      if (reorderHoveredCells) {
+        const arr = reorderHoveredCells.map(({ from, to, direction }) => {
+          return Decoration.node(from, to, {
+            class: `hovered-cell_${direction}`,
+          });
+        });
+
+        return {
+          ...value,
+          cellsToHide: DecorationSet.create(newState.doc, arr),
+        };
+      }
+
+      if (reorderHoveredCells === null) {
+        return {
+          ...value,
+          cellsToHide: DecorationSet.empty,
+        };
+      }
+
+      // if (hideCellsToReorder) {
+      //   const arr = hideCellsToReorder.map(({ from, to }) => {
+      //     return Decoration.node(from, to, { class: "hide-cell" });
+      //   });
+
+      //   return {
+      //     ...value,
+      //     cellsToHide: DecorationSet.create(newState.doc, arr),
+      //   };
+      // }
+
+      // if (hideCellsToReorder === null) {
+      //   return {
+      //     ...value,
+      //     cellsToHide: DecorationSet.empty,
+      //   };
+      // }
 
       return value;
+    },
+  },
+
+  props: {
+    decorations(state) {
+      // pass array of decorations to each property
+      // combine them and create a DecorationSet with the combined array
+
+      return this.getState(state).cellsToHide;
     },
   },
 
@@ -188,15 +266,20 @@ export const CellSelecting = new Plugin({
     const tableReorderState = {
       cellDimensions: null,
       cloneDOM: null,
-      tableBlockDOM: null,
-      tableBlockRect: null,
-      isPressedTableButton: false,
+
+      isPressed: false,
       isReordering: false,
       startCoords: null,
       sourceIndex: null,
       targetIndex: null,
       buttonOrientation: null,
       scrollAnimationId: null,
+
+      tableStart: null,
+      tableNode: null,
+      tableBlockDOM: null,
+      tableBlockRect: null,
+      tableMap: null,
     };
     // review
 
@@ -233,8 +316,8 @@ export const CellSelecting = new Plugin({
           const colSelection = CellSelection.colSelection($cell);
 
           // todo: dnd
-          const rect = tableBlockDOM.getBoundingClientRect(); // fix
-          let startX = rect.x;
+          const tableBlockRect = tableBlockDOM.getBoundingClientRect();
+          let startX = tableBlockRect.x;
 
           const cellDimensions = Array.from(
             tableBlockDOM.querySelector("tr").children
@@ -254,10 +337,12 @@ export const CellSelecting = new Plugin({
           });
 
           tableReorderState.cellDimensions = cellDimensions;
+          tableReorderState.tableStart = tableStart;
+          tableReorderState.tableNode = tableNode;
           tableReorderState.tableBlockDOM = tableBlockDOM;
-          tableReorderState.tableBlockRect =
-            tableBlockDOM.getBoundingClientRect(); // can do this because the DOM element exists already
-          tableReorderState.isPressedTableButton = true;
+          tableReorderState.tableBlockRect = tableBlockRect; // can do this because the DOM element exists already
+          tableReorderState.tableMap = tableMap;
+          tableReorderState.isPressed = true;
           tableReorderState.startCoords = { x: e.clientX, y: e.clientY };
           tableReorderState.sourceIndex = sourceIndex;
 
@@ -270,9 +355,9 @@ export const CellSelecting = new Plugin({
             const rect = tableWrapper.getBoundingClientRect();
 
             if (mouseX < rect.left) {
-              tableWrapper.scrollLeft -= 5;
+              tableWrapper.scrollLeft -= 12;
             } else if (mouseX > rect.right) {
-              tableWrapper.scrollLeft += 5;
+              tableWrapper.scrollLeft += 12;
             }
           }, 16);
           // todo
@@ -302,7 +387,10 @@ export const CellSelecting = new Plugin({
     };
 
     const handleMouseMove = (e) => {
-      if (tableReorderState.isPressedTableButton) {
+      const { dispatch } = editorView;
+      const { tr } = editorView.state;
+
+      if (tableReorderState.isPressed) {
         mouseX = e.clientX;
 
         const distance =
@@ -313,13 +401,23 @@ export const CellSelecting = new Plugin({
 
         if (tableReorderState.isReordering) {
           if (!tableReorderState.cloneDOM) {
+            // generate clone
             const cloneDOM = cloneColumn(
               e,
               tableReorderState.sourceIndex,
               tableReorderState.tableBlockDOM
             );
 
+            // assign the clone
             tableReorderState.cloneDOM = cloneDOM;
+
+            // hide the selected column/row
+            const arr = [];
+            editorView.state.selection.forEachCell((node, pos) => {
+              arr.push({ from: pos, to: pos + node.nodeSize });
+            });
+            tr.setMeta(HIDE_CELLS_TO_REORDER, arr);
+            dispatch(tr);
           } else {
             const { tableBlockDOM, tableBlockRect, cloneDOM, sourceIndex } =
               tableReorderState;
@@ -336,6 +434,7 @@ export const CellSelecting = new Plugin({
             cloneDOM.style.left = clampedX + "px";
             cloneDOM.style.transform = `translateX(-${cloneDOM.offsetWidth / 2}px)`;
 
+            // debug: I am not sure if this is the correct logic...
             for (let i = 0; i < tableReorderState.cellDimensions.length; i++) {
               const { startX, endX, cellIndex } =
                 tableReorderState.cellDimensions[i];
@@ -349,6 +448,26 @@ export const CellSelecting = new Plugin({
               ) {
                 tableReorderState.targetIndex = cellIndex;
 
+                const { tableMap, tableNode, tableStart, sourceIndex } =
+                  tableReorderState;
+
+                // todo
+                // todo
+                const hoveredCellNodes = getHoveredCellNodes(
+                  editorView,
+                  tableMap,
+                  tableNode,
+                  tableStart,
+                  cellIndex,
+                  sourceIndex
+                );
+
+                tr.setMeta(REORDER_HOVERED_CELLS, hoveredCellNodes);
+
+                dispatch(tr);
+                // todo
+                // todo
+
                 break;
               } else if (
                 cellIndex === 0 &&
@@ -356,6 +475,22 @@ export const CellSelecting = new Plugin({
                 cellIndex !== sourceIndex
               ) {
                 tableReorderState.targetIndex = cellIndex;
+
+                const { tableMap, tableNode, tableStart, sourceIndex } =
+                  tableReorderState;
+
+                const hoveredCellNodes = getHoveredCellNodes(
+                  editorView,
+                  tableMap,
+                  tableNode,
+                  tableStart,
+                  cellIndex,
+                  sourceIndex
+                );
+
+                tr.setMeta(REORDER_HOVERED_CELLS, hoveredCellNodes);
+
+                dispatch(tr);
 
                 break;
               } else if (
@@ -365,9 +500,30 @@ export const CellSelecting = new Plugin({
               ) {
                 tableReorderState.targetIndex = cellIndex;
 
+                const { tableMap, tableNode, tableStart, sourceIndex } =
+                  tableReorderState;
+
+                const hoveredCellNodes = getHoveredCellNodes(
+                  editorView,
+                  tableMap,
+                  tableNode,
+                  tableStart,
+                  cellIndex,
+                  sourceIndex
+                );
+
+                tr.setMeta(REORDER_HOVERED_CELLS, hoveredCellNodes);
+
+                dispatch(tr);
+
                 break;
               } else {
+                // todo: need to hide the hovered cell decoration
                 tableReorderState.targetIndex = null;
+
+                tr.setMeta(REORDER_HOVERED_CELLS, null);
+
+                dispatch(tr);
               }
             }
           }
@@ -376,9 +532,12 @@ export const CellSelecting = new Plugin({
     };
 
     const handleMouseUp = () => {
+      const { dispatch } = editorView;
+      const { tr } = editorView.state;
+
       clearInterval(scrollInterval);
 
-      if (tableReorderState.isPressedTableButton) {
+      if (tableReorderState.isPressed) {
         if (
           tableReorderState.isReordering &&
           tableReorderState.targetIndex !== null &&
@@ -387,11 +546,25 @@ export const CellSelecting = new Plugin({
           moveTableColumn({
             from: tableReorderState.sourceIndex,
             to: tableReorderState.targetIndex,
-          })(editorView.state, editorView.dispatch);
+          })(editorView.state, (tr) => {
+            tr
+              //
+              .setMeta(HIDE_CELLS_TO_REORDER, null)
+              .setMeta(REORDER_HOVERED_CELLS, null);
+
+            dispatch(tr);
+          });
+        } else {
+          tr
+            //
+            .setMeta(HIDE_CELLS_TO_REORDER, null)
+            .setMeta(REORDER_HOVERED_CELLS, null);
+
+          dispatch(tr);
         }
 
         // todo: reset
-        tableReorderState.isPressedTableButton = false;
+        tableReorderState.isPressed = false;
         tableReorderState.isReordering = false;
         tableReorderState.startCoords = null;
         tableReorderState.sourceIndex = null;
@@ -399,6 +572,7 @@ export const CellSelecting = new Plugin({
 
         tableReorderState.cloneDOM?.remove();
         tableReorderState.cloneDOM = null;
+
         // todo: reset
       }
     };
