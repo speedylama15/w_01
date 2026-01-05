@@ -1,5 +1,5 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
-import { CellSelection, TableMap } from "@tiptap/pm/tables";
+import { CellSelection, TableMap, moveTableColumn } from "@tiptap/pm/tables";
 import { columnResizingPluginKey } from "prosemirror-tables";
 
 import { getDepth } from "../../utils/getDepth";
@@ -108,38 +108,51 @@ const displayCellSelectedTableControls = (view, nodeID) => {
   );
 };
 
-const cloneColumn = (e, index, tableDOM) => {
-  const queriedTable = tableDOM.querySelector("table");
-  const table = queriedTable.cloneNode(false);
+const cloneColumn = (e, index, tableBlockDOM) => {
+  try {
+    const tableWrapper = document.createElement("div");
+    tableWrapper.style.position = "relative";
 
-  const queriedColgroup = tableDOM.querySelector("colgroup");
-  const colgroup = queriedColgroup.cloneNode(false);
-  const col = queriedColgroup.children[index].cloneNode(true);
+    const table = document.createElement("table");
 
-  const queriedTbody = queriedTable.querySelector("tbody");
-  const tbody = document.createElement("tbody");
+    const colgroup = document.createElement("colgroup");
+    const col = tableBlockDOM
+      ?.querySelector("colgroup")
+      ?.children[index]?.cloneNode(true);
+    colgroup.append(col);
 
-  Array.from(queriedTbody.children).forEach((tr) => {
-    const cell = tr.children[index];
+    const tbody = document.createElement("tbody");
+    Array.from(tableBlockDOM.querySelector("tbody").children).forEach((tr) => {
+      const cell = tr.children[index];
 
-    if (cell) {
-      const clonedTr = tr.cloneNode(false);
-      clonedTr.append(cell.cloneNode(true));
-      tbody.append(clonedTr);
-    }
-  });
+      if (cell) {
+        const clonedTr = tr.cloneNode(false);
+        clonedTr.append(cell.cloneNode(true));
+        tbody.append(clonedTr);
+      }
+    });
 
-  table.append(colgroup);
-  colgroup.append(col);
-  table.append(tbody);
+    const tableSelectionBox = tableBlockDOM
+      .querySelector(".table-selection-box")
+      .cloneNode(true);
+    tableSelectionBox.style.top = 0;
+    tableSelectionBox.style.left = 0;
 
-  document.body.appendChild(table);
-  table.style.display = "block";
-  table.style.position = "absolute";
-  table.style.zIndex = 10000;
-  table.style.top = 0;
-  table.style.left = 0;
-  table.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+    tableWrapper.append(table, tableSelectionBox);
+    table.append(colgroup, tbody);
+
+    tableWrapper.style.display = "none"; // fix
+    tableWrapper.style.position = "absolute";
+    tableWrapper.style.zIndex = 10000; // fix
+    tableWrapper.style.opacity = "0.5";
+    tableWrapper.style.width = parseInt(col.style.width) + 1 + "px"; // fix
+
+    document.body.appendChild(tableWrapper);
+
+    return tableWrapper;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const CellSelectingKey = new PluginKey("CellSelectingKey");
@@ -161,118 +174,242 @@ export const CellSelecting = new Plugin({
     apply(tr, value, oldState, newState) {
       const tableReorder = tr.getMeta("table-reorder");
 
-      if (tableReorder) {
-        // const { index, orientation, cellSelection } = tableReorder;
-
-        return tableReorder;
-      }
+      if (tableReorder) return tableReorder;
 
       return value;
     },
   },
 
-  props: {
-    handleDOMEvents: {
-      mousedown(view, e) {
-        const { tr } = view.state;
-        const { dispatch } = view;
+  view(editorView) {
+    // review: values to use
+    let scrollInterval = null;
+    let mouseX = 0;
 
-        const tableButton = e.target.closest(".table-button");
+    const tableReorderState = {
+      cellDimensions: null,
+      cloneDOM: null,
+      tableBlockDOM: null,
+      tableBlockRect: null,
+      isPressedTableButton: false,
+      isReordering: false,
+      startCoords: null,
+      sourceIndex: null,
+      targetIndex: null,
+      buttonOrientation: null,
+      scrollAnimationId: null,
+    };
+    // review
 
-        if (tableButton) {
-          const tableDOM = e.target.closest(`div[data-content-type="table"]`);
+    const handleMouseDown = (e) => {
+      const { tr } = editorView.state;
+      const { dispatch } = editorView;
 
-          if (!tableDOM) return;
+      const tableButton = e.target.closest(".table-button");
 
-          // e.preventDefault();
-          e.stopPropagation();
+      if (tableButton) {
+        // idea: perhaps I could improve this?
+        // idea: table button has the ID of the block node
+        // idea: query for content-type="table" && the id
+        const tableBlockDOM = e.target.closest(
+          `div[data-content-type="table"]`
+        );
 
-          const type = tableButton.dataset.tableButtonType;
-          const index = parseInt(tableButton.dataset.tableButtonIndex);
+        if (!tableBlockDOM) return;
 
-          const tableStart = view.posAtDOM(tableDOM);
-          const tableBefore = tableStart - 1;
-          const tableNode = view.state.doc.nodeAt(tableBefore);
-          const tableMap = TableMap.get(tableNode);
+        e.preventDefault();
+        e.stopPropagation(); // todo: I need to figure out the hierarchy of mousedowns
 
-          if (type === "column") {
-            const cellPos = tableStart + tableMap.map[index];
+        const type = tableButton.dataset.tableButtonType; // fix: change name to tableButtonOrientation
+        const sourceIndex = parseInt(tableButton.dataset.tableButtonIndex);
 
-            const $cell = view.state.doc.resolve(cellPos);
-            const colSelection = CellSelection.colSelection($cell);
+        const tableStart = editorView.posAtDOM(tableBlockDOM);
+        const tableBefore = tableStart - 1;
+        const tableNode = editorView.state.doc.nodeAt(tableBefore); // to get the map
+        const tableMap = TableMap.get(tableNode); // to get the col/row selection
 
-            tr.setSelection(colSelection)
-              // for dropdown menu
-              .setMeta("tableDropdown", {
-                isOpen: true,
-                buttonType: type,
-                buttonIndex: index,
-                buttonRect: tableButton.getBoundingClientRect(),
-              })
-              // for dnd reorder
-              .setMeta("table-reorder", {
-                isReordering: true,
-                index,
-                orientation: type,
-                cellSelection: colSelection,
-                tableDOM,
-              });
+        if (type === "column") {
+          const cellPos = tableStart + tableMap.map[sourceIndex];
+          const $cell = editorView.state.doc.resolve(cellPos);
+          const colSelection = CellSelection.colSelection($cell);
 
-            dispatch(tr);
+          // todo: dnd
+          const rect = tableBlockDOM.getBoundingClientRect(); // fix
+          let startX = rect.x;
 
-            return;
-          }
+          const cellDimensions = Array.from(
+            tableBlockDOM.querySelector("tr").children
+          ).map((cell) => {
+            const cellIndex = cell.cellIndex;
 
-          if (type === "row") {
-            const cellPos = tableStart + tableMap.map[tableMap.width * index];
+            const start = startX;
+            const end = start + cell.offsetWidth;
 
-            const $cell = view.state.doc.resolve(cellPos);
-            const rowSelection = CellSelection.rowSelection($cell);
+            startX = end;
 
-            tr.setSelection(rowSelection).setMeta("tableDropdown", {
-              isOpen: true,
-              buttonType: type,
-              buttonIndex: index,
-              buttonRect: tableButton.getBoundingClientRect(),
-            });
+            return {
+              cellIndex,
+              startX: start,
+              endX: end,
+            };
+          });
 
-            dispatch(tr);
+          tableReorderState.cellDimensions = cellDimensions;
+          tableReorderState.tableBlockDOM = tableBlockDOM;
+          tableReorderState.tableBlockRect =
+            tableBlockDOM.getBoundingClientRect(); // can do this because the DOM element exists already
+          tableReorderState.isPressedTableButton = true;
+          tableReorderState.startCoords = { x: e.clientX, y: e.clientY };
+          tableReorderState.sourceIndex = sourceIndex;
 
-            return;
+          tr.setSelection(colSelection);
+          dispatch(tr);
+
+          const tableWrapper = tableBlockDOM.querySelector(".tableWrapper");
+
+          scrollInterval = setInterval(() => {
+            const rect = tableWrapper.getBoundingClientRect();
+
+            if (mouseX < rect.left) {
+              tableWrapper.scrollLeft -= 5;
+            } else if (mouseX > rect.right) {
+              tableWrapper.scrollLeft += 5;
+            }
+          }, 16);
+          // todo
+
+          return;
+        }
+
+        // if (type === "row") {
+        //   const cellPos =
+        //     tableStart + tableMap.map[tableMap.width * sourceIndex];
+
+        //   const $cell = editorView.state.doc.resolve(cellPos);
+        //   const rowSelection = CellSelection.rowSelection($cell);
+
+        //   tr.setSelection(rowSelection).setMeta("tableDropdown", {
+        //     isOpen: true,
+        //     buttonType: type,
+        //     buttonIndex: sourceIndex,
+        //     buttonRect: tableButton.getBoundingClientRect(),
+        //   });
+
+        //   dispatch(tr);
+
+        //   return;
+        // }
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      if (tableReorderState.isPressedTableButton) {
+        mouseX = e.clientX;
+
+        const distance =
+          Math.pow(e.clientX - tableReorderState.startCoords.x, 2) +
+          Math.pow(e.clientY - tableReorderState.startCoords.y, 2);
+
+        if (distance > 25) tableReorderState.isReordering = true;
+
+        if (tableReorderState.isReordering) {
+          if (!tableReorderState.cloneDOM) {
+            const cloneDOM = cloneColumn(
+              e,
+              tableReorderState.sourceIndex,
+              tableReorderState.tableBlockDOM
+            );
+
+            tableReorderState.cloneDOM = cloneDOM;
+          } else {
+            const { tableBlockDOM, tableBlockRect, cloneDOM, sourceIndex } =
+              tableReorderState;
+            const { x, y, width } = tableBlockRect;
+
+            const tableWrapper = tableBlockDOM.querySelector(".tableWrapper");
+
+            const minX = x + 30;
+            const maxX = x + width - 30;
+            const clampedX = Math.max(minX, Math.min(e.clientX, maxX));
+
+            cloneDOM.style.display = "flex";
+            cloneDOM.style.top = y + "px";
+            cloneDOM.style.left = clampedX + "px";
+            cloneDOM.style.transform = `translateX(-${cloneDOM.offsetWidth / 2}px)`;
+
+            for (let i = 0; i < tableReorderState.cellDimensions.length; i++) {
+              const { startX, endX, cellIndex } =
+                tableReorderState.cellDimensions[i];
+
+              const mouseX = e.clientX + tableWrapper.scrollLeft;
+
+              if (
+                mouseX > startX &&
+                mouseX < endX &&
+                cellIndex !== sourceIndex
+              ) {
+                tableReorderState.targetIndex = cellIndex;
+
+                break;
+              } else if (
+                cellIndex === 0 &&
+                mouseX < endX &&
+                cellIndex !== sourceIndex
+              ) {
+                tableReorderState.targetIndex = cellIndex;
+
+                break;
+              } else if (
+                cellIndex === tableReorderState.cellDimensions.length - 1 &&
+                mouseX > startX &&
+                cellIndex !== sourceIndex
+              ) {
+                tableReorderState.targetIndex = cellIndex;
+
+                break;
+              } else {
+                tableReorderState.targetIndex = null;
+              }
+            }
           }
         }
-      },
+      }
+    };
 
-      mousemove(view, e) {
-        const state = CellSelectingKey.getState(view.state);
+    const handleMouseUp = () => {
+      clearInterval(scrollInterval);
 
-        if (state?.cellSelection && state?.orientation === "column") {
-          //
+      if (tableReorderState.isPressedTableButton) {
+        if (
+          tableReorderState.isReordering &&
+          tableReorderState.targetIndex !== null &&
+          tableReorderState.sourceIndex !== tableReorderState.targetIndex
+        ) {
+          moveTableColumn({
+            from: tableReorderState.sourceIndex,
+            to: tableReorderState.targetIndex,
+          })(editorView.state, editorView.dispatch);
         }
-      },
 
-      mouseup(view) {
-        const { tr } = view.state;
-        const { dispatch } = view;
+        // todo: reset
+        tableReorderState.isPressedTableButton = false;
+        tableReorderState.isReordering = false;
+        tableReorderState.startCoords = null;
+        tableReorderState.sourceIndex = null;
+        tableReorderState.targetIndex = null;
 
-        tr.setMeta("table-reorder", {
-          isReordering: false,
-          index: null,
-          orientation: null,
-          cellSelection: null,
-        });
+        tableReorderState.cloneDOM?.remove();
+        tableReorderState.cloneDOM = null;
+        // todo: reset
+      }
+    };
 
-        dispatch(tr);
-      },
-    },
-  },
+    editorView.dom.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
 
-  view() {
     // need to know the tableID in which displayed the overlay
     // query for the blockTableDOM and hide the overlay
     let prevTableID = null;
-
-    const testVal = "I am hungry";
 
     return {
       update(view) {
@@ -388,6 +525,12 @@ export const CellSelecting = new Plugin({
 
           return;
         }
+      },
+
+      destroy() {
+        editorView.dom.removeEventListener("mousedown", handleMouseDown);
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
       },
     };
   },
