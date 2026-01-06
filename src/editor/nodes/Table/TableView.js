@@ -1,8 +1,5 @@
 import { TableView } from "@tiptap/extension-table";
 
-import { getDepth } from "../../utils/getDepth";
-import { getDepthByContent } from "../../utils/getDepthByContent";
-
 class m_TableView extends TableView {
   createBlock(HTMLAttributes) {
     const block = document.createElement("div");

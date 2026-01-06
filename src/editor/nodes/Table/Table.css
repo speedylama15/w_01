@@ -128,11 +128,11 @@ paragraph-item {
   background-color: #c7ecb8;
 }
 
-.hide-cell {
+.hidden-cell {
   background-color: #124fca;
 }
 
-.hide-cell > * {
+.hidden-cell > * {
   visibility: hidden;
 }
 
@@ -144,6 +144,8 @@ paragraph-item {
   left: 0;
   width: 3px;
   height: 100%;
+  z-index: 10000;
+  transform: translateX(calc(-50% - 0.5px));
 }
 
 .hovered-cell_right::before {
@@ -154,4 +156,6 @@ paragraph-item {
   right: 0;
   width: 3px;
   height: 100%;
+  z-index: 10000;
+  transform: translateX(calc(50% + 0.5px));
 }

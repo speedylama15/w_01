@@ -15,6 +15,13 @@ const m_TableCell = TableCell.extend({
           colwidth: [attributes.colwidth],
         }),
       },
+      contentType: {
+        default: this.name,
+        parseHTML: (element) => element.getAttribute("data-content-type"),
+        renderHTML: (attributes) => ({
+          "data-content-type": attributes.contentType,
+        }),
+      },
       divType: {
         default: this.name,
         parseHTML: (element) => element.getAttribute("data-div-type"),

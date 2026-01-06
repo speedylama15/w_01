@@ -1,4 +1,4 @@
-export const getDepth = ($from, divType) => {
+export const getDepthbyDiv = ($from, divType) => {
   let depth = $from.depth;
 
   for (let i = $from.depth; i >= 0; i--) {
