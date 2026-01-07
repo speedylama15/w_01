@@ -145,7 +145,6 @@ paragraph-item {
   width: 3px;
   height: 100%;
   z-index: 10000;
-  transform: translateX(calc(-50% - 0.5px));
 }
 
 .hovered-cell_right::before {
@@ -157,5 +156,26 @@ paragraph-item {
   width: 3px;
   height: 100%;
   z-index: 10000;
-  transform: translateX(calc(50% + 0.5px));
+}
+
+.hovered-cell_above::before {
+  content: "";
+  background-color: #ff0000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 10000;
+}
+
+.hovered-cell_below::before {
+  content: "";
+  background-color: #ff0000;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 10000;
 }

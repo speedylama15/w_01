@@ -1,114 +1,24 @@
-import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
-import { CellSelection, TableMap, moveTableColumn } from "@tiptap/pm/tables";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import {
+  CellSelection,
+  TableMap,
+  moveTableColumn,
+  moveTableRow,
+} from "@tiptap/pm/tables";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+
+import { cloneColumn } from "./utils/cloneColumn";
+import { cloneRow } from "./utils/cloneRow";
+import { getHoveredCells_COLUMN } from "./utils/getHoveredCells_COLUMN";
+import { getHoveredCells_ROW } from "./utils/getHoveredCells_ROW";
+import { getTableCellDimensions_COLUMN } from "./utils/getTableCellDimensions_COLUMN";
+import { getTableCellDimensions_ROW } from "./utils/getTableCellDimensions_ROW";
 
 const REORDER_HIDE_CELLS = "REORDER_HIDE_CELLS";
 const REORDER_HOVERED_CELLS = "REORDER_HOVERED_CELLS";
 
 // HIDE_DROPDOWN
 // SHOW_DROPDOWN
-
-// todo: column -> offsetWidth row -> offsetHeight
-// todo: change startX to something that works for both startXY
-const getTableCellDimensions = (initX, tableBlockDOM, buttonType) => {
-  let startX = initX;
-
-  const cells = Array.from(tableBlockDOM.querySelector("tr").children);
-
-  const cellDimensions = cells.map((cell) => {
-    const { cellIndex } = cell;
-
-    const start = startX;
-    const end = start + cell.offsetWidth;
-
-    startX = end;
-
-    return {
-      startX: start,
-      endX: end,
-      cellIndex,
-    };
-  });
-
-  return cellDimensions;
-};
-
-const cloneColumn = (e, index, tableBlockDOM) => {
-  try {
-    const tableWrapper = document.createElement("div");
-    tableWrapper.style.position = "relative";
-
-    const table = document.createElement("table");
-
-    const colgroup = document.createElement("colgroup");
-    const col = tableBlockDOM
-      ?.querySelector("colgroup")
-      ?.children[index]?.cloneNode(true);
-    colgroup.append(col);
-
-    const tbody = document.createElement("tbody");
-    const rows = Array.from(tableBlockDOM.querySelector("tbody").children);
-    rows.forEach((tr) => {
-      const cell = tr.children[index];
-
-      if (cell) {
-        const clonedTr = tr.cloneNode(false);
-        clonedTr.append(cell.cloneNode(true));
-        tbody.append(clonedTr);
-      }
-    });
-
-    const tableSelectionBox = tableBlockDOM
-      .querySelector(".table-selection-box")
-      .cloneNode(true);
-    tableSelectionBox.style.top = 0;
-    tableSelectionBox.style.left = 0;
-
-    tableWrapper.append(table, tableSelectionBox);
-    table.append(colgroup, tbody);
-
-    tableWrapper.style.display = "none";
-    tableWrapper.style.width = parseInt(col.style.width) + 1 + "px";
-    tableWrapper.style.position = "absolute";
-    tableWrapper.style.zIndex = 100;
-    tableWrapper.style.opacity = "0.5";
-
-    document.body.appendChild(tableWrapper);
-
-    return tableWrapper;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const getHoveredCells = (
-  view,
-  tableMap,
-  tableStart,
-  grabbedIndex,
-  hoveredCellIndex
-) => {
-  let nodes = [];
-
-  for (let row = 0; row < tableMap.height; row++) {
-    const indexInMap = row * tableMap.width + hoveredCellIndex;
-    const cellPos = tableStart + tableMap.map[indexInMap];
-    const cellNode = view.state.doc.nodeAt(cellPos);
-
-    if (!cellNode) {
-      nodes = [];
-      break;
-    } else {
-      nodes.push({
-        from: cellPos,
-        to: cellPos + cellNode.nodeSize,
-        direction: grabbedIndex > hoveredCellIndex ? "left" : "right",
-      });
-    }
-  }
-
-  return nodes;
-};
 
 export const CellButtonKey = new PluginKey("CellButtonKey");
 
@@ -124,7 +34,7 @@ export const CellButton = new Plugin({
       };
     },
 
-    apply(tr, value, oldState, newState) {
+    apply(tr, value) {
       const hiddenCells = tr.getMeta(REORDER_HIDE_CELLS);
       const hoveredCells = tr.getMeta(REORDER_HOVERED_CELLS);
 
@@ -187,6 +97,17 @@ export const CellButton = new Plugin({
 
       return DecorationSet.create(state.doc, decorations);
     },
+
+    handleTripleClick(view, pos, e) {
+      const tableButton = e.target.closest(".table-button");
+
+      if (tableButton) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        return true;
+      }
+    },
   },
 
   // REVIEW: VIEW
@@ -204,7 +125,7 @@ export const CellButton = new Plugin({
       startCoords: null,
       grabbedIndex: null,
       targetIndex: null,
-      buttonType: null, // row or column
+      tableButtonType: null, // row or column
 
       tableBlockMap: null,
       tableBlockDOM: null,
@@ -224,9 +145,10 @@ export const CellButton = new Plugin({
       if (!tableBlockDOM) return;
 
       e.preventDefault();
-      e.stopPropagation(); // todo: figure out the different mousedown event handlers
+      // todo: figure out the different mousedown event handlers
+      e.stopPropagation();
 
-      const buttonType = tableButton.dataset.tableButtonType;
+      const tableButtonType = tableButton.dataset.tableButtonType;
       const buttonIndex = parseInt(tableButton.dataset.tableButtonIndex);
 
       const tableBlockStart = view.posAtDOM(tableBlockDOM);
@@ -234,17 +156,15 @@ export const CellButton = new Plugin({
       const tableBlockNode = view.state.doc.nodeAt(tableBlockBefore); // to get tableMap
       const tableBlockMap = TableMap.get(tableBlockNode); // to get the col/row selection
 
-      if (buttonType === "column") {
+      if (tableButtonType === "column") {
         const cellPos = tableBlockStart + tableBlockMap.map[buttonIndex];
         const $cell = view.state.doc.resolve(cellPos);
         const colSelection = CellSelection.colSelection($cell); // get the col selection
 
         const tableBlockRect = tableBlockDOM.getBoundingClientRect();
-        // fix: orientation needs to be taken into account
-        const tableCellDimensions = getTableCellDimensions(
+        const tableCellDimensions = getTableCellDimensions_COLUMN(
           tableBlockRect.x,
-          tableBlockDOM,
-          buttonType
+          tableBlockDOM
         );
 
         tableButtonState.isPressed = true;
@@ -253,7 +173,7 @@ export const CellButton = new Plugin({
 
         tableButtonState.startCoords = { x: e.clientX, y: e.clientY };
         tableButtonState.grabbedIndex = buttonIndex;
-        tableButtonState.buttonType = buttonType;
+        tableButtonState.tableButtonType = tableButtonType;
 
         tableButtonState.tableBlockMap = tableBlockMap;
         tableButtonState.tableBlockDOM = tableBlockDOM;
@@ -284,7 +204,43 @@ export const CellButton = new Plugin({
         return;
       }
 
-      // gotta work with row as well
+      if (tableButtonType === "row") {
+        const cellPos =
+          tableBlockStart +
+          tableBlockMap.map[tableBlockMap.width * buttonIndex];
+        const $cell = view.state.doc.resolve(cellPos);
+        const rowSelection = CellSelection.rowSelection($cell);
+
+        // todo: here show the dropdown if criteria is met
+
+        const tableBlockRect = tableBlockDOM.getBoundingClientRect();
+        const tableCellDimensions = getTableCellDimensions_ROW(
+          tableBlockRect.y,
+          tableBlockDOM
+        );
+
+        tableButtonState.isPressed = true;
+
+        tableButtonState.tableCellDimensions = tableCellDimensions;
+
+        tableButtonState.startCoords = { x: e.clientX, y: e.clientY };
+        tableButtonState.grabbedIndex = buttonIndex;
+        tableButtonState.tableButtonType = tableButtonType;
+
+        tableButtonState.tableBlockMap = tableBlockMap;
+        tableButtonState.tableBlockDOM = tableBlockDOM;
+        tableButtonState.tableBlockRect = tableBlockRect;
+        tableButtonState.tableBlockNode = tableBlockNode;
+        tableButtonState.tableBlockStart = tableBlockStart;
+
+        tr.setSelection(rowSelection); // review: selection will ALWAYS be made
+
+        dispatch(tr);
+
+        return;
+      }
+
+      return true;
     };
 
     const handleMouseMove = (e) => {
@@ -297,6 +253,7 @@ export const CellButton = new Plugin({
         tableCellDimensions,
         startCoords,
         grabbedIndex,
+        tableButtonType,
         tableBlockMap,
         tableBlockDOM,
         tableBlockRect,
@@ -316,13 +273,11 @@ export const CellButton = new Plugin({
       // reordering has initiated
 
       if (!tableButtonState.clonedDOM) {
-        // fix: either column or row, but rn let's just go with column
         // clone once
-        tableButtonState.clonedDOM = cloneColumn(
-          e,
-          grabbedIndex,
-          tableBlockDOM
-        );
+        tableButtonState.clonedDOM =
+          tableButtonType === "column"
+            ? cloneColumn(e, grabbedIndex, tableBlockDOM)
+            : cloneRow(e, grabbedIndex, tableBlockDOM);
 
         // hide cells once
         const hiddenCells = [];
@@ -336,38 +291,64 @@ export const CellButton = new Plugin({
         dispatch(tr);
       }
 
-      const { x, y, width } = tableBlockRect;
+      const { x, y, width, height } = tableBlockRect;
       const tableWrapper = tableBlockDOM.querySelector(".tableWrapper");
 
-      const minX = x + 30;
-      const maxX = x + width - 30;
-      const clampedX = Math.max(minX, Math.min(e.clientX, maxX));
+      // movement of the clonedDOM
+      if (tableButtonType === "column") {
+        const minX = x + 30;
+        const maxX = x + width - 30;
+        const clampedX = Math.max(minX, Math.min(e.clientX, maxX));
 
-      tableButtonState.clonedDOM.style.display = "flex";
-      tableButtonState.clonedDOM.style.top = y + "px";
-      tableButtonState.clonedDOM.style.left = clampedX + "px";
-      tableButtonState.clonedDOM.style.transform = `translateX(-${tableButtonState.clonedDOM.offsetWidth / 2}px)`;
+        tableButtonState.clonedDOM.style.display = "flex";
+        tableButtonState.clonedDOM.style.top = y + "px";
+        tableButtonState.clonedDOM.style.left = clampedX + "px";
+        tableButtonState.clonedDOM.style.transform = `translateX(-${tableButtonState.clonedDOM.offsetWidth / 2}px)`;
+      }
+
+      // movement of the clonedDOM
+      if (tableButtonType === "row") {
+        const minY = y - 10;
+        const maxY = y + height - tableButtonState.clonedDOM.offsetHeight + 10;
+        const clampedY = Math.max(minY, Math.min(e.clientY, maxY));
+
+        tableButtonState.clonedDOM.style.display = "flex";
+        tableButtonState.clonedDOM.style.top = clampedY + "px";
+        tableButtonState.clonedDOM.style.left = x + "px";
+      }
 
       for (let i = 0; i < tableCellDimensions.length; i++) {
-        const { startX, endX, cellIndex } = tableCellDimensions[i]; // fix: adjust the names
+        const { startCoord, endCoord, index } = tableCellDimensions[i];
 
-        const mouseX = e.clientX + tableWrapper.scrollLeft;
+        const mouseCoord =
+          tableButtonType === "column"
+            ? e.clientX + tableWrapper.scrollLeft
+            : e.clientY;
 
         const isValidTarget =
-          (mouseX >= startX && mouseX <= endX) ||
-          (cellIndex === 0 && mouseX <= startX) ||
-          (cellIndex === tableCellDimensions.length - 1 && mouseX >= endX);
+          (mouseCoord >= startCoord && mouseCoord <= endCoord) ||
+          (index === 0 && mouseCoord <= startCoord) ||
+          (index === tableCellDimensions.length - 1 && mouseCoord >= endCoord);
 
-        if (isValidTarget && cellIndex !== grabbedIndex) {
-          tableButtonState.targetIndex = cellIndex;
+        if (isValidTarget && index !== grabbedIndex) {
+          tableButtonState.targetIndex = index;
 
-          const hoveredCells = getHoveredCells(
-            view,
-            tableBlockMap,
-            tableBlockStart,
-            grabbedIndex,
-            cellIndex
-          );
+          const hoveredCells =
+            tableButtonType === "column"
+              ? getHoveredCells_COLUMN(
+                  view,
+                  tableBlockMap,
+                  tableBlockStart,
+                  grabbedIndex,
+                  index
+                )
+              : getHoveredCells_ROW(
+                  view,
+                  tableBlockMap,
+                  tableBlockStart,
+                  grabbedIndex,
+                  index
+                );
 
           tr.setMeta(REORDER_HOVERED_CELLS, hoveredCells);
 
@@ -384,33 +365,60 @@ export const CellButton = new Plugin({
       }
     };
 
-    const handleMouseUp = (e) => {
+    const handleMouseUp = () => {
       const { tr } = view.state;
       const { dispatch } = view;
 
       clearInterval(scrollIntervalID);
 
-      const { isPressed, isReordering, grabbedIndex, targetIndex } =
-        tableButtonState;
+      const {
+        isPressed,
+        isReordering,
+        grabbedIndex,
+        targetIndex,
+        tableButtonType,
+      } = tableButtonState;
 
       if (isPressed) {
+        if (!isReordering) {
+          // todo
+          console.log("render dropdown");
+        }
+
         if (
           isReordering &&
           targetIndex !== null &&
           grabbedIndex !== targetIndex
         ) {
-          moveTableColumn({
-            from: grabbedIndex,
-            to: targetIndex,
-          })(view.state, (tr) => {
-            // remove hovered cells and hide cells decoration
-            tr
-              //
-              .setMeta(REORDER_HIDE_CELLS, null)
-              .setMeta(REORDER_HOVERED_CELLS, null);
+          if (tableButtonType === "column") {
+            moveTableColumn({
+              from: grabbedIndex,
+              to: targetIndex,
+            })(view.state, (tr) => {
+              // remove hovered cells and hide cells decoration
+              tr
+                //
+                .setMeta(REORDER_HIDE_CELLS, null)
+                .setMeta(REORDER_HOVERED_CELLS, null);
 
-            dispatch(tr);
-          });
+              dispatch(tr);
+            });
+          }
+
+          if (tableButtonType === "row") {
+            moveTableRow({
+              from: grabbedIndex,
+              to: targetIndex,
+            })(view.state, (tr) => {
+              // remove hovered cells and hide cells decoration
+              tr
+                //
+                .setMeta(REORDER_HIDE_CELLS, null)
+                .setMeta(REORDER_HOVERED_CELLS, null);
+
+              dispatch(tr);
+            });
+          }
         } else {
           // remove hovered cells and hide cells decoration
           tr
@@ -431,7 +439,7 @@ export const CellButton = new Plugin({
         tableButtonState.startCoords = null;
         tableButtonState.grabbedIndex = null;
         tableButtonState.targetIndex = null;
-        tableButtonState.buttonType = null;
+        tableButtonState.tableButtonType = null;
 
         tableButtonState.tableBlockMap = null;
         tableButtonState.tableBlockDOM = null;

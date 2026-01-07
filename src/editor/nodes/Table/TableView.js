@@ -59,6 +59,7 @@ class m_TableView extends TableView {
     const button = document.createElement("button");
 
     button.className = "table-button table-column-button";
+    button.contentEditable = false;
     button.setAttribute("data-table-button-type", "column");
     button.setAttribute("data-table-button-index", null);
 
@@ -70,8 +71,10 @@ class m_TableView extends TableView {
     const button = document.createElement("button");
 
     div.className = "table-row-button-container";
+    div.contentEditable = false;
 
     button.className = "table-button table-row-button";
+    button.contentEditable = false;
     button.setAttribute("data-table-button-type", "row");
     button.setAttribute("data-table-button-index", null);
 
