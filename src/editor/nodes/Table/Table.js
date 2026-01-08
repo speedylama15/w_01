@@ -46,21 +46,8 @@ const m_Table = Table.extend({
     };
   },
 
-  // todo: addNodeView
   addNodeView() {
-    return ({
-      HTMLAttributes,
-      decorations,
-      editor,
-      extension,
-      getPos,
-      innerDecorations,
-      node,
-      view,
-    }) => {
-      // todo: option-ize it
-      const cellMinWidth = 150;
-
+    return ({ HTMLAttributes, getPos, node, view }) => {
       return new m_TableView(node, 150, view, getPos, HTMLAttributes);
     };
   },

@@ -1,12 +1,12 @@
 .editor-page {
   display: flex;
-  background-color: #87ceeb;
+  background-color: #8fcae2;
   min-height: calc(100vh - 84px);
 }
 
 .editor-node {
-  background-color: #f2d6b3;
-  width: 500px;
+  /* background-color: #f2d6b3; */
+  width: 640px;
   height: 400px;
   margin: 70px auto auto auto;
 }

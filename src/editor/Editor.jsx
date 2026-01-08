@@ -40,6 +40,7 @@ import HardBreak from "@tiptap/extension-hard-break";
 
 // component
 import TableDropdownMenu from "./components/TableDropdownMenu/TableDropdownMenu.jsx";
+import AddColumnButton from "./components/AddColumnButton/AddColumnButton.jsx";
 // component
 
 import { Plugins } from "./plugins/Plugins";
@@ -173,6 +174,7 @@ const Editor = () => {
       </div>
 
       <TableDropdownMenu />
+      <AddColumnButton />
     </EditorContext.Provider>
   );
 };

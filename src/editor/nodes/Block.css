@@ -1,8 +1,8 @@
 .block {
   /* background-color: #f9aba2; */
-  /* padding: 2px 4px; */
+  padding: 2px 4px;
   border-radius: 7px;
-  /* margin-bottom: 2px; */
+  margin-bottom: 2px;
 }
 
 .content {
@@ -14,7 +14,8 @@ blockquote,
 verse,
 verse-with-citation {
   display: block;
-  font-size: 16px;
+  font-size: var(--font-size);
+  font-weight: var(--font-weight);
   line-height: 1.6;
 }
 
@@ -39,7 +40,8 @@ heading3 {
 }
 
 list-item {
-  font-size: 16px;
+  font-size: var(--font-size);
+  font-weight: var(--font-weight);
   line-height: 1.6;
 }
 
@@ -53,7 +55,7 @@ list-item {
   justify-content: center;
   font-family: none;
   /* todo: make this a variable 통합*/
-  font-size: 16px;
+  font-size: var(--font-size);
   width: fit-content;
   min-width: 28px;
   /* todo: make this a variable 통합*/
@@ -70,7 +72,7 @@ list-item {
   /* review: solution */
   flex-shrink: 0;
   /* todo: make this a variable 통합*/
-  font-size: 16px;
+  font-size: var(--font-size);
   min-width: 24px;
   text-align: center;
   padding-left: 4px;

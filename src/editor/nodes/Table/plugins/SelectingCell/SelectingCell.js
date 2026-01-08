@@ -21,6 +21,10 @@ export const SelectingCell = new Plugin({
 
         const resizeState = columnResizingPluginKey.getState(view.state);
 
+        // fix: I wonder if there is a way to completely remove selection when outside
+        // fix: the editor has been clicked
+        // console.log("selection inspection", selection);
+
         // if prevTableID exists and is dragging, hide the box and controls
         if (resizeState?.dragging && prevTableID) {
           hideTableControls(prevTableID);

@@ -83,6 +83,20 @@ class m_TableView extends TableView {
     return div;
   }
 
+  handleMouseMove(e) {
+    const { tr } = this.view.state;
+    const { dispatch } = this.view;
+
+    tr.setMeta("open-add-column", {
+      rect: e.currentTarget.getBoundingClientRect(),
+    });
+    dispatch(tr);
+
+    // console.log("moving!!!");
+  }
+
+  handleMouseLeave() {}
+
   constructor(node, cellMinWidth, view, getPos, HTMLAttributes) {
     super(node, cellMinWidth);
 
@@ -107,6 +121,20 @@ class m_TableView extends TableView {
     tableWrapper.append(selectionBox, columnButton);
 
     this.dom = block;
+
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleMouseLeave = this.handleMouseLeave.bind(this);
+
+    this.dom.addEventListener("mousemove", this.handleMouseMove);
+    this.dom.addEventListener("mouseleave", this.handleMouseLeave);
+  }
+
+  destroy() {
+    console.log("destroy");
+
+    // Remove your custom listeners BEFORE calling super.destroy()
+    this.dom.removeEventListener("mousemove", this.handleMouseMove);
+    this.dom.removeEventListener("mouseleave", this.handleMouseLeave);
   }
 
   // return true -> Keep instance and update the existing DOM
