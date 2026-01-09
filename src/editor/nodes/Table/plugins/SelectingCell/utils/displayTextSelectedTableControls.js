@@ -20,6 +20,8 @@ export const displayTextSelectedTableControls = (view, nodeID, pos) => {
   selectionBox.style.width = width + "px";
   selectionBox.style.height = height + "px";
 
+  selectionBox.querySelector(".cell-button").style.display = "flex";
+
   columnButton.style.display = "flex";
   columnButton.style.top = "0px";
   columnButton.style.left = cellDOM.offsetLeft + cellDOM.offsetWidth / 2 + "px";

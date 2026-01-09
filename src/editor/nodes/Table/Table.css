@@ -88,7 +88,7 @@ paragraph-item {
   top: 0px;
   left: 0px;
   width: 0;
-  z-index: 1000;
+  z-index: 5;
 }
 
 .table-row-button {
@@ -103,7 +103,7 @@ paragraph-item {
   background-color: #fff;
   border-radius: 0px 3px 3px 0px;
   pointer-events: auto;
-  z-index: 4;
+  z-index: 5;
 }
 
 .table-button:hover {

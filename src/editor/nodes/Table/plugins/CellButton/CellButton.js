@@ -17,9 +17,6 @@ import { getTableCellDimensions_ROW } from "./utils/getTableCellDimensions_ROW";
 const REORDER_HIDE_CELLS = "REORDER_HIDE_CELLS";
 const REORDER_HOVERED_CELLS = "REORDER_HOVERED_CELLS";
 
-// HIDE_DROPDOWN
-// SHOW_DROPDOWN
-
 export const CellButtonKey = new PluginKey("CellButtonKey");
 
 export const CellButton = new Plugin({
@@ -127,6 +124,8 @@ export const CellButton = new Plugin({
       targetIndex: null,
       tableButtonType: null, // row or column
 
+      tableButtonDOM: null,
+
       tableBlockMap: null,
       tableBlockDOM: null,
       tableBlockRect: null,
@@ -138,6 +137,8 @@ export const CellButton = new Plugin({
       const { tr } = view.state;
       const { dispatch } = view;
 
+      if (e.button !== 0) return;
+
       const tableButton = e.target.closest(".table-button");
       if (!tableButton) return;
 
@@ -147,6 +148,8 @@ export const CellButton = new Plugin({
       e.preventDefault();
       // todo: figure out the different mousedown event handlers
       e.stopPropagation();
+
+      tableButtonState.tableButtonDOM = tableButton;
 
       const tableButtonType = tableButton.dataset.tableButtonType;
       const buttonIndex = parseInt(tableButton.dataset.tableButtonIndex);
@@ -381,8 +384,15 @@ export const CellButton = new Plugin({
 
       if (isPressed) {
         if (!isReordering) {
-          // todo
-          console.log("render dropdown");
+          const rect = tableButtonState.tableButtonDOM.getBoundingClientRect();
+
+          tr.setMeta("open-table-dropdown", {
+            isOpen: true,
+            rect,
+            type: tableButtonState.tableButtonType,
+          });
+
+          dispatch(tr);
         }
 
         if (
@@ -440,6 +450,8 @@ export const CellButton = new Plugin({
         tableButtonState.grabbedIndex = null;
         tableButtonState.targetIndex = null;
         tableButtonState.tableButtonType = null;
+
+        tableButtonState.tableButtonDOM = null;
 
         tableButtonState.tableBlockMap = null;
         tableButtonState.tableBlockDOM = null;

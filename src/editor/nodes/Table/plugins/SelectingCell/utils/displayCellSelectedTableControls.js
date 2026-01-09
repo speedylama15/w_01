@@ -29,6 +29,8 @@ export const displayCellSelectedTableControls = (view, nodeID) => {
   selectionBox.style.width = width + "px";
   selectionBox.style.height = height + "px";
 
+  selectionBox.querySelector(".cell-button").style.display = "none";
+
   columnButton.style.display = "flex";
   columnButton.style.top = "0px";
   columnButton.style.left = headDOM.offsetLeft + headDOM.offsetWidth / 2 + "px";

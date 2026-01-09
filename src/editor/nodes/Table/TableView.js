@@ -83,19 +83,15 @@ class m_TableView extends TableView {
     return div;
   }
 
-  handleMouseMove(e) {
-    const { tr } = this.view.state;
-    const { dispatch } = this.view;
-
-    tr.setMeta("open-add-column", {
-      rect: e.currentTarget.getBoundingClientRect(),
-    });
-    dispatch(tr);
-
-    // console.log("moving!!!");
+  handleMouseMove() {
+    // opening logic lives here
+    // the closing logic lives in React Component
   }
 
-  handleMouseLeave() {}
+  handleMouseLeave() {
+    // this will send a tr that indicates for the hiding of the buttons
+    // but the ultimate decision is made in the React component
+  }
 
   constructor(node, cellMinWidth, view, getPos, HTMLAttributes) {
     super(node, cellMinWidth);
@@ -130,15 +126,12 @@ class m_TableView extends TableView {
   }
 
   destroy() {
-    console.log("destroy");
-
-    // Remove your custom listeners BEFORE calling super.destroy()
     this.dom.removeEventListener("mousemove", this.handleMouseMove);
     this.dom.removeEventListener("mouseleave", this.handleMouseLeave);
   }
 
-  // return true -> Keep instance and update the existing DOM
-  // return false -> Destroy and recreate everything from scratch
+  // review: return true -> Keep instance and update the existing DOM
+  // review: return false -> Destroy and recreate everything from scratch
   // update(node, decorations, innerDecorations) {
   //   // update method does not have access to the editor...
   //   // maybe I can make use of state? Bring in the state? // idea
@@ -149,8 +142,8 @@ class m_TableView extends TableView {
   //   return true;
   // }
 
-  // return true = Ignore this DOM change - ProseMirror won't try to reparse it
-  // Return false = Handle this DOM change - ProseMirror will reparse and potentially update the document
+  // review: return true = Ignore this DOM change - ProseMirror won't try to reparse it
+  // review: return false = Handle this DOM change - ProseMirror will reparse and potentially update the document
   // Use true for mutations you caused yourself (like updating <col> widths) to prevent ProseMirror from interfering.
   // ignoreMutation() {
   //   return true;

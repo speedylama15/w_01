@@ -1,0 +1,23 @@
+.table-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background-color: #e6ebf1;
+  padding: 8px;
+  border: 1px solid #000;
+}
+
+.table-dropdown button {
+  background-color: #e6ebf1;
+  font-size: 16px;
+  font-weight: 300;
+  border: none;
+  border-radius: 3px;
+  padding: 10px 12px;
+  display: flex;
+}
+
+.table-dropdown button:hover {
+  cursor: pointer;
+  background-color: #d5dee9;
+}
