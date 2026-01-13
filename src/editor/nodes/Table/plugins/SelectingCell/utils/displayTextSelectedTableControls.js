@@ -1,6 +1,7 @@
 import { getTableControls } from "./getTableControls";
 
-export const displayTextSelectedTableControls = (view, nodeID, pos) => {
+export const displayTextSelectedTableControls = (view, tableID, pos) => {
+  // get the individual cellDOM
   const cellDOM = view.nodeDOM(pos);
 
   if (!cellDOM) return;
@@ -12,26 +13,32 @@ export const displayTextSelectedTableControls = (view, nodeID, pos) => {
     offsetHeight: height,
   } = cellDOM;
 
-  const { selectionBox, columnButton, rowButton } = getTableControls(nodeID);
+  const { rowButton, columnButton, selectionBox, cellButton } =
+    getTableControls(tableID);
 
-  selectionBox.style.display = "flex";
-  selectionBox.style.top = y + "px";
-  selectionBox.style.left = x + "px";
-  selectionBox.style.width = width + "px";
-  selectionBox.style.height = height + "px";
+  selectionBox.style.cssText = `
+    display: flex;
+    top: ${y}px;
+    left: ${x}px;
+    width: ${width}px;
+    height: ${height}px;
+  `;
 
-  selectionBox.querySelector(".cell-button").style.display = "flex";
+  cellButton.style.cssText = `
+    display: flex;
+  `;
 
-  columnButton.style.display = "flex";
-  columnButton.style.top = "0px";
-  columnButton.style.left = cellDOM.offsetLeft + cellDOM.offsetWidth / 2 + "px";
-  columnButton.setAttribute("data-table-button-index", cellDOM.cellIndex);
+  columnButton.setAttribute("data-from-index", cellDOM.cellIndex);
+  columnButton.style.cssText = `
+    display: flex;
+    top: 0;
+    left: ${x + width / 2}px;
+  `;
 
-  rowButton.style.display = "flex";
-  rowButton.style.top = cellDOM.offsetTop + cellDOM.offsetHeight / 2 + "px";
-  rowButton.style.left = "0px";
-  rowButton.setAttribute(
-    "data-table-button-index",
-    cellDOM.parentElement.rowIndex
-  );
+  rowButton.setAttribute("data-from-index", cellDOM.parentElement.rowIndex);
+  rowButton.style.cssText = `
+    display: flex;
+    top: ${y + height / 2}px;
+    left: -1px;
+  `;
 };

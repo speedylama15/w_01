@@ -1,9 +1,13 @@
 import { getTableControls } from "./getTableControls";
 
-export const hideTableControls = (nodeID) => {
-  const { selectionBox, columnButton, rowButton } = getTableControls(nodeID);
+export const hideTableControls = (tableID) => {
+  const { rowButton, columnButton, selectionBox, cellButton } =
+    getTableControls(tableID);
+
+  rowButton.style.display = "none";
+
+  columnButton.style.display = "none";
 
   selectionBox.style.display = "none";
-  columnButton.style.display = "none";
-  rowButton.style.display = "none";
+  cellButton.style.display = "none";
 };

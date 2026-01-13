@@ -5,6 +5,7 @@ class m_TableView extends TableView {
     const block = document.createElement("div");
 
     block.className = "block block-table";
+
     Object.entries(HTMLAttributes).forEach((entry) => {
       const key = entry[0];
       const value = entry[1];
@@ -23,6 +24,14 @@ class m_TableView extends TableView {
     return content;
   }
 
+  createContentWrapper() {
+    const contentWrapper = document.createElement("div");
+
+    contentWrapper.className = "contentWrapper";
+
+    return contentWrapper;
+  }
+
   createTableWrapper() {
     const tableWrapper = document.createElement("div");
 
@@ -31,123 +40,88 @@ class m_TableView extends TableView {
     return tableWrapper;
   }
 
-  createSelectionBox(
-    offsetWidth = 0,
-    offsetHeight = 0,
-    offsetTop = 0,
-    offsetLeft = 0
-  ) {
-    const div = document.createElement("div");
-    div.className = "table-selection-box";
+  createSelectionBox() {
+    const tableSelectionBox = document.createElement("div");
+    tableSelectionBox.className = "table-selection-box";
 
-    const cellButton = document.createElement("button");
-    cellButton.className = "cell-button";
+    const tableCellButton = document.createElement("button");
+    tableCellButton.className = "table-cell-button";
 
-    div.style.cssText = `
-      top: ${offsetTop}px;
-      left: ${offsetLeft}px;
-      width: ${offsetWidth}px;
-      height: ${offsetHeight}px;
-    `;
+    tableSelectionBox.append(tableCellButton);
 
-    div.append(cellButton);
-
-    return div;
+    return tableSelectionBox;
   }
 
-  createColumnButton() {
+  createColumnButton(tableID) {
     const button = document.createElement("button");
 
     button.className = "table-button table-column-button";
+
     button.contentEditable = false;
-    button.setAttribute("data-table-button-type", "column");
-    button.setAttribute("data-table-button-index", null);
+
+    button.setAttribute("data-is-column", true);
+    button.setAttribute("data-from-index", null);
+    button.setAttribute("data-table-id", tableID);
 
     return button;
   }
 
-  createRowButton() {
-    const div = document.createElement("div");
+  createRowButton(tableID) {
     const button = document.createElement("button");
 
-    div.className = "table-row-button-container";
-    div.contentEditable = false;
-
     button.className = "table-button table-row-button";
+
     button.contentEditable = false;
-    button.setAttribute("data-table-button-type", "row");
-    button.setAttribute("data-table-button-index", null);
 
-    div.append(button);
+    button.setAttribute("data-is-column", false);
+    button.setAttribute("data-from-index", null);
+    button.setAttribute("data-table-id", tableID);
 
-    return div;
-  }
-
-  handleMouseMove() {
-    // opening logic lives here
-    // the closing logic lives in React Component
-  }
-
-  handleMouseLeave() {
-    // this will send a tr that indicates for the hiding of the buttons
-    // but the ultimate decision is made in the React component
+    return button;
   }
 
   constructor(node, cellMinWidth, view, getPos, HTMLAttributes) {
     super(node, cellMinWidth);
 
-    this.view = view;
-
     const block = this.createBlock(HTMLAttributes);
     const content = this.createContent();
+    const contentWrapper = this.createContentWrapper();
     const tableWrapper = this.createTableWrapper();
 
-    const selectionBox = this.createSelectionBox();
-    const columnButton = this.createColumnButton();
-    const rowButton = this.createRowButton();
-
     block.append(content);
-    content.append(tableWrapper);
+    content.append(contentWrapper);
+    contentWrapper.append(tableWrapper);
 
-    // assign the ID to the table as well // debug: do I need this tho?
-    this.table.setAttribute("data-id", HTMLAttributes["data-id"]);
+    const rowButton = this.createRowButton(HTMLAttributes["data-id"]);
 
-    tableWrapper.append(rowButton);
-    tableWrapper.append(this.table);
-    tableWrapper.append(selectionBox, columnButton);
+    contentWrapper.append(rowButton);
+
+    const selectionBox = this.createSelectionBox();
+    const columnButton = this.createColumnButton(HTMLAttributes["data-id"]);
+
+    tableWrapper.append(this.table, selectionBox, columnButton);
 
     this.dom = block;
-
-    this.handleMouseMove = this.handleMouseMove.bind(this);
-    this.handleMouseLeave = this.handleMouseLeave.bind(this);
-
-    this.dom.addEventListener("mousemove", this.handleMouseMove);
-    this.dom.addEventListener("mouseleave", this.handleMouseLeave);
   }
-
-  destroy() {
-    this.dom.removeEventListener("mousemove", this.handleMouseMove);
-    this.dom.removeEventListener("mouseleave", this.handleMouseLeave);
-  }
-
-  // review: return true -> Keep instance and update the existing DOM
-  // review: return false -> Destroy and recreate everything from scratch
-  // update(node, decorations, innerDecorations) {
-  //   // update method does not have access to the editor...
-  //   // maybe I can make use of state? Bring in the state? // idea
-
-  //   // it needs to be able to know if the selection is Cell or Text
-  //   // but update() does not have access to the most up to date selection... // fix
-
-  //   return true;
-  // }
-
-  // review: return true = Ignore this DOM change - ProseMirror won't try to reparse it
-  // review: return false = Handle this DOM change - ProseMirror will reparse and potentially update the document
-  // Use true for mutations you caused yourself (like updating <col> widths) to prevent ProseMirror from interfering.
-  // ignoreMutation() {
-  //   return true;
-  // }
 }
 
 export default m_TableView;
+
+// review: return true -> Keep instance and update the existing DOM
+// review: return false -> Destroy and recreate everything from scratch
+// update(node, decorations, innerDecorations) {
+//   // update method does not have access to the editor...
+//   // maybe I can make use of state? Bring in the state? // idea
+
+//   // it needs to be able to know if the selection is Cell or Text
+//   // but update() does not have access to the most up to date selection... // fix
+
+//   return true;
+// }
+
+// review: return true = Ignore this DOM change - ProseMirror won't try to reparse it
+// review: return false = Handle this DOM change - ProseMirror will reparse and potentially update the document
+// Use true for mutations you caused yourself (like updating <col> widths) to prevent ProseMirror from interfering.
+// ignoreMutation() {
+//   return true;
+// }

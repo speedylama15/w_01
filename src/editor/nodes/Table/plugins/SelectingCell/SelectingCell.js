@@ -21,61 +21,21 @@ export const SelectingCell = new Plugin({
 
         const resizeState = columnResizingPluginKey.getState(view.state);
 
-        // fix: I wonder if there is a way to completely remove selection when outside
-        // fix: the editor has been clicked
-        // console.log("selection inspection", selection);
-
         // if prevTableID exists and is dragging, hide the box and controls
         if (resizeState?.dragging && prevTableID) {
-          hideTableControls(prevTableID);
+          // todo: set up a mutation observer here and resize the selection box
 
           return;
         }
 
-        // pretty much guaranteed that a table will exist
-        if (selection instanceof CellSelection) {
-          const tableBlockDepth = getDepthByContent($from, "table");
-          const tableBlockNode = $from.node(tableBlockDepth);
-
-          if (tableBlockNode.type.name !== "table") return;
-
-          // this cannot be null
-          const currTableID = tableBlockNode.attrs.id;
-
-          // prev = "a" curr = "b"
-          if (prevTableID !== null && prevTableID !== currTableID) {
-            hideTableControls(prevTableID); // destroy prev table
-            prevTableID = currTableID; // set prevTableID to currTableID
-            displayCellSelectedTableControls(view, currTableID); // render curr table overlay
-
-            return;
-          }
-
-          // prev = null curr = "a"
-          if (prevTableID === null && prevTableID !== currTableID) {
-            prevTableID = currTableID; // set prevTableID = currID
-            displayCellSelectedTableControls(view, currTableID); // render table A's overlay
-
-            return;
-          }
-
-          // prev = "a" curr = "a"
-          if (prevTableID === currTableID) {
-            prevTableID = currTableID; // set prevTableID = currID
-            displayCellSelectedTableControls(view, currTableID); // render table A's overlay
-
-            return;
-          }
-        }
-
         if (selection instanceof TextSelection) {
-          const tableBlockDepth = getDepthByContent($from, "table");
-          const tableBlockNode = $from.node(tableBlockDepth);
+          const tableDepth = getDepthByContent($from, "table");
+          const tableNode = $from.node(tableDepth);
           const cellDepth =
             getDepthByContent($from, "tableCell") ||
             getDepthByContent($from, "tableHeader");
 
-          if (tableBlockNode.type.name !== "table") {
+          if (tableNode.type.name !== "table") {
             const currTableID = null;
 
             // prev = "a" curr = null
@@ -94,7 +54,7 @@ export const SelectingCell = new Plugin({
             }
           }
 
-          const currTableID = tableBlockNode.attrs.id;
+          const currTableID = tableNode.attrs.id;
           const cellBefore = $from.before(cellDepth);
 
           // prev = "a" curr = "b"
@@ -123,6 +83,42 @@ export const SelectingCell = new Plugin({
           }
 
           return;
+        }
+
+        // pretty much guaranteed that a table will exist
+        if (selection instanceof CellSelection) {
+          const tableDepth = getDepthByContent($from, "table");
+          const tableNode = $from.node(tableDepth);
+
+          if (tableNode.type.name !== "table") return;
+
+          // this cannot be null
+          const currTableID = tableNode.attrs.id;
+
+          // prev = "a" curr = "b"
+          if (prevTableID !== null && prevTableID !== currTableID) {
+            hideTableControls(prevTableID); // destroy prev table
+            prevTableID = currTableID; // set prevTableID to currTableID
+            displayCellSelectedTableControls(view, currTableID); // render curr table overlay
+
+            return;
+          }
+
+          // prev = null curr = "a"
+          if (prevTableID === null && prevTableID !== currTableID) {
+            prevTableID = currTableID; // set prevTableID = currID
+            displayCellSelectedTableControls(view, currTableID); // render table A's overlay
+
+            return;
+          }
+
+          // prev = "a" curr = "a"
+          if (prevTableID === currTableID) {
+            prevTableID = currTableID; // set prevTableID = currID
+            displayCellSelectedTableControls(view, currTableID); // render table A's overlay
+
+            return;
+          }
         }
         //
       },

@@ -96,9 +96,10 @@ export const CellButton = new Plugin({
     },
 
     handleTripleClick(view, pos, e) {
+      const cell = e.target.closest("td, th");
       const tableButton = e.target.closest(".table-button");
 
-      if (tableButton) {
+      if (tableButton || cell) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -277,6 +278,9 @@ export const CellButton = new Plugin({
 
       if (!tableButtonState.clonedDOM) {
         // clone once
+        // fix
+        // fix
+        // fix
         tableButtonState.clonedDOM =
           tableButtonType === "column"
             ? cloneColumn(e, grabbedIndex, tableBlockDOM)
@@ -298,13 +302,16 @@ export const CellButton = new Plugin({
       const tableWrapper = tableBlockDOM.querySelector(".tableWrapper");
 
       // movement of the clonedDOM
+      // fix
+      // fix
+      // fix
       if (tableButtonType === "column") {
         const minX = x + 30;
         const maxX = x + width - 30;
         const clampedX = Math.max(minX, Math.min(e.clientX, maxX));
 
         tableButtonState.clonedDOM.style.display = "flex";
-        tableButtonState.clonedDOM.style.top = y + "px";
+        tableButtonState.clonedDOM.style.top = y + window.scrollY + 2 + "px";
         tableButtonState.clonedDOM.style.left = clampedX + "px";
         tableButtonState.clonedDOM.style.transform = `translateX(-${tableButtonState.clonedDOM.offsetWidth / 2}px)`;
       }
@@ -316,7 +323,8 @@ export const CellButton = new Plugin({
         const clampedY = Math.max(minY, Math.min(e.clientY, maxY));
 
         tableButtonState.clonedDOM.style.display = "flex";
-        tableButtonState.clonedDOM.style.top = clampedY + "px";
+        tableButtonState.clonedDOM.style.top =
+          clampedY + 2 + window.scrollY + "px";
         tableButtonState.clonedDOM.style.left = x + "px";
       }
 
@@ -401,18 +409,24 @@ export const CellButton = new Plugin({
           grabbedIndex !== targetIndex
         ) {
           if (tableButtonType === "column") {
-            moveTableColumn({
-              from: grabbedIndex,
-              to: targetIndex,
-            })(view.state, (tr) => {
-              // remove hovered cells and hide cells decoration
-              tr
-                //
-                .setMeta(REORDER_HIDE_CELLS, null)
-                .setMeta(REORDER_HOVERED_CELLS, null);
+            // moveTableColumn({
+            //   from: grabbedIndex,
+            //   to: targetIndex,
+            // })(view.state, (tr) => {
+            //   // remove hovered cells and hide cells decoration
+            //   tr
+            //     //
+            //     .setMeta(REORDER_HIDE_CELLS, null)
+            //     .setMeta(REORDER_HOVERED_CELLS, null);
+            //   dispatch(tr);
+            // });
 
-              dispatch(tr);
-            });
+            tr
+              //
+              .setMeta(REORDER_HIDE_CELLS, null)
+              .setMeta(REORDER_HOVERED_CELLS, null);
+
+            dispatch(tr);
           }
 
           if (tableButtonType === "row") {

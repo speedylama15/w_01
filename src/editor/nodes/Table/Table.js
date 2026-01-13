@@ -14,7 +14,7 @@ const m_Table = Table.extend({
         return editor
           .chain()
           .focus()
-          .insertTable({ rows: 3, cols: 7, withHeaderRow: true })
+          .insertTable({ rows: 5, cols: 7, withHeaderRow: true })
           .run();
       },
     };

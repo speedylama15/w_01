@@ -1,11 +1,14 @@
-export const getTableControls = (nodeID) => {
-  const tableBlockDOM = document.querySelector(
-    `div[data-id="${nodeID}"][data-content-type="table"]`
-  );
+import { getTableBlockDOM } from "./getTableBlockDOM";
 
-  const selectionBox = tableBlockDOM.querySelector(".table-selection-box");
-  const columnButton = tableBlockDOM.querySelector(".table-column-button");
-  const rowButton = tableBlockDOM.querySelector(".table-row-button");
+export const getTableControls = (tableID) => {
+  const tableBlockDOM = getTableBlockDOM(tableID);
 
-  return { selectionBox, columnButton, rowButton };
+  const contentWrapper = tableBlockDOM.querySelector(".contentWrapper");
+
+  const rowButton = contentWrapper.querySelector(".table-row-button");
+  const columnButton = contentWrapper.querySelector(".table-column-button");
+  const selectionBox = contentWrapper.querySelector(".table-selection-box");
+  const cellButton = contentWrapper.querySelector(".table-cell-button");
+
+  return { rowButton, columnButton, selectionBox, cellButton };
 };

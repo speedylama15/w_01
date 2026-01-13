@@ -1,19 +1,19 @@
-export const getTableCellDimensions_COLUMN = (initCoord, tableBlockDOM) => {
-  let startCoord = initCoord;
+export const getColumnDimensions = (initCoord, tableBlockDOM) => {
+  let startPoint = initCoord;
 
   const cells = Array.from(tableBlockDOM.querySelector("tr").children);
 
   const cellDimensions = cells.map((cell) => {
     const { cellIndex } = cell;
 
-    const start = startCoord;
+    const start = startPoint;
     const end = start + cell.offsetWidth;
 
-    startCoord = end;
+    startPoint = end;
 
     return {
-      startCoord: start,
-      endCoord: end,
+      startPoint: start,
+      endPoint: end,
       index: cellIndex,
     };
   });

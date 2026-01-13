@@ -1,11 +1,10 @@
 import { Extension } from "@tiptap/core";
 
 import { SelectingCell } from "../nodes/Table/plugins/SelectingCell/SelectingCell";
-import { CellButton } from "../nodes/Table/plugins/CellButton/CellButton";
-import { AddColumn } from "../nodes/Table/plugins/AddColumn/AddColumn";
+import { TablePlugin } from "../nodes/Table/plugins/TablePlugin/TablePlugin";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
-    return [SelectingCell, CellButton, AddColumn];
+    return [SelectingCell, TablePlugin];
   },
 });

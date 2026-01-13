@@ -1,6 +1,6 @@
 import { getTableControls } from "./getTableControls";
 
-export const displayCellSelectedTableControls = (view, nodeID) => {
+export const displayCellSelectedTableControls = (view, tableID) => {
   const { selection } = view.state;
 
   const { $anchorCell, $headCell } = selection;
@@ -8,7 +8,8 @@ export const displayCellSelectedTableControls = (view, nodeID) => {
   const anchorDOM = view.nodeDOM($anchorCell.pos);
   const headDOM = view.nodeDOM($headCell.pos);
 
-  const { selectionBox, columnButton, rowButton } = getTableControls(nodeID);
+  const { rowButton, columnButton, selectionBox, cellButton } =
+    getTableControls(tableID);
 
   const x = Math.min(anchorDOM.offsetLeft, headDOM.offsetLeft);
   const y = Math.min(anchorDOM.offsetTop, headDOM.offsetTop);
@@ -23,24 +24,29 @@ export const displayCellSelectedTableControls = (view, nodeID) => {
   const width = r - x;
   const height = b - y;
 
-  selectionBox.style.display = "flex";
-  selectionBox.style.top = y + "px";
-  selectionBox.style.left = x + "px";
-  selectionBox.style.width = width + "px";
-  selectionBox.style.height = height + "px";
+  selectionBox.style.cssText = `
+    display: flex;
+    top: ${y}px;
+    left: ${x}px;
+    width: ${width}px;
+    height: ${height}px;
+  `;
 
-  selectionBox.querySelector(".cell-button").style.display = "none";
+  cellButton.style.cssText = `
+    display: none;
+  `;
 
-  columnButton.style.display = "flex";
-  columnButton.style.top = "0px";
-  columnButton.style.left = headDOM.offsetLeft + headDOM.offsetWidth / 2 + "px";
-  columnButton.setAttribute("data-table-button-index", headDOM.cellIndex);
+  columnButton.setAttribute("data-from-index", headDOM.cellIndex);
+  columnButton.style.cssText = `
+    display: flex;
+    top: 0;
+    left: ${headDOM.offsetLeft + headDOM.offsetWidth / 2}px;
+  `;
 
-  rowButton.style.display = "flex";
-  rowButton.style.top = headDOM.offsetTop + headDOM.offsetHeight / 2 + "px";
-  rowButton.style.left = "0px";
-  rowButton.setAttribute(
-    "data-table-button-index",
-    headDOM.parentElement.rowIndex
-  );
+  rowButton.setAttribute("data-from-index", headDOM.parentElement.rowIndex);
+  rowButton.style.cssText = `
+    display: flex;
+    top: ${headDOM.offsetTop + headDOM.offsetHeight / 2}px;
+    left: -1px;
+  `;
 };
