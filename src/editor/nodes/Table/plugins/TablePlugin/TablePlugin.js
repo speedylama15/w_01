@@ -9,25 +9,6 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 const REORDER_HIDE_CELLS = "REORDER_HIDE_CELLS";
 const REORDER_HOVERED_CELLS = "REORDER_HOVERED_CELLS";
 
-const moveElement = (arr, fromIndex, toIndex) => {
-  if (
-    fromIndex < 0 ||
-    fromIndex >= arr.length ||
-    toIndex < 0 ||
-    toIndex >= arr.length
-  ) {
-    console.error("Indices are out of bounds.");
-
-    return arr;
-  }
-
-  const element = arr.splice(fromIndex, 1)[0];
-
-  arr.splice(toIndex, 0, element);
-
-  return arr;
-};
-
 const getTableButtonAttributes = (tableButton) => {
   const { tableId } = tableButton.dataset;
   const isColumn = JSON.parse(tableButton.dataset.isColumn);
@@ -188,6 +169,31 @@ const getToIndex = (
   });
 
   return toIndex;
+};
+
+const isHeaderColumn = (cellGrid, index) => {
+  let isHeader = true;
+
+  cellGrid.forEach((row) => {
+    const cell = row[index];
+
+    if (cell.node.type.name !== "tableHeader") isHeader = false;
+  });
+
+  return isHeader;
+};
+
+const isHeaderRow = (cellGrid, index) => {
+  let isHeader = true;
+
+  // get the corresponding row
+  const row = cellGrid[index];
+
+  row.forEach((cell) => {
+    if (cell.node.type.name !== "tableHeader") isHeader = false;
+  });
+
+  return isHeader;
 };
 
 const TablePluginKey = new PluginKey("TablePluginKey");
@@ -360,7 +366,7 @@ export const TablePlugin = new Plugin({
     };
 
     const handleMouseMove = (e) => {
-      const { tr, selection } = view.state;
+      const { tr } = view.state;
       const { dispatch } = view;
 
       const {
@@ -522,46 +528,202 @@ export const TablePlugin = new Plugin({
 
     const handleMouseUp = () => {
       const { tr } = view.state;
-      const { $from } = tr.selection;
       const { dispatch } = view;
 
       if (tableButtonState.isDragging) {
         const { fromIndex, toIndex, isColumn } = tableButtonState;
 
-        if (isColumn && toIndex !== null) {
-          cellGrid.forEach((row) => {
-            const fromData = row[fromIndex];
-            const fromBefore = fromData.pos;
-            const fromAfter = fromBefore + fromData.node.nodeSize;
+        // todo: view.state.schema.nodes.tableCell
+        if (isColumn && fromIndex !== toIndex && toIndex !== null) {
+          // toIndex > fromIndex
+          if (fromIndex === 0) {
+            const isHeader = isHeaderColumn(cellGrid, fromIndex);
 
-            const toData = row[toIndex];
-            const toBefore = toData.pos;
-            const toAfter = toData.pos + toData.node.nodeSize;
+            cellGrid.forEach((row) => {
+              const fromCell = row[fromIndex];
+              const fromBefore = fromCell.pos;
+              const fromAfter = fromBefore + fromCell.node.nodeSize;
 
-            if (fromIndex > toIndex) {
-              tr.delete(fromBefore, fromAfter).insert(toBefore, fromData.node);
-            } else {
-              tr.insert(toAfter, fromData.node).delete(fromBefore, fromAfter);
-            }
-          });
-        }
+              const toCell = row[toIndex];
+              // const toBefore = toCell.pos;
+              const toAfter = toCell.pos + toCell.node.nodeSize;
 
-        if (!isColumn && toIndex !== null) {
-          const fromData = rowArray[fromIndex];
-          const fromBefore = fromData.pos;
-          const fromAfter = fromData.pos + fromData.node.nodeSize;
+              if (isHeader) {
+                const cellIndex1 = row[1];
 
-          const toData = rowArray[toIndex];
-          const toBefore = toData.pos;
-          const toAfter = toData.pos + toData.node.nodeSize;
+                tr.setNodeMarkup(
+                  cellIndex1.pos,
+                  view.state.schema.nodes.tableHeader
+                );
+              }
 
-          if (fromIndex > toIndex) {
-            tr.delete(fromBefore, fromAfter).insert(toBefore, fromData.node);
-          } else {
-            tr.insert(toAfter, fromData.node).delete(fromBefore, fromAfter);
+              tr.insert(toAfter, fromCell.node);
+
+              if (isHeader) {
+                tr.setNodeMarkup(toAfter, view.state.schema.nodes.tableCell);
+              }
+
+              tr.delete(fromBefore, fromAfter);
+            });
+          }
+
+          // fromIndex > toIndex
+          if (toIndex === 0) {
+            const isHeader = isHeaderColumn(cellGrid, toIndex);
+
+            cellGrid.forEach((row) => {
+              const fromCell = row[fromIndex];
+              const fromBefore = fromCell.pos;
+              const fromAfter = fromBefore + fromCell.node.nodeSize;
+
+              const toCell = row[toIndex];
+              const toBefore = toCell.pos;
+              // const toAfter = toCell.pos + toCell.node.nodeSize;
+
+              if (isHeader) {
+                const cellIndex0 = row[0];
+
+                tr.setNodeMarkup(
+                  cellIndex0.pos,
+                  view.state.schema.nodes.tableCell
+                );
+              }
+
+              tr.delete(fromBefore, fromAfter);
+              tr.insert(toBefore, fromCell.node);
+
+              if (isHeader) {
+                tr.setNodeMarkup(toBefore, view.state.schema.nodes.tableHeader);
+              }
+            });
+          }
+
+          if (fromIndex !== 0 && toIndex !== 0) {
+            cellGrid.forEach((row) => {
+              const fromCell = row[fromIndex];
+              const fromBefore = fromCell.pos;
+              const fromAfter = fromBefore + fromCell.node.nodeSize;
+
+              const toCell = row[toIndex];
+              const toBefore = toCell.pos;
+              const toAfter = toCell.pos + toCell.node.nodeSize;
+
+              if (fromIndex > toIndex) {
+                tr.delete(fromBefore, fromAfter);
+                tr.insert(toBefore, fromCell.node);
+              } else {
+                tr.insert(toAfter, fromCell.node);
+                tr.delete(fromBefore, fromAfter);
+              }
+            });
           }
         }
 
+        // reorder row
+        if (!isColumn && fromIndex !== toIndex && toIndex !== null) {
+          const fromRow = rowArray[fromIndex];
+          const fromBefore = fromRow.pos;
+          const fromAfter = fromRow.pos + fromRow.node.nodeSize;
+
+          const toRow = rowArray[toIndex];
+          const toBefore = toRow.pos;
+          const toAfter = toRow.pos + toRow.node.nodeSize;
+
+          if (fromIndex === 0) {
+            // check if the row is a header
+            const isHeader = isHeaderRow(cellGrid, fromIndex);
+
+            // if true
+            if (isHeader) {
+              // get row index 1
+              const rowIndex1 = cellGrid[1];
+
+              // set all the cells to header
+              rowIndex1.forEach((cell) => {
+                tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableHeader);
+              });
+            }
+
+            // toIndex will always be greater because fromIndex is 0
+            tr.insert(toAfter, fromRow.node);
+
+            if (isHeader) {
+              // get the inserted row
+              const insertRowNode = tr.doc.nodeAt(toAfter);
+
+              // set all of them to tableCell
+              insertRowNode.descendants((node, pos) => {
+                if (
+                  node.type.name === "tableHeader" ||
+                  node.type.name === "tableCell"
+                ) {
+                  const cellBefore = toAfter + pos + 1;
+
+                  tr.setNodeMarkup(
+                    cellBefore,
+                    view.state.schema.nodes.tableCell
+                  );
+
+                  return false;
+                }
+              });
+            }
+
+            // delete
+            tr.delete(fromBefore, fromAfter);
+          }
+
+          if (toIndex === 0) {
+            // check if the row is a header
+            const isHeader = isHeaderRow(cellGrid, toIndex);
+
+            if (isHeader) {
+              // get row 0
+              const rowIndex0 = cellGrid[0];
+
+              // set all the cells to cell
+              rowIndex0.forEach((cell) => {
+                tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableCell);
+              });
+            }
+
+            // fromIndex will always be greater because toIndex is 0
+            tr.delete(fromBefore, fromAfter);
+            tr.insert(toBefore, fromRow.node);
+
+            if (isHeader) {
+              // get the inserted row
+              const insertRowNode = tr.doc.nodeAt(toBefore);
+
+              // set all of them to tableHeader
+              insertRowNode.descendants((node, pos) => {
+                if (
+                  node.type.name === "tableHeader" ||
+                  node.type.name === "tableCell"
+                ) {
+                  const cellBefore = toBefore + pos + 1;
+
+                  tr.setNodeMarkup(
+                    cellBefore,
+                    view.state.schema.nodes.tableHeader
+                  );
+
+                  return false;
+                }
+              });
+            }
+          }
+
+          if (fromIndex !== 0 && toIndex !== 0) {
+            if (fromIndex > toIndex) {
+              tr.delete(fromBefore, fromAfter).insert(toBefore, fromRow.node);
+            } else {
+              tr.insert(toAfter, fromRow.node).delete(fromBefore, fromAfter);
+            }
+          }
+        }
+
+        // get the updated tableNode through tr.doc and not state.doc
         const tableNode = tr.doc.nodeAt(tableButtonState.tableBefore);
 
         const map = getTableMap(
@@ -570,7 +732,7 @@ export const TablePlugin = new Plugin({
           tableButtonState.tableAfter
         );
 
-        if (isColumn && toIndex !== null) {
+        if (isColumn && fromIndex !== toIndex && toIndex !== null) {
           const cellSelection = getColumnSelection(
             tr.doc,
             map.cellGrid,
@@ -580,7 +742,7 @@ export const TablePlugin = new Plugin({
           tr.setSelection(cellSelection);
         }
 
-        if (!isColumn && toIndex !== null) {
+        if (!isColumn && fromIndex !== toIndex && toIndex !== null) {
           const cellSelection = getRowSelection(tr.doc, map.cellGrid, toIndex);
 
           tr.setSelection(cellSelection);
