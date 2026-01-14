@@ -114,3 +114,47 @@ td.display-resizer .col-resizer {
 .selectedCell {
   background-color: #86beff;
 }
+
+.hidden-cell > * {
+  visibility: hidden;
+}
+
+.hovered-cell_right::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 3px;
+  height: 100%;
+  background-color: red;
+}
+
+.hovered-cell_left::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background-color: red;
+}
+
+.hovered-cell_above::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 3px;
+  background-color: red;
+}
+
+.hovered-cell_below::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 3px;
+  background-color: red;
+}

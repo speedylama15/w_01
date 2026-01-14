@@ -4,6 +4,10 @@ import { CellSelection } from "@tiptap/pm/tables";
 import { getColumnDimensions } from "../CellButton/utils/getColumnDimensions";
 import { getRowDimensions } from "../CellButton/utils/getRowDimensions";
 import { getTableBlockDOM } from "../SelectingCell/utils/getTableBlockDOM";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
+
+const REORDER_HIDE_CELLS = "REORDER_HIDE_CELLS";
+const REORDER_HOVERED_CELLS = "REORDER_HOVERED_CELLS";
 
 const moveElement = (arr, fromIndex, toIndex) => {
   if (
@@ -22,6 +26,14 @@ const moveElement = (arr, fromIndex, toIndex) => {
   arr.splice(toIndex, 0, element);
 
   return arr;
+};
+
+const getTableButtonAttributes = (tableButton) => {
+  const { tableId } = tableButton.dataset;
+  const isColumn = JSON.parse(tableButton.dataset.isColumn);
+  const fromIndex = parseInt(tableButton.dataset.fromIndex);
+
+  return { tableId, isColumn, fromIndex };
 };
 
 const getTableMap = (tableNode, tableBefore, tableAfter) => {
@@ -72,41 +84,27 @@ const getTableMap = (tableNode, tableBefore, tableAfter) => {
   return { rowArray, cellGrid };
 };
 
-const selectColumn = (view, cellGrid, fromIndex) => {
-  const { tr } = view.state;
-  const { dispatch } = view;
-
+const getColumnSelection = (doc, cellGrid, index) => {
   const firstRow = cellGrid[0];
   const lastRow = cellGrid[cellGrid.length - 1];
 
   const cellSelection = CellSelection.create(
-    view.state.doc,
-    firstRow[fromIndex].pos,
-    lastRow[fromIndex].pos
+    doc,
+    firstRow[index].pos,
+    lastRow[index].pos
   );
 
-  tr.setSelection(cellSelection);
-
-  dispatch(tr);
+  return cellSelection;
 };
 
-const selectRow = (view, cellGrid, fromIndex) => {
-  const { tr } = view.state;
-  const { dispatch } = view;
-
-  const row = cellGrid[fromIndex];
+const getRowSelection = (doc, cellGrid, index) => {
+  const row = cellGrid[index];
   const firstCell = row[0];
   const lastCell = row[row.length - 1];
 
-  const cellSelection = CellSelection.create(
-    view.state.doc,
-    firstCell.pos,
-    lastCell.pos
-  );
+  const cellSelection = CellSelection.create(doc, firstCell.pos, lastCell.pos);
 
-  tr.setSelection(cellSelection);
-
-  dispatch(tr);
+  return cellSelection;
 };
 
 const getColumnReorderHandler = () => {
@@ -197,7 +195,64 @@ const TablePluginKey = new PluginKey("TablePluginKey");
 export const TablePlugin = new Plugin({
   key: TablePluginKey,
 
+  state: {
+    init() {
+      return {
+        hiddenCellDecorations: [],
+        hoveredCellDecorations: [],
+      };
+    },
+
+    apply(tr, value) {
+      const hiddenCells = tr.getMeta(REORDER_HIDE_CELLS);
+      const hoveredCells = tr.getMeta(REORDER_HOVERED_CELLS);
+
+      if (hiddenCells) {
+        return { ...value, hiddenCellDecorations: hiddenCells };
+      }
+
+      if (hoveredCells) {
+        return { ...value, hoveredCellDecorations: hoveredCells };
+      }
+
+      if (hiddenCells === null && hoveredCells === null) {
+        return {
+          ...value,
+          hiddenCellDecorations: [],
+          hoveredCellDecorations: [],
+        };
+      }
+
+      if (hiddenCells === null) {
+        return {
+          ...value,
+          hiddenCellDecorations: [],
+        };
+      }
+
+      if (hoveredCells === null) {
+        return {
+          ...value,
+          hoveredCellDecorations: [],
+        };
+      }
+
+      return value;
+    },
+  },
+
   props: {
+    decorations(state) {
+      const { hiddenCellDecorations, hoveredCellDecorations } =
+        this.getState(state);
+
+      const decorations = [...hiddenCellDecorations, ...hoveredCellDecorations];
+
+      if (decorations.length < 0) return DecorationSet.empty;
+
+      return DecorationSet.create(state.doc, decorations);
+    },
+
     handleTripleClick(view, pos, e) {
       const cell = e.target.closest("td, th");
       const tableButton = e.target.closest(".table-button");
@@ -212,7 +267,6 @@ export const TablePlugin = new Plugin({
   },
 
   view(view) {
-    let tableID = null;
     let rowArray = []; // []
     let cellGrid = []; // [][]
 
@@ -226,12 +280,16 @@ export const TablePlugin = new Plugin({
       tableID: null,
       tableBlockDOM: null,
       tableWrapperDOM: null,
+      tableWrapperRect: null,
       tableDimensions: null,
       reorderHandlerDOM: null,
       tableButtonDOM: null,
+      tableNode: null,
+      tableBefore: null,
+      tableAfter: null,
     };
 
-    // todo: reminder, isColumn is a string "true" or "false"
+    // reminder, isColumn is a string "true" or "false"
     const handleMouseDown = (e) => {
       const { selection, tr } = view.state;
       const { dispatch } = view;
@@ -243,16 +301,13 @@ export const TablePlugin = new Plugin({
 
       if (!tableButton) return;
 
-      // fix: do I need tableID?
-      const { tableId } = tableButton.dataset;
-      const isColumn = JSON.parse(tableButton.dataset.isColumn);
-      const fromIndex = parseInt(tableButton.dataset.fromIndex);
+      const { tableId, isColumn, fromIndex } =
+        getTableButtonAttributes(tableButton);
 
-      const tableBlockDOM = getTableBlockDOM(tableId); // todo: need this for dimension calculation
+      const tableBlockDOM = getTableBlockDOM(tableId);
       const tableWrapperDOM = tableBlockDOM.querySelector(".tableWrapper");
-      const tableWrapperRect = tableWrapperDOM.getBoundingClientRect(); // todo: I need the wrapper's rect because the block has padding
+      const tableWrapperRect = tableWrapperDOM.getBoundingClientRect(); // I need wrapper over the block because the block has a padding
 
-      // idea: set values
       tableButtonState.isPressed = true;
       tableButtonState.startCoords = { x: e.clientX, y: e.clientY };
       tableButtonState.fromIndex = fromIndex;
@@ -261,6 +316,7 @@ export const TablePlugin = new Plugin({
       tableButtonState.tableWrapperDOM = tableWrapperDOM;
       tableButtonState.tableButtonDOM = tableButton;
       tableButtonState.tableID = tableId;
+      tableButtonState.tableWrapperRect = tableWrapperRect;
 
       const tableDepth = getDepthByContent($from, "table");
       const tableBefore = $from.before(tableDepth);
@@ -269,26 +325,37 @@ export const TablePlugin = new Plugin({
 
       const map = getTableMap(tableNode, tableBefore, tableAfter);
 
-      // idea: set values again
-      tableID = tableId;
+      tableButtonState.tableNode = tableNode;
+      tableButtonState.tableBefore = tableBefore;
+      tableButtonState.tableAfter = tableAfter;
+
       rowArray = map.rowArray;
       cellGrid = map.cellGrid;
 
-      // review: make selection no matter what...
       if (isColumn) {
-        selectColumn(view, cellGrid, fromIndex);
+        const columnSelection = getColumnSelection(tr.doc, cellGrid, fromIndex);
+
         tableButtonState.tableDimensions = getColumnDimensions(
           tableWrapperRect.x,
-          tableBlockDOM
+          tableWrapperDOM
         );
+
+        tr.setSelection(columnSelection);
+
+        dispatch(tr);
       }
 
       if (!isColumn) {
-        selectRow(view, cellGrid, fromIndex);
+        const rowSelection = getRowSelection(tr.doc, cellGrid, fromIndex);
+
         tableButtonState.tableDimensions = getRowDimensions(
           tableWrapperRect.y,
-          tableBlockDOM
+          tableWrapperDOM
         );
+
+        tr.setSelection(rowSelection);
+
+        dispatch(tr);
       }
     };
 
@@ -303,6 +370,7 @@ export const TablePlugin = new Plugin({
         isColumn,
         tableDimensions,
         tableWrapperDOM,
+        tableWrapperRect,
       } = tableButtonState;
 
       // do nothing if button has not even been pressed
@@ -319,19 +387,53 @@ export const TablePlugin = new Plugin({
       if (!tableButtonState.isDragging) return;
 
       // generate reorder handler
-      // todo: hide the row or column button
       if (!tableButtonState.reorderHandlerDOM) {
         const handler = isColumn
           ? getColumnReorderHandler()
           : getRowReorderHandler();
 
         tableButtonState.reorderHandlerDOM = handler;
+
+        const decorations = [];
+
+        if (isColumn) {
+          cellGrid.forEach((row) => {
+            const cell = row[fromIndex];
+
+            const from = cell.pos;
+            const to = cell.pos + cell.node.nodeSize;
+
+            const decoration = Decoration.node(from, to, {
+              class: "hidden-cell",
+            });
+
+            decorations.push(decoration);
+          });
+
+          dispatch(tr.setMeta(REORDER_HIDE_CELLS, decorations));
+        }
+
+        if (!isColumn) {
+          const row = cellGrid[fromIndex];
+
+          row.forEach((cell) => {
+            const from = cell.pos;
+            const to = cell.pos + cell.node.nodeSize;
+
+            const decoration = Decoration.node(from, to, {
+              class: "hidden-cell",
+            });
+
+            decorations.push(decoration);
+          });
+
+          dispatch(tr.setMeta(REORDER_HIDE_CELLS, decorations));
+        }
       }
 
       // movement
       if (isColumn) {
-        // fix: optimize this
-        const { x, y, width } = tableWrapperDOM.getBoundingClientRect();
+        const { x, y, width } = tableWrapperRect;
 
         const minX = x;
         const maxX = x + width;
@@ -343,8 +445,7 @@ export const TablePlugin = new Plugin({
 
       // movement
       if (!isColumn) {
-        // fix: optimize this
-        const { x, y, height } = tableWrapperDOM.getBoundingClientRect();
+        const { x, y, height } = tableWrapperRect;
 
         const minY = y;
         const maxY = y + height;
@@ -354,6 +455,7 @@ export const TablePlugin = new Plugin({
         tableButtonState.reorderHandlerDOM.style.left = `${x}px`;
       }
 
+      // review: CRUCIAL
       const toIndex = getToIndex(
         e,
         tableDimensions,
@@ -362,20 +464,71 @@ export const TablePlugin = new Plugin({
         fromIndex
       );
 
-      // review: CRUCIAL
       tableButtonState.toIndex = toIndex;
 
+      let decorations = [];
+
+      if (toIndex === null) {
+        dispatch(tr.setMeta(REORDER_HOVERED_CELLS, null));
+
+        return;
+      }
+
+      if (isColumn && toIndex !== null && fromIndex !== toIndex) {
+        cellGrid.forEach((row) => {
+          const cell = row[toIndex];
+
+          const from = cell.pos;
+          const to = cell.pos + cell.node.nodeSize;
+
+          const name =
+            fromIndex < toIndex ? "hovered-cell_right" : "hovered-cell_left";
+
+          const decoration = Decoration.node(from, to, {
+            class: name,
+          });
+
+          decorations.push(decoration);
+        });
+
+        dispatch(tr.setMeta(REORDER_HOVERED_CELLS, decorations));
+
+        return;
+      }
+
+      if (!isColumn && toIndex !== null && fromIndex !== toIndex) {
+        const row = cellGrid[toIndex];
+
+        row.forEach((cell) => {
+          const from = cell.pos;
+          const to = cell.pos + cell.node.nodeSize;
+
+          const className =
+            fromIndex < toIndex ? "hovered-cell_below" : "hovered-cell_above";
+
+          const decoration = Decoration.node(from, to, {
+            class: className,
+          });
+
+          decorations.push(decoration);
+        });
+
+        dispatch(tr.setMeta(REORDER_HOVERED_CELLS, decorations));
+
+        return;
+      }
       //
     };
 
     const handleMouseUp = () => {
-      const { tr, selection } = view.state;
+      const { tr } = view.state;
+      const { $from } = tr.selection;
       const { dispatch } = view;
 
       if (tableButtonState.isDragging) {
         const { fromIndex, toIndex, isColumn } = tableButtonState;
 
-        if (isColumn) {
+        if (isColumn && toIndex !== null) {
           cellGrid.forEach((row) => {
             const fromData = row[fromIndex];
             const fromBefore = fromData.pos;
@@ -391,11 +544,9 @@ export const TablePlugin = new Plugin({
               tr.insert(toAfter, fromData.node).delete(fromBefore, fromAfter);
             }
           });
-
-          dispatch(tr);
         }
 
-        if (!isColumn) {
+        if (!isColumn && toIndex !== null) {
           const fromData = rowArray[fromIndex];
           const fromBefore = fromData.pos;
           const fromAfter = fromData.pos + fromData.node.nodeSize;
@@ -409,11 +560,31 @@ export const TablePlugin = new Plugin({
           } else {
             tr.insert(toAfter, fromData.node).delete(fromBefore, fromAfter);
           }
-
-          dispatch(tr);
         }
 
-        console.log("reorder", { isColumn, fromIndex, toIndex }); // debug
+        const tableNode = tr.doc.nodeAt(tableButtonState.tableBefore);
+
+        const map = getTableMap(
+          tableNode,
+          tableButtonState.tableBefore,
+          tableButtonState.tableAfter
+        );
+
+        if (isColumn && toIndex !== null) {
+          const cellSelection = getColumnSelection(
+            tr.doc,
+            map.cellGrid,
+            toIndex
+          );
+
+          tr.setSelection(cellSelection);
+        }
+
+        if (!isColumn && toIndex !== null) {
+          const cellSelection = getRowSelection(tr.doc, map.cellGrid, toIndex);
+
+          tr.setSelection(cellSelection);
+        }
       }
 
       if (tableButtonState.isPressed && !tableButtonState.isDragging) {
@@ -428,6 +599,10 @@ export const TablePlugin = new Plugin({
 
       tableButtonState.reorderHandlerDOM?.remove();
       tableButtonState.reorderHandlerDOM = null;
+
+      tr.setMeta(REORDER_HIDE_CELLS, null).setMeta(REORDER_HOVERED_CELLS, null);
+
+      dispatch(tr);
     };
 
     view.root.addEventListener("mousedown", handleMouseDown);
@@ -443,12 +618,3 @@ export const TablePlugin = new Plugin({
     };
   },
 });
-
-// // todo: reordering
-// const fromIndex = parseInt(tableButton.dataset.tableButtonIndex);
-// const toIndex = 5; // fix: hard-coded this value
-
-// const fromRow = cellGrid[fromIndex]; // []
-// const toRow = cellGrid[toIndex]; // []
-
-// // todo
