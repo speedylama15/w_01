@@ -1,0 +1,14 @@
+.block-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background-color: aqua;
+  border: 1px solid #000;
+  cursor: grab;
+}
+
+.block-handle:active {
+  cursor: grabbing;
+}

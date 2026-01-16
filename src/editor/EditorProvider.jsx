@@ -1,5 +1,5 @@
-import { useMemo, useRef } from "react";
-import { useEditor, EditorContent, EditorContext } from "@tiptap/react";
+import { useMemo } from "react";
+import { useEditor, EditorContext } from "@tiptap/react";
 
 import Text from "@tiptap/extension-text";
 import Document from "./nodes/Document/Document";
@@ -100,6 +100,10 @@ const EditorProvider = ({ children }) => {
       ParagraphItem,
       Text,
 
+      // fix
+      // MyDragHandle,
+      // fix
+
       // REVIEW: mark
       TextStyle,
       Color,
@@ -130,10 +134,6 @@ const EditorProvider = ({ children }) => {
           PDF.name,
           Divider.name,
           Table.name,
-          // TableRow.name,
-          // TableHeader.name,
-          // TableCell.name,
-          // ParagraphItem.name,
         ],
       }),
 

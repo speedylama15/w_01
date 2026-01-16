@@ -6,7 +6,6 @@ import EditorPage from "./pages/EditorPage/EditorPage.jsx";
 import WhiteboardPage from "./pages/WhiteboardPage/WhiteboardPage.jsx";
 import Navbar from "./components/Navbar/Navbar.jsx";
 import TableDropdown from "./editor/components/TableDropdown/TableDropdown.jsx";
-import AddColumnOrRow from "./editor/components/AddColumnOrRow/AddColumnOrRow.jsx";
 
 import "./editor/Editor.css";
 import "./editor/nodes/Block.css";
@@ -55,7 +54,6 @@ function App() {
 
       <div className="portal">
         <TableDropdown />
-        <AddColumnOrRow />
       </div>
     </EditorProvider>
   );

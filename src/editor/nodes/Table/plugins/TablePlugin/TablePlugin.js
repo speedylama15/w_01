@@ -295,7 +295,6 @@ export const TablePlugin = new Plugin({
       tableAfter: null,
     };
 
-    // reminder, isColumn is a string "true" or "false"
     const handleMouseDown = (e) => {
       const { selection, tr } = view.state;
       const { dispatch } = view;
@@ -533,7 +532,7 @@ export const TablePlugin = new Plugin({
       if (tableButtonState.isDragging) {
         const { fromIndex, toIndex, isColumn } = tableButtonState;
 
-        // todo: view.state.schema.nodes.tableCell
+        // reorder column
         if (isColumn && fromIndex !== toIndex && toIndex !== null) {
           // toIndex > fromIndex
           if (fromIndex === 0) {
@@ -751,6 +750,14 @@ export const TablePlugin = new Plugin({
 
       if (tableButtonState.isPressed && !tableButtonState.isDragging) {
         console.log("show dropdown");
+
+        // need tableButton's rect
+        const { tableButtonDOM } = tableButtonState;
+
+        tr.setMeta("open-table-dropdown", {
+          isOpen: true,
+          rect: tableButtonDOM.getBoundingClientRect(),
+        });
       }
 
       tableButtonState.isPressed = false;
