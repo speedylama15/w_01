@@ -25,3 +25,14 @@
 }
 
 /* <----------------------------------------------------------------------------------------------------------------------------------> */
+.ProseMirror-selectednode {
+  outline: 2px solid blue;
+}
+
+.multiple-node-selection {
+  background-color: green !important;
+}
+
+.has-multiple-node-selection ::selection {
+  background: transparent;
+}

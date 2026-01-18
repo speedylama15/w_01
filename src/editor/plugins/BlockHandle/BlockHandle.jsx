@@ -1,26 +1,71 @@
+import { TextSelection } from "@tiptap/pm/state";
+import { useCurrentEditor } from "@tiptap/react";
 import { useStore } from "zustand";
 
 import blockHandleStore from "../../stores/blockHandleStore";
 
+import { MultipleNodeSelection } from "../../selections/MultipleNodeSelection";
+
 import "./BlockHandle.css";
 
 // todo: add tooltip
-// mousedown -> lock it
-// mouseup -> unlock it
-// todo: obtain the node
-// todo: obtain the before and after
+// todo: mousedown -> lock it
+// todo: mouseup -> unlock it
+// todo: multiple node/s drag and drop
 
 const BlockHandle = () => {
-  const state = useStore(blockHandleStore);
+  const editor = useCurrentEditor();
+
+  const blockHandleState = useStore(blockHandleStore);
+
+  const handleMouseDown = (e) => {
+    // idea: maintains focus on the editor
+    e.preventDefault();
+
+    const { view } = editor;
+    const { tr } = view.state;
+    const { dispatch } = view;
+    const { selection } = tr;
+
+    // when text is highlighted, create multiple node selection for multiple block/node/s
+    if (selection instanceof TextSelection && selection.from !== selection.to) {
+      const selections = MultipleNodeSelection.create(
+        tr.doc,
+        selection.from,
+        selection.to
+      );
+
+      dispatch(tr.setSelection(selections));
+
+      window.getSelection().removeAllRanges();
+
+      return;
+    }
+
+    // handles when there is no focus on the editor
+    // handles when a single browser selection has been made
+    // when a single browser selection has been made but another node/block has been clicked
+    const selections = MultipleNodeSelection.create(
+      tr.doc,
+      blockHandleState.pos,
+      blockHandleState.pos + blockHandleState.node.nodeSize
+    );
+
+    dispatch(tr.setSelection(selections));
+
+    return;
+  };
 
   return (
     <>
-      {state.isOpen && (
+      {blockHandleState.isOpen && (
         <div
+          tabIndex="-1"
           className="block-handle"
           style={{
-            transform: `translate(calc(${state.rect.x}px - 100%), ${state.rect.y + 4}px)`,
+            transform: `translate(calc(${blockHandleState.rect.x}px - 100%), ${blockHandleState.rect.y + window.scrollY + 4}px)`,
           }}
+          onMouseDown={handleMouseDown}
         ></div>
       )}
     </>

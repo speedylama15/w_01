@@ -39,6 +39,7 @@ export const SelectingCell = new Plugin({
             const currTableID = null;
 
             // prev = "a" curr = null
+            // fix: I got an error here...
             if (prevTableID !== null) {
               hideTableControls(prevTableID); // destroy table A's overlay
               prevTableID = currTableID; // set prevTableID = null

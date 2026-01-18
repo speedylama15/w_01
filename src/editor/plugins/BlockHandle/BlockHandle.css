@@ -7,6 +7,7 @@
   background-color: aqua;
   border: 1px solid #000;
   cursor: grab;
+  user-select: none;
 }
 
 .block-handle:active {

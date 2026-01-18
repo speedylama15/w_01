@@ -38,6 +38,10 @@ import UniqueID from "@tiptap/extension-unique-id";
 import HardBreak from "@tiptap/extension-hard-break";
 // functionality
 
+// shortcuts
+import { KeyboardShortcuts } from "./shortcuts/KeyboardShortcuts";
+// shortcuts
+
 import { Plugins } from "./plugins/Plugins";
 
 import "./Editor.css";
@@ -101,7 +105,7 @@ const EditorProvider = ({ children }) => {
       Text,
 
       // fix
-      // MyDragHandle,
+      KeyboardShortcuts,
       // fix
 
       // REVIEW: mark
@@ -156,6 +160,16 @@ const EditorProvider = ({ children }) => {
     onUpdate({ editor }) {
       localStorage.setItem("editor", JSON.stringify(editor.getJSON()));
     },
+
+    // onFocus(props) {
+    //   // const {editor, events, transaction} = props;
+
+    //   props.event.preventDefault();
+
+    //   window.getSelection().removeAllRanges();
+
+    //   return false;
+    // },
   });
 
   const memoizedEditor = useMemo(() => {
