@@ -36,3 +36,11 @@
 .has-multiple-node-selection ::selection {
   background: transparent;
 }
+
+.woah {
+  background-color: midnightblue !important;
+}
+
+.ProseMirror-hideselection * {
+  caret-color: blueviolet !important;
+}

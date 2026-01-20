@@ -3,6 +3,7 @@ import { useCurrentEditor, EditorContent } from "@tiptap/react";
 
 import BlockHandle from "./plugins/BlockHandle/BlockHandle.jsx";
 import KeyboardComponent from "./KeyboardComponent.jsx";
+import FlexibleSelectionBox from "./components/FlexibleSelectionBox/FlexibleSelectionBox.jsx";
 
 const Editor = () => {
   const editor = useCurrentEditor();
@@ -15,6 +16,7 @@ const Editor = () => {
 
       <BlockHandle />
       <KeyboardComponent />
+      {/* <FlexibleSelectionBox /> */}
     </div>
   );
 };
