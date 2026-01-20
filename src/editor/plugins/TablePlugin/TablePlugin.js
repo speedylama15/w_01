@@ -1,10 +1,11 @@
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { getDepthByContent } from "../../../../utils/getDepthByContent";
-import { CellSelection } from "@tiptap/pm/tables";
-import { getColumnDimensions } from "../CellButton/utils/getColumnDimensions";
-import { getRowDimensions } from "../CellButton/utils/getRowDimensions";
-import { getTableBlockDOM } from "../SelectingCell/utils/getTableBlockDOM";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { CellSelection } from "@tiptap/pm/tables";
+
+import { getDepthByContent } from "../../utils/getDepthByContent";
+import { getColumnDimensions } from "../../utils/getColumnDimensions";
+import { getRowDimensions } from "../../utils/getRowDimensions";
+import { getTableBlockDOM } from "../../utils/getTableBlockDOM";
 
 const REORDER_HIDE_CELLS = "REORDER_HIDE_CELLS";
 const REORDER_HOVERED_CELLS = "REORDER_HOVERED_CELLS";

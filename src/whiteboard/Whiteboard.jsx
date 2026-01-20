@@ -18,11 +18,11 @@ import useEdges from "../stores/useEdges.js";
 
 import useObserveWrapperRect from "../hooks/useObserveWrapperRect.jsx";
 
-import { getWorldCoords } from "../utils/getWorldCoords.js";
-import { getNodeAABB } from "../utils/getNodeAABB.js";
-import { getRadian } from "../utils/getRadian.js";
-import { drawSquareWithBezierCurve } from "../utils/drawSquareWithBezierCurve.js";
-import { handleSingleResize } from "../utils/handleResize.js";
+import { getWorldCoords } from "../whiteboard/utils/getWorldCoords.js";
+import { getNodeAABB } from "../whiteboard/utils/getNodeAABB.js";
+import { getRadian } from "../whiteboard/utils/getRadian.js";
+import { drawSquareWithBezierCurve } from "../whiteboard/utils/drawSquareWithBezierCurve.js";
+import { handleSingleResize } from "../whiteboard/utils/handleResize.js";
 
 import "./Whiteboard.css";
 

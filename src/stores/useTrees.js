@@ -3,7 +3,7 @@ import RBush from "rbush";
 
 import useNodes from "./useNodes";
 
-import { getNodeAABB } from "../utils/getNodeAABB";
+import { getNodeAABB } from "../whiteboard/utils/getNodeAABB";
 
 const getInitNodesTree = () => {
   const tree = new RBush();

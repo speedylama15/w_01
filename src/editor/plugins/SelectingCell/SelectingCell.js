@@ -1,10 +1,10 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { CellSelection, columnResizingPluginKey } from "prosemirror-tables";
 
-import { getDepthByContent } from "../../../../utils/getDepthByContent";
-import { hideTableControls } from "./utils/hideTableControls";
-import { displayTextSelectedTableControls } from "./utils/displayTextSelectedTableControls";
-import { displayCellSelectedTableControls } from "./utils/displayCellSelectedTableControls";
+import { getDepthByContent } from "../../utils/getDepthByContent";
+import { hideTableControls } from "../../utils/hideTableControls";
+import { displayTextSelectedTableControls } from "../../utils/displayTextSelectedTableControls";
+import { displayCellSelectedTableControls } from "../../utils/displayCellSelectedTableControls";
 
 export const SelectingCellKey = new PluginKey("SelectingCellKey");
 

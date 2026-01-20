@@ -1,8 +1,7 @@
 import useEdges from "../../stores/useEdges";
 import useNodes from "../../stores/useNodes";
 
-import { getNodeAABB } from "../../utils/getNodeAABB";
-import { rotateCoords } from "../../utils/rotateCoords";
+import { rotateCoords } from "../../whiteboard/utils/rotateCoords";
 
 const getCenterXY = (node) => {
   const { position, dimension } = node;

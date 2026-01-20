@@ -6,7 +6,7 @@ import useWrapperRect from "../../stores/useWrapperRect.js";
 
 import useSetCanvasDimension from "../../hooks/useSetCanvasDimension.jsx";
 
-import { drawSquareWithBezierCurve } from "../../utils/drawSquareWithBezierCurve";
+import { drawSquareWithBezierCurve } from "../utils/drawSquareWithBezierCurve.js";
 
 const ShapeCanvas = ({ ref }) => {
   const nodesMap = useNodes((state) => state.nodesMap);

@@ -1,12 +1,12 @@
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-
-import blockHandleStore from "../../stores/blockHandleStore";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { MultipleNodeSelection } from "../../selections/MultipleNodeSelection";
 
-const BlockHandleKey = new PluginKey("BlockHandleKey");
+import blockHandleStore from "../../stores/blockHandleStore";
 
-const BlockHandle = new Plugin({
+export const BlockHandleKey = new PluginKey("BlockHandleKey");
+
+export const BlockHandlePlugin = new Plugin({
   key: BlockHandleKey,
 
   props: {
@@ -96,5 +96,3 @@ const BlockHandle = new Plugin({
     },
   },
 });
-
-export default BlockHandle;

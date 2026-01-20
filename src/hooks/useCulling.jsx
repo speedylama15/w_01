@@ -8,7 +8,7 @@ import useTrees from "../stores/useTrees";
 import useSelection from "../stores/useSelection";
 
 import { getWrapperBox } from "../utils/getWRAPPERBOX";
-import { getNodeAABB } from "../utils/getNodeAABB";
+import { getNodeAABB } from "../whiteboard/utils/getNodeAABB";
 
 const useCulling = () => {
   // todo
