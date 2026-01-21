@@ -26,11 +26,11 @@
 
 /* <----------------------------------------------------------------------------------------------------------------------------------> */
 .ProseMirror-selectednode {
-  outline: 2px solid blue;
+  outline: 2px solid rgb(216, 88, 255);
 }
 
 .multiple-node-selection {
-  background-color: green !important;
+  background-color: #ffd000 !important;
 }
 
 .has-multiple-node-selection ::selection {

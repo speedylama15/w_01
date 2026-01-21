@@ -45,8 +45,8 @@ function App() {
           <Navbar />
 
           <Routes>
-            <Route path="/" exact element={<HomePage />} />
-            <Route path="/editor" exact element={<EditorPage />} />
+            {/* <Route path="/" exact element={<HomePage />} /> */}
+            <Route path="/" exact element={<EditorPage />} />
             <Route path="/whiteboard" exact element={<WhiteboardPage />} />
           </Routes>
         </HashRouter>

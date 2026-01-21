@@ -20,6 +20,13 @@ const m_Table = Table.extend({
     };
   },
 
+  addProseMirrorPlugins() {
+    // fix
+    // const plugins = this.parent?.() || [];
+
+    return [];
+  },
+
   addAttributes() {
     return {
       divType: {
