@@ -2,10 +2,10 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { CellSelection } from "@tiptap/pm/tables";
 
-import { getDepthByContent } from "../../utils/getDepthByContent";
-import { getColumnDimensions } from "../../utils/getColumnDimensions";
-import { getRowDimensions } from "../../utils/getRowDimensions";
-import { getTableBlockDOM } from "../../utils/getTableBlockDOM";
+import { getByContentType } from "../../../utils/depth/getByContentType";
+import { getColumnDimensions } from "../../../utils/getColumnDimensions";
+import { getRowDimensions } from "../../../utils/getRowDimensions";
+import { getTableBlockDOM } from "../../../utils/getTableBlockDOM";
 
 const REORDER_HIDE_CELLS = "REORDER_HIDE_CELLS";
 const REORDER_HOVERED_CELLS = "REORDER_HOVERED_CELLS";
@@ -259,18 +259,6 @@ export const TablePlugin = new Plugin({
 
       return DecorationSet.create(state.doc, decorations);
     },
-
-    handleTripleClick(view, pos, e) {
-      const cell = e.target.closest("td, th");
-      const tableButton = e.target.closest(".table-button");
-
-      if (tableButton || cell) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        return true;
-      }
-    },
   },
 
   view(view) {
@@ -324,9 +312,9 @@ export const TablePlugin = new Plugin({
       tableButtonState.tableID = tableId;
       tableButtonState.tableWrapperRect = tableWrapperRect;
 
-      const tableDepth = getDepthByContent($from, "table");
-      const tableBefore = $from.before(tableDepth);
-      const tableNode = $from.node(tableDepth);
+      const tableResult = getByContentType($from, "table");
+      const tableBefore = $from.before(tableResult.depth);
+      const tableNode = $from.node(tableResult.depth);
       const tableAfter = tableBefore + tableNode.nodeSize;
 
       const map = getTableMap(tableNode, tableBefore, tableAfter);

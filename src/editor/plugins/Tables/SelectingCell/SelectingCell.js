@@ -1,10 +1,10 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { CellSelection, columnResizingPluginKey } from "prosemirror-tables";
 
-import { getDepthByContent } from "../../utils/getDepthByContent";
-import { hideTableControls } from "../../utils/hideTableControls";
-import { displayTextSelectedTableControls } from "../../utils/displayTextSelectedTableControls";
-import { displayCellSelectedTableControls } from "../../utils/displayCellSelectedTableControls";
+import { getByContentType } from "../../../utils/depth/getByContentType";
+import { hideTableControls } from "../../../utils/hideTableControls";
+import { displayTextSelectedTableControls } from "../../../utils/displayTextSelectedTableControls";
+import { displayCellSelectedTableControls } from "../../../utils/displayCellSelectedTableControls";
 
 export const SelectingCellKey = new PluginKey("SelectingCellKey");
 
@@ -29,11 +29,14 @@ export const SelectingCell = new Plugin({
         }
 
         if (selection instanceof TextSelection) {
-          const tableDepth = getDepthByContent($from, "table");
-          const tableNode = $from.node(tableDepth);
-          const cellDepth =
-            getDepthByContent($from, "tableCell") ||
-            getDepthByContent($from, "tableHeader");
+          const tableResult = getByContentType($from, "table");
+
+          if (tableResult === null) return;
+
+          const tableNode = $from.node(tableResult.depth);
+          const cellResult =
+            getByContentType($from, "tableCell") ||
+            getByContentType($from, "tableHeader");
 
           if (tableNode.type.name !== "table") {
             const currTableID = null;
@@ -56,7 +59,7 @@ export const SelectingCell = new Plugin({
           }
 
           const currTableID = tableNode.attrs.id;
-          const cellBefore = $from.before(cellDepth);
+          const cellBefore = $from.before(cellResult.depth);
 
           // prev = "a" curr = "b"
           if (prevTableID !== null && prevTableID !== currTableID) {
@@ -88,8 +91,11 @@ export const SelectingCell = new Plugin({
 
         // pretty much guaranteed that a table will exist
         if (selection instanceof CellSelection) {
-          const tableDepth = getDepthByContent($from, "table");
-          const tableNode = $from.node(tableDepth);
+          const tableResult = getByContentType($from, "table");
+
+          if (tableResult === null) return;
+
+          const tableNode = $from.node(tableResult.depth);
 
           if (tableNode.type.name !== "table") return;
 

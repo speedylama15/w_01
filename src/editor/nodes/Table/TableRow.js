@@ -3,6 +3,13 @@ import { TableRow } from "@tiptap/extension-table";
 const m_TableRow = TableRow.extend({
   addAttributes() {
     return {
+      elementType: {
+        default: "tr",
+        parseHTML: (element) => element.getAttribute("data-element-type"),
+        renderHTML: (attributes) => ({
+          "data-element-type": attributes.elementType,
+        }),
+      },
       contentType: {
         default: this.name,
         parseHTML: (element) => element.getAttribute("data-content-type"),
@@ -10,11 +17,11 @@ const m_TableRow = TableRow.extend({
           "data-content-type": attributes.contentType,
         }),
       },
-      divType: {
-        default: this.name,
-        parseHTML: (element) => element.getAttribute("data-div-type"),
+      nodeType: {
+        default: "content",
+        parseHTML: (element) => element.getAttribute("data-node-type"),
         renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
+          "data-node-type": attributes.nodeType,
         }),
       },
     };

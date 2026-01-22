@@ -15,6 +15,13 @@ const m_TableCell = TableCell.extend({
           colwidth: [attributes.colwidth],
         }),
       },
+      elementType: {
+        default: "td",
+        parseHTML: (element) => element.getAttribute("data-element-type"),
+        renderHTML: (attributes) => ({
+          "data-element-type": attributes.elementType,
+        }),
+      },
       contentType: {
         default: this.name,
         parseHTML: (element) => element.getAttribute("data-content-type"),
@@ -22,11 +29,11 @@ const m_TableCell = TableCell.extend({
           "data-content-type": attributes.contentType,
         }),
       },
-      divType: {
-        default: this.name,
-        parseHTML: (element) => element.getAttribute("data-div-type"),
+      nodeType: {
+        default: "content",
+        parseHTML: (element) => element.getAttribute("data-node-type"),
         renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
+          "data-node-type": attributes.nodeType,
         }),
       },
     };

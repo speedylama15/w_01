@@ -47,11 +47,11 @@ const NumberedList = Node.create({
 
   addAttributes() {
     return {
-      divType: {
+      nodeType: {
         default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
+        parseHTML: (element) => element.getAttribute("data-node-type"),
         renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
+          "data-node-type": attributes.nodeType,
         }),
       },
       contentType: {
@@ -72,6 +72,7 @@ const NumberedList = Node.create({
   },
 
   parseHTML() {
+    // fix: ???
     return [{ tag: `div[data-content-type="${name}"]` }, { tag: "ol li" }];
   },
 

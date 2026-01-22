@@ -22,11 +22,11 @@ const Paragraph = Node.create({
 
   addAttributes() {
     return {
-      divType: {
+      nodeType: {
         default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
+        parseHTML: (element) => element.getAttribute("data-node-type"),
         renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
+          "data-node-type": attributes.nodeType,
         }),
       },
       contentType: {
@@ -47,14 +47,14 @@ const Paragraph = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "p" }];
+    return [{ tag: "p" }];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
-      ["div", this.options.contentAttrs, ["paragraph", {}, 0]],
+      ["div", this.options.contentAttrs, ["p", {}, 0]],
     ];
   },
 });

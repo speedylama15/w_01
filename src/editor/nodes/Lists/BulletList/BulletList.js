@@ -46,11 +46,11 @@ const BulletList = Node.create({
 
   addAttributes() {
     return {
-      divType: {
+      nodeType: {
         default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
+        parseHTML: (element) => element.getAttribute("data-node-type"),
         renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
+          "data-node-type": attributes.nodeType,
         }),
       },
       contentType: {
@@ -71,6 +71,7 @@ const BulletList = Node.create({
   },
 
   parseHTML() {
+    // fix: not sure what to put here
     return [{ tag: `div[data-content-type="${name}"]` }, { tag: "ul li" }];
   },
 

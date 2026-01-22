@@ -1,20 +1,11 @@
 import { Extension } from "@tiptap/core";
 
-import { SelectingCell } from "./SelectingCell/SelectingCell";
-import { TablePlugin } from "./TablePlugin/TablePlugin";
-import { BlockHandlePlugin } from "./BlockHandle/BlockHandlePlugin";
-import { SelectionControl } from "./SelectionControlPlugin/SelectionControlPlugin";
-
-import { CellInteractions } from "./Tables/CellInteractions/CellInteractions";
+import { DisableTripleClick } from "./DisableTripleClick";
+import { SelectingCell } from "./Tables/SelectingCell/SelectingCell";
+import { MouseDown } from "./MouseDown";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
-    return [
-      SelectingCell,
-      // TablePlugin,
-      // BlockHandlePlugin,
-      // SelectionControl
-      CellInteractions,
-    ];
+    return [DisableTripleClick, SelectingCell, MouseDown];
   },
 });

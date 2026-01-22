@@ -29,11 +29,21 @@ const m_Table = Table.extend({
 
   addAttributes() {
     return {
-      divType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
+      elementType: {
+        default: "table",
+        parseHTML: (element) => element.getAttribute("data-element-type"),
         renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
+          "data-element-type": attributes.elementType,
+        }),
+      },
+      // either block or content
+      // table is block
+      // tableRow, tableHeader, tableCell are all content
+      nodeType: {
+        default: "block",
+        parseHTML: (element) => element.getAttribute("data-node-type"),
+        renderHTML: (attributes) => ({
+          "data-node-type": attributes.nodeType,
         }),
       },
       contentType: {

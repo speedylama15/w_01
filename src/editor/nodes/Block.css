@@ -9,7 +9,7 @@
   vertical-align: middle;
 }
 
-paragraph,
+p,
 blockquote,
 verse,
 verse-with-citation {
@@ -19,23 +19,23 @@ verse-with-citation {
   line-height: 1.6;
 }
 
-heading1,
-heading2,
-heading3 {
+h1,
+h2,
+h3 {
   display: block;
   font-weight: 700;
   line-height: 1.2;
 }
 
-heading1 {
+h1 {
   font-size: 36px;
 }
 
-heading2 {
+h2 {
   font-size: 28px;
 }
 
-heading3 {
+h3 {
   font-size: 22px;
 }
 

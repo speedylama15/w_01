@@ -35,11 +35,11 @@ const Heading1 = Node.create({
 
   addAttributes() {
     return {
-      divType: {
+      nodeType: {
         default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
+        parseHTML: (element) => element.getAttribute("data-node-type"),
         renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
+          "data-node-type": attributes.nodeType,
         }),
       },
       contentType: {
@@ -60,14 +60,14 @@ const Heading1 = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "h1" }];
+    return [{ tag: "h1" }];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
-      ["div", this.options.contentAttrs, ["heading1", {}, 0]],
+      ["div", this.options.contentAttrs, ["h1", {}, 0]],
     ];
   },
 });
