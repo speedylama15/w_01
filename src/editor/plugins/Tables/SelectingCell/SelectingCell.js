@@ -1,7 +1,7 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { CellSelection, columnResizingPluginKey } from "prosemirror-tables";
 
-import { getByContentType } from "../../../utils/depth/getByContentType";
+import { getDepthByContentType } from "../../../utils/depth/getDepthByContentType";
 import { hideTableControls } from "../../../utils/hideTableControls";
 import { displayTextSelectedTableControls } from "../../../utils/displayTextSelectedTableControls";
 import { displayCellSelectedTableControls } from "../../../utils/displayCellSelectedTableControls";
@@ -29,14 +29,14 @@ export const SelectingCell = new Plugin({
         }
 
         if (selection instanceof TextSelection) {
-          const tableResult = getByContentType($from, "table");
+          const tableResult = getDepthByContentType($from, "table");
 
           if (tableResult === null) return;
 
           const tableNode = $from.node(tableResult.depth);
           const cellResult =
-            getByContentType($from, "tableCell") ||
-            getByContentType($from, "tableHeader");
+            getDepthByContentType($from, "tableCell") ||
+            getDepthByContentType($from, "tableHeader");
 
           if (tableNode.type.name !== "table") {
             const currTableID = null;
@@ -91,7 +91,7 @@ export const SelectingCell = new Plugin({
 
         // pretty much guaranteed that a table will exist
         if (selection instanceof CellSelection) {
-          const tableResult = getByContentType($from, "table");
+          const tableResult = getDepthByContentType($from, "table");
 
           if (tableResult === null) return;
 

@@ -29,16 +29,12 @@
   outline: 2px solid rgb(216, 88, 255);
 }
 
-.multiple-node-selection {
-  background-color: #ffd000 !important;
-}
-
-.has-multiple-node-selection ::selection {
+.has-multi-block-selection ::selection {
   background: transparent;
 }
 
-.woah {
-  background-color: midnightblue !important;
+.multi-block-selection {
+  background-color: #ffd000 !important;
 }
 
 .ProseMirror-hideselection * {

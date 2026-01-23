@@ -1,8 +1,10 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
+import { DecorationSet, Decoration } from "@tiptap/pm/view";
 import { CellSelection } from "@tiptap/pm/tables";
 
-import { getByContentType } from "../utils/depth/getByContentType";
-import { getByNodeType } from "../utils/depth/getByNodeType";
+import { MultiBlockSelection } from "../selections/MultiBlockSelection";
+import { getDepthByNodeType } from "../utils/depth/getDepthByNodeType";
+import { getDepthByContentType } from "../utils/depth/getDepthByContentType";
 
 // fix: e.ctrlKey || e.metaKey -> creates NodeSelection...
 // fix: when I rapidly move the mouse, browser selection can be made ✅
@@ -30,6 +32,31 @@ export const MouseDown = new Plugin({
     },
   },
 
+  props: {
+    attributes(state) {
+      if (state.selection instanceof MultiBlockSelection) {
+        return { class: "has-multi-block-selection" };
+      }
+      return {};
+    },
+
+    decorations(state) {
+      const { selection } = state;
+
+      if (selection instanceof MultiBlockSelection) {
+        const decos = selection.positions.map((pos) =>
+          Decoration.node(pos.before, pos.after, {
+            class: "multi-block-selection",
+          })
+        );
+
+        return DecorationSet.create(state.doc, decos);
+      }
+
+      return DecorationSet.empty;
+    },
+  },
+
   view(view) {
     let isMouseDown = false;
 
@@ -44,14 +71,187 @@ export const MouseDown = new Plugin({
     const handleMouseDown = (e) => {
       // left button MUST be clicked
       if (e.button !== 0) return;
-
       // ctrl or metaKey should not be pressed
       if (e.ctrlKey || e.metaKey) return;
 
       const { tr, selection } = view.state;
+      const { $from, from, to } = selection;
       const { dispatch } = view;
 
       isMouseDown = true;
+
+      if (e.shiftKey) {
+        // get the current block DOM
+        const currBlockDOM = e.target.closest(".block");
+
+        if (!currBlockDOM) {
+          // SHIFT and something else has been pressed
+          // not a normal type of selection
+          // do nothing and prevent default behavior
+          e.preventDefault();
+          return;
+        }
+
+        // get current node and pos
+        const currPos = view.posAtDOM(currBlockDOM) - 1;
+        const currNode = view.state.doc.nodeAt(currPos);
+
+        if (currNode.attrs.nodeType !== "block") {
+          // something went completely wrong...
+          e.preventDefault();
+          return;
+        }
+
+        if (selection instanceof TextSelection) {
+          if (from === to) {
+            const result = getDepthByNodeType($from, "block");
+
+            if (result === null) {
+              e.preventDefault();
+              return;
+            }
+
+            const prevPos = $from.before(result.depth);
+            const prevNode = result.node;
+
+            const isSame = prevNode.attrs.id === currNode.attrs.id;
+
+            // ✅
+            if (!isSame) {
+              e.preventDefault();
+
+              const multiSelection = MultiBlockSelection.create(
+                tr.doc,
+                Math.min(prevPos, currPos),
+                Math.max(
+                  prevPos + prevNode.nodeSize,
+                  currPos + currNode.nodeSize
+                )
+              );
+
+              dispatch(tr.setSelection(multiSelection));
+
+              window.getSelection()?.removeAllRanges();
+
+              return;
+            }
+
+            // fix: not sure
+            if (isSame) {
+              if (currNode.type.name === "table") {
+                e.preventDefault();
+
+                const cellDOM = e.target.closest("td, th");
+                const cellPos = view.posAtDOM(cellDOM) - 1;
+                const result =
+                  getDepthByContentType($from, "tableCell") ||
+                  getDepthByContentType($from, "tableHeader");
+
+                const cellSelection = CellSelection.create(
+                  tr.doc,
+                  $from.before(result.depth),
+                  cellPos
+                );
+
+                dispatch(tr.setSelection(cellSelection));
+
+                window.getSelection().removeAllRanges();
+
+                return;
+              }
+
+              // ✅
+              if (currNode.type.name !== "table") {
+                console.log("TEXT");
+                return;
+              }
+            }
+          }
+
+          // ✅
+          if (from !== to) {
+            e.preventDefault();
+
+            const multiSelection = MultiBlockSelection.create(
+              tr.doc,
+              Math.min(currPos, from, to),
+              Math.max(currPos + currNode.nodeSize, from, to)
+            );
+
+            dispatch(tr.setSelection(multiSelection));
+
+            window.getSelection()?.removeAllRanges();
+
+            return;
+          }
+        }
+
+        // ✅
+        if (selection instanceof MultiBlockSelection) {
+          e.preventDefault();
+
+          const from = selection.positions[0].before;
+          const to = selection.positions.at(-1).after;
+
+          const multiSelection = MultiBlockSelection.create(
+            tr.doc,
+            Math.min(currPos, from),
+            Math.max(currPos + currNode.nodeSize, to)
+          );
+
+          dispatch(tr.setSelection(multiSelection));
+
+          window.getSelection()?.removeAllRanges();
+
+          return;
+        }
+
+        if (selection instanceof CellSelection) {
+          const prevNode = selection.$anchorCell.node(-1);
+
+          const isSame = prevNode.attrs.id === currNode.attrs.id;
+
+          // fix: I am not sure about this...
+          if (isSame) {
+            e.preventDefault();
+
+            const cellDOM = e.target.closest("td, th");
+            const cellPos = view.posAtDOM(cellDOM) - 1;
+
+            const cellSelection = CellSelection.create(
+              tr.doc,
+              selection.$anchorCell.pos,
+              cellPos
+            );
+
+            dispatch(tr.setSelection(cellSelection));
+
+            window.getSelection().removeAllRanges();
+
+            return;
+          }
+
+          // fix: I am not sure about this...
+          if (!isSame) {
+            e.preventDefault();
+
+            const from = selection.$anchorCell.pos;
+            const to = selection.$headCell.pos;
+
+            const multiSelection = MultiBlockSelection.create(
+              tr.doc,
+              Math.min(currPos, from),
+              Math.max(currPos + currNode.nodeSize, to)
+            );
+
+            dispatch(tr.setSelection(multiSelection));
+
+            window.getSelection()?.removeAllRanges();
+
+            return;
+          }
+        }
+      }
 
       if (!e.shiftKey) {
         // when td is pressed
@@ -71,73 +271,6 @@ export const MouseDown = new Plugin({
         }
 
         // when block handle is pressed
-      }
-
-      if (e.shiftKey) {
-        // e.preventDefault();
-        const cellDOM = e.target.closest("td, th");
-
-        if (cellDOM) {
-          const cellBefore = view.posAtDOM(cellDOM) - 1;
-
-          const tableDOM = cellDOM.closest(".block-table");
-          const tableID = tableDOM.getAttribute("data-id");
-
-          if (selection instanceof TextSelection) {
-            // get the node in which has been selected
-            const { $from } = selection;
-
-            // get the table node
-            const tableResult = getByNodeType($from, "block");
-            if (tableResult === null) return;
-
-            // check isSameTable
-            const prevTableNode = $from.node(tableResult.depth);
-            const prevTableID = prevTableNode.attrs.id;
-
-            if (tableID !== prevTableID) return;
-
-            // get the cell node
-            const cellResult =
-              getByContentType($from, "tableHeader") ||
-              getByContentType($from, "tableCell");
-
-            // get the before of the cell
-            const prevCellBefore = $from.before(cellResult.depth);
-
-            // create CellSelection
-            const cellSelection = CellSelection.create(
-              tr.doc,
-              prevCellBefore,
-              cellBefore
-            );
-
-            dispatch(tr.setSelection(cellSelection));
-
-            e.preventDefault();
-
-            return;
-          }
-
-          if (selection instanceof CellSelection) {
-            // get the table
-            const tableNode = selection.$anchorCell.node(-1);
-
-            // check isSameTable
-            if (tableID !== tableNode.attrs.id) return;
-
-            // adjust CellSelection
-            const cellSelection = CellSelection.create(
-              tr.doc,
-              selection.$anchorCell.pos,
-              cellBefore
-            );
-
-            dispatch(tr.setSelection(cellSelection));
-
-            e.preventDefault();
-          }
-        }
       }
     };
 

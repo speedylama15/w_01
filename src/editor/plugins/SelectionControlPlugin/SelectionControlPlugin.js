@@ -1,7 +1,6 @@
 import RBush from "rbush";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { DecorationSet } from "@tiptap/pm/view";
-import { MultipleNodeSelection } from "../../selections/MultipleNodeSelection";
 
 const getBlockDOMBoxes = (view) => {
   const blocks = view.dom.querySelectorAll(".block");

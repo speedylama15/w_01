@@ -1,4 +1,4 @@
-export const getByContentType = ($from, contentType) => {
+export const getDepthByNodeType = ($from, nodeType) => {
   for (let i = $from.depth; i >= 0; i--) {
     const node = $from.node(i);
 
@@ -6,7 +6,7 @@ export const getByContentType = ($from, contentType) => {
       break;
     }
 
-    if (node.attrs.contentType === contentType) {
+    if (node.attrs.nodeType === nodeType) {
       return { depth: i, node };
     }
   }

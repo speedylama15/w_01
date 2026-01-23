@@ -1,6 +1,6 @@
 import { Extension } from "@tiptap/core";
 
-import { MultipleNodeSelection } from "../selections/MultipleNodeSelection";
+import { MultiBlockSelection } from "../selections/MultiBlockSelection";
 import { TextSelection } from "@tiptap/pm/state";
 
 export const KeyboardShortcuts = Extension.create({
@@ -19,9 +19,9 @@ export const KeyboardShortcuts = Extension.create({
         const { tr } = view.state;
         const { dispatch } = view;
 
-        if (selection instanceof MultipleNodeSelection) {
-          const from = selection.positions[0].from;
-          const to = selection.positions[selection.positions.length - 1].to;
+        if (selection instanceof MultiBlockSelection) {
+          const from = selection.positions[0].before;
+          const to = selection.positions[selection.positions.length - 1].after;
 
           tr.deleteRange(from, to);
           tr.setSelection(TextSelection.create(tr.doc, from + 1));

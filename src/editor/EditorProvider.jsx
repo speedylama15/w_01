@@ -160,16 +160,6 @@ const EditorProvider = ({ children }) => {
     onUpdate({ editor }) {
       localStorage.setItem("editor", JSON.stringify(editor.getJSON()));
     },
-
-    // onFocus(props) {
-    //   // const {editor, events, transaction} = props;
-
-    //   props.event.preventDefault();
-
-    //   window.getSelection().removeAllRanges();
-
-    //   return false;
-    // },
   });
 
   const memoizedEditor = useMemo(() => {

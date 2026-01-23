@@ -4,7 +4,7 @@ import { useStore } from "zustand";
 
 import blockHandleStore from "../../stores/blockHandleStore";
 
-import { MultipleNodeSelection } from "../../selections/MultipleNodeSelection";
+import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
 
 import "./BlockHandle.css";
 
@@ -29,7 +29,7 @@ const BlockHandle = () => {
 
     // when text is highlighted, create multiple node selection for multiple block/node/s
     if (selection instanceof TextSelection && selection.from !== selection.to) {
-      const selections = MultipleNodeSelection.create(
+      const selections = MultiBlockSelection.create(
         tr.doc,
         selection.from,
         selection.to
@@ -45,7 +45,7 @@ const BlockHandle = () => {
     // handles when there is no focus on the editor
     // handles when a single browser selection has been made
     // when a single browser selection has been made but another node/block has been clicked
-    const selections = MultipleNodeSelection.create(
+    const selections = MultiBlockSelection.create(
       tr.doc,
       blockHandleState.pos,
       blockHandleState.pos + blockHandleState.node.nodeSize
