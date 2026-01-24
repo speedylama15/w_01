@@ -60,6 +60,7 @@
     "electron-context-menu": "^4.1.1",
     "electron-squirrel-startup": "^1.0.1",
     "express": "^5.1.0",
+    "flatbush": "^4.5.0",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "paper": "^0.12.18",

@@ -14,6 +14,7 @@ const Editor = () => {
       <EditorContent editor={editor} className="editor-content" />
 
       <BlockHandle />
+
       <MarqueeSelectionBox />
     </div>
   );

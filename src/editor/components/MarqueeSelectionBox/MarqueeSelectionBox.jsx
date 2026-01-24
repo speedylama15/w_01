@@ -1,12 +1,16 @@
-import RBush from "rbush";
+import Flatbush from "flatbush";
 import { useEffect, useRef, useState } from "react";
 import { useCurrentEditor } from "@tiptap/react";
-import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-import "./MarqueeSelectionBox.css";
 import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
 
+import "./MarqueeSelectionBox.css";
+
 // todo: I can over engineer this and find the dom and the corresponding node
+// idea: also, while marquee selecting, I don't want other elements to render
+// idea: resize (table), block handle, I don't want them to show up
+// review: when click outside the editor -> no window selection at all and visible
+// review: when I click inside -> invisible
 
 const MarqueeSelectionBox = () => {
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -14,7 +18,8 @@ const MarqueeSelectionBox = () => {
 
   const editor = useCurrentEditor();
 
-  const treeRef = useRef(new RBush());
+  const flatIndex = useRef();
+  const blockDOMs = useRef([]);
   const startCoords = useRef(null);
   const currentCoords = useRef(null);
 
@@ -22,8 +27,11 @@ const MarqueeSelectionBox = () => {
     if (!editor) return;
 
     const handleMouseDown = (e) => {
-      // fix: only right mouse button
-      //   e.preventDefault();
+      // left button only
+      if (e.button !== 0) return;
+
+      // idea: maybe?
+      // e.preventDefault();
 
       setIsMouseDown(true);
 
@@ -32,8 +40,10 @@ const MarqueeSelectionBox = () => {
       startCoords.current = coords;
       currentCoords.current = coords;
 
-      const arr = [];
       const blocks = editor.view.dom.querySelectorAll(".block");
+
+      blockDOMs.current = [];
+      flatIndex.current = new Flatbush(blocks.length);
 
       blocks.forEach((block) => {
         const rect = block.getBoundingClientRect();
@@ -43,14 +53,18 @@ const MarqueeSelectionBox = () => {
         const minY = rect.top + window.scrollY;
         const maxY = rect.bottom + window.scrollY;
 
-        arr.push({ minX, maxX, minY, maxY, dom: block });
+        flatIndex.current.add(minX, minY, maxX, maxY);
+        blockDOMs.current.push(block);
       });
 
-      treeRef.current.load(arr);
+      flatIndex.current.finish();
     };
 
     const handleMouseMove = (e) => {
       if (!isMouseDown) return;
+
+      // e.preventDefault();
+      // window.getSelection().removeAllRanges();
 
       currentCoords.current = { x: e.clientX, y: e.clientY + window.scrollY };
 
@@ -60,42 +74,67 @@ const MarqueeSelectionBox = () => {
       const maxY = Math.max(startCoords.current.y, currentCoords.current.y);
 
       const box = { minX, maxX, minY, maxY };
+      setBox(box);
 
-      const result = treeRef.current.search(box);
+      // debug
+      let shouldShowUpWhenPressedInEditor = false;
 
-      if (result.length === 0) return;
+      const ids = flatIndex.current
+        .search(minX, minY, maxX, maxY, (i) => {
+          const dom = blockDOMs.current[i];
+          const contentType = dom.getAttribute("data-content-type");
+
+          if (contentType === "table") shouldShowUpWhenPressedInEditor = true;
+
+          return true;
+        })
+        .sort((a, b) => a - b);
+
+      console.log(shouldShowUpWhenPressedInEditor);
+
+      // const ids = index.search(10, 10, 20, 20, (i) => items[i].foo === 'bar');
+
+      if (ids.length === 0) return;
 
       const { dispatch } = editor.view;
       const { tr } = editor.view.state;
 
-      if (result.length === 1) {
-        const anchor = result[0];
-        const anchorBefore = editor.view.posAtDOM(anchor.dom) - 1;
+      if (ids.length === 1) {
+        const anchorIndex = ids[0];
+        const anchorBefore =
+          editor.view.posAtDOM(blockDOMs.current[anchorIndex]) - 1;
+        const anchorNode = editor.view.state.doc.nodeAt(anchorBefore);
 
-        const multiSelection = MultiBlockSelection.create(tr.doc, anchorBefore);
+        const multiSelection = MultiBlockSelection.create(
+          tr.doc,
+          anchorBefore,
+          anchorBefore + anchorNode.nodeSize,
+        );
 
         dispatch(tr.setSelection(multiSelection));
       }
 
-      if (result.length > 1) {
-        const anchor = result[0];
-        const head = result[result.length - 1];
+      if (ids.length > 1) {
+        const anchor = ids[0];
+        const head = ids[ids.length - 1];
 
-        // fix: the returned result is not in order...
-        // fix: maybe I need to use flatbrush?
-        const anchorBefore = editor.view.posAtDOM(anchor.dom) - 1;
-        const headBefore = editor.view.posAtDOM(head.dom) - 1;
+        const anchorBefore =
+          editor.view.posAtDOM(blockDOMs.current[anchor]) - 1;
+        const headBefore = editor.view.posAtDOM(blockDOMs.current[head]) - 1;
         const headNode = editor.view.state.doc.nodeAt(headBefore);
         const headAfter = headBefore + headNode.nodeSize;
 
-        const multiSelection = MultiBlockSelection.create(tr.doc, 0, 15);
-
-        console.log(anchorBefore, headAfter, multiSelection);
+        const multiSelection = MultiBlockSelection.create(
+          tr.doc,
+          anchorBefore,
+          headAfter,
+        );
 
         dispatch(tr.setSelection(multiSelection));
       }
 
-      setBox(box);
+      // e.preventDefault();
+      window.getSelection().removeAllRanges();
     };
 
     const handleMouseUp = () => {
@@ -104,7 +143,6 @@ const MarqueeSelectionBox = () => {
 
       startCoords.current = null;
       currentCoords.current = null;
-      treeRef.current.clear();
     };
 
     document.addEventListener("mousedown", handleMouseDown);
@@ -123,14 +161,15 @@ const MarqueeSelectionBox = () => {
       {isMouseDown && box && (
         <div
           style={{
-            backgroundColor: "#ffffff6b",
-            border: "1px solid #000",
+            backgroundColor: "#96afde6b",
+            border: "1px solid #004cff",
             position: "absolute",
             top: 0,
             left: 0,
             transform: `translate(${box.minX}px, ${box.minY}px)`,
             width: `${box.maxX - box.minX}px`,
             height: `${box.maxY - box.minY}px`,
+            pointerEvents: "none",
           }}
         ></div>
       )}
