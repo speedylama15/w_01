@@ -8,6 +8,12 @@ export const BlockEvents = new Plugin({
       return true;
     },
 
+    // fix: do I need this?
+    handleDrop(view, e) {
+      e.preventDefault();
+      return true;
+    },
+
     handleDOMEvents: {
       mousedown(view, e) {
         if (e.metaKey) {

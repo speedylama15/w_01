@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useCurrentEditor, EditorContent } from "@tiptap/react";
 
 import BlockHandle from "./components/BlockHandle/BlockHandle.jsx";
+import MarqueeSelectionBox from "./components/MarqueeSelectionBox/MarqueeSelectionBox.jsx";
 
 const Editor = () => {
   const editor = useCurrentEditor();
@@ -13,7 +14,7 @@ const Editor = () => {
       <EditorContent editor={editor} className="editor-content" />
 
       <BlockHandle />
-      {/* <FlexibleSelectionBox /> */}
+      <MarqueeSelectionBox />
     </div>
   );
 };

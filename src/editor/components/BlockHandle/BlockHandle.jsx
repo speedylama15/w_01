@@ -7,6 +7,7 @@ import blockHandleStore from "../../stores/blockHandleStore";
 import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
 
 import "./BlockHandle.css";
+import { getDepthByNodeType } from "../../utils/depth/getDepthByNodeType";
 
 // todo: add tooltip
 // todo: mousedown -> lock it
@@ -16,7 +17,12 @@ import "./BlockHandle.css";
 const BlockHandle = () => {
   const editor = useCurrentEditor();
 
-  const blockHandleState = useStore(blockHandleStore);
+  const {
+    isOpen,
+    rect,
+    pos: handlePos,
+    node: handleNode,
+  } = useStore(blockHandleStore);
 
   const handleMouseDown = (e) => {
     // idea: maintains focus on the editor
@@ -26,44 +32,80 @@ const BlockHandle = () => {
     const { tr } = view.state;
     const { dispatch } = view;
     const { selection } = tr;
+    const { $from, $to, from, to } = selection;
 
-    // when text is highlighted, create multiple node selection for multiple block/node/s
-    if (selection instanceof TextSelection && selection.from !== selection.to) {
-      const selections = MultiBlockSelection.create(
-        tr.doc,
-        selection.from,
-        selection.to
-      );
+    // when ranged TextSelection and handleState.pos is inclusive
+    if (selection instanceof TextSelection && from !== to) {
+      const fromResult = getDepthByNodeType($from, "block");
+      const toResult = getDepthByNodeType($to, "block");
 
-      dispatch(tr.setSelection(selections));
+      // handle error
+      if (fromResult === null || toResult === null) return;
 
-      window.getSelection().removeAllRanges();
+      const fromBefore = $from.before(fromResult.depth);
+      const toAfter = $to.after(toResult.depth);
 
-      return;
+      if (handlePos >= fromBefore && handlePos < toAfter) {
+        const multiSelection = MultiBlockSelection.create(
+          tr.doc,
+          fromBefore,
+          toAfter,
+        );
+
+        dispatch(tr.setSelection(multiSelection));
+
+        window.getSelection()?.removeAllRanges();
+
+        return;
+      }
     }
 
-    // handles when there is no focus on the editor
-    // handles when a single browser selection has been made
-    // when a single browser selection has been made but another node/block has been clicked
-    const selections = MultiBlockSelection.create(
+    // when MultiSelection and handleState.pos is inclusive
+    if (selection instanceof MultiBlockSelection) {
+      const { $anchor, $head } = selection;
+
+      if (handlePos >= $anchor.pos && handlePos < $head.pos) {
+        const multiSelection = MultiBlockSelection.create(
+          tr.doc,
+          $anchor.pos,
+          $head.pos,
+        );
+
+        dispatch(tr.setSelection(multiSelection));
+
+        window.getSelection()?.removeAllRanges();
+
+        return;
+      }
+    }
+
+    if (!handleNode) return;
+
+    // normally just multi select the corresponding block when it was pressed
+    const multiSelection = MultiBlockSelection.create(
       tr.doc,
-      blockHandleState.pos,
-      blockHandleState.pos + blockHandleState.node.nodeSize
+      handlePos,
+      handlePos + handleNode.nodeSize,
     );
 
-    dispatch(tr.setSelection(selections));
+    dispatch(tr.setSelection(multiSelection));
+
+    window.getSelection()?.removeAllRanges();
 
     return;
   };
 
   return (
     <>
-      {blockHandleState.isOpen && (
+      {isOpen && (
         <div
           tabIndex="-1"
           className="block-handle"
           style={{
-            transform: `translate(calc(${blockHandleState.rect.x}px - 100%), ${blockHandleState.rect.y + window.scrollY + 4}px)`,
+            transform: `
+              translate(calc(${rect.x}px - 100%), 
+              ${rect.y + window.scrollY + 4}px)
+            `,
           }}
           onMouseDown={handleMouseDown}
         ></div>

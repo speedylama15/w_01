@@ -40,3 +40,7 @@
 .ProseMirror-hideselection * {
   caret-color: blueviolet !important;
 }
+
+.woah {
+  background-color: #00ffdd !important;
+}

@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-
-import { useCurrentEditor } from "@tiptap/react";
-
-import "./FlexibleSelectionBox.css";
 import RBush from "rbush";
+import { useEffect, useRef, useState } from "react";
+import { useCurrentEditor } from "@tiptap/react";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+
+import "./MarqueeSelectionBox.css";
+import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
 
 // todo: I can over engineer this and find the dom and the corresponding node
 
-const FlexibleSelectionBox = () => {
+const MarqueeSelectionBox = () => {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [box, setBox] = useState(null);
 
@@ -22,6 +22,7 @@ const FlexibleSelectionBox = () => {
     if (!editor) return;
 
     const handleMouseDown = (e) => {
+      // fix: only right mouse button
       //   e.preventDefault();
 
       setIsMouseDown(true);
@@ -62,24 +63,37 @@ const FlexibleSelectionBox = () => {
 
       const result = treeRef.current.search(box);
 
-      const decorations = [];
-      result.forEach((data) => {
-        const pos = editor.view.posAtDOM(data.dom);
-        const before = pos - 1;
-        const node = editor.view.state.doc.nodeAt(before);
-        const after = before + node.nodeSize;
-
-        console.log("test", before);
-
-        const dec = Decoration.node(before, after, { class: "woah" });
-        decorations.push(dec);
-      });
+      if (result.length === 0) return;
 
       const { dispatch } = editor.view;
       const { tr } = editor.view.state;
 
-      // fix
-      dispatch(tr.setMeta("woah", DecorationSet.create(tr.doc, decorations)));
+      if (result.length === 1) {
+        const anchor = result[0];
+        const anchorBefore = editor.view.posAtDOM(anchor.dom) - 1;
+
+        const multiSelection = MultiBlockSelection.create(tr.doc, anchorBefore);
+
+        dispatch(tr.setSelection(multiSelection));
+      }
+
+      if (result.length > 1) {
+        const anchor = result[0];
+        const head = result[result.length - 1];
+
+        // fix: the returned result is not in order...
+        // fix: maybe I need to use flatbrush?
+        const anchorBefore = editor.view.posAtDOM(anchor.dom) - 1;
+        const headBefore = editor.view.posAtDOM(head.dom) - 1;
+        const headNode = editor.view.state.doc.nodeAt(headBefore);
+        const headAfter = headBefore + headNode.nodeSize;
+
+        const multiSelection = MultiBlockSelection.create(tr.doc, 0, 15);
+
+        console.log(anchorBefore, headAfter, multiSelection);
+
+        dispatch(tr.setSelection(multiSelection));
+      }
 
       setBox(box);
     };
@@ -124,4 +138,4 @@ const FlexibleSelectionBox = () => {
   );
 };
 
-export default FlexibleSelectionBox;
+export default MarqueeSelectionBox;

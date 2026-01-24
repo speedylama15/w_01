@@ -40,25 +40,6 @@ export const MouseDown = new Plugin({
       return {};
     },
 
-    handleDOMEvents: {
-      dragstart(view, e) {
-        e.preventDefault();
-        return true;
-      },
-      drag(view, e) {
-        e.preventDefault();
-        return true;
-      },
-      drop(view, e) {
-        e.preventDefault();
-        return true;
-      },
-      dragover(view, e) {
-        e.preventDefault();
-        return true;
-      },
-    },
-
     decorations(state) {
       const { selection } = state;
 
@@ -66,7 +47,7 @@ export const MouseDown = new Plugin({
         const decos = selection.positions.map((pos) =>
           Decoration.node(pos.before, pos.after, {
             class: "multi-block-selection",
-          })
+          }),
         );
 
         return DecorationSet.create(state.doc, decos);
@@ -102,6 +83,7 @@ export const MouseDown = new Plugin({
       if (e.shiftKey) {
         // get the current block DOM
         const currBlockDOM = e.target.closest(".block");
+
         // ERROR handle
         if (!currBlockDOM) {
           // SHIFT and something else has been pressed
@@ -147,8 +129,8 @@ export const MouseDown = new Plugin({
                 Math.min(prevPos, currPos),
                 Math.max(
                   prevPos + prevBlock.nodeSize,
-                  currPos + currBlock.nodeSize
-                )
+                  currPos + currBlock.nodeSize,
+                ),
               );
 
               dispatch(tr.setSelection(multiSelection));
@@ -172,7 +154,7 @@ export const MouseDown = new Plugin({
                 const cellSelection = CellSelection.create(
                   tr.doc,
                   $from.before(result.depth),
-                  cellPos
+                  cellPos,
                 );
 
                 dispatch(tr.setSelection(cellSelection));
@@ -196,7 +178,7 @@ export const MouseDown = new Plugin({
             const multiSelection = MultiBlockSelection.create(
               tr.doc,
               Math.min(currPos, from, to),
-              Math.max(currPos + currBlock.nodeSize, from, to)
+              Math.max(currPos + currBlock.nodeSize, from, to),
             );
 
             dispatch(tr.setSelection(multiSelection));
@@ -217,7 +199,7 @@ export const MouseDown = new Plugin({
           const multiSelection = MultiBlockSelection.create(
             tr.doc,
             Math.min(currPos, from),
-            Math.max(currPos + currBlock.nodeSize, to)
+            Math.max(currPos + currBlock.nodeSize, to),
           );
 
           dispatch(tr.setSelection(multiSelection));
@@ -242,7 +224,7 @@ export const MouseDown = new Plugin({
             const cellSelection = CellSelection.create(
               tr.doc,
               selection.$anchorCell.pos,
-              cellPos
+              cellPos,
             );
 
             dispatch(tr.setSelection(cellSelection));
@@ -262,7 +244,7 @@ export const MouseDown = new Plugin({
             const multiSelection = MultiBlockSelection.create(
               tr.doc,
               Math.min(currPos, from),
-              Math.max(currPos + currBlock.nodeSize, to)
+              Math.max(currPos + currBlock.nodeSize, to),
             );
 
             dispatch(tr.setSelection(multiSelection));
@@ -327,7 +309,7 @@ export const MouseDown = new Plugin({
         const cellSelection = CellSelection.create(
           tr.doc,
           anchorData.anchorCellBefore,
-          headCellBefore
+          headCellBefore,
         );
 
         dispatch(tr.setSelection(cellSelection));
