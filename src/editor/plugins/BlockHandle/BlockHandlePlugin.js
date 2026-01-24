@@ -43,25 +43,7 @@ export const BlockHandlePlugin = new Plugin({
       return true;
     },
 
-    // review: dragStart may be the only one that is needed...
     handleDOMEvents: {
-      dragstart(view, e) {
-        e.preventDefault();
-        return true;
-      },
-      drag(view, e) {
-        e.preventDefault();
-        return true;
-      },
-      drop(view, e) {
-        e.preventDefault();
-        return true;
-      },
-      dragover(view, e) {
-        e.preventDefault();
-        return true;
-      },
-
       mousemove(view, e) {
         // review: 50 for the padding of the contenteditable
         const elements = view.root.elementsFromPoint(e.clientX + 50, e.clientY);

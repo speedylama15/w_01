@@ -1,11 +1,11 @@
 import { Extension } from "@tiptap/core";
 
-import { DisableTripleClick } from "./DisableTripleClick";
-import { SelectingCell } from "./Tables/SelectingCell/SelectingCell";
+import { BlockEvents } from "./BlockEvents";
 import { MouseDown } from "./MouseDown";
+import { SelectTableCell } from "./SelectTableCell";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
-    return [DisableTripleClick, SelectingCell, MouseDown];
+    return [BlockEvents, MouseDown, SelectTableCell];
   },
 });

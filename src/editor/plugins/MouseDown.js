@@ -40,6 +40,25 @@ export const MouseDown = new Plugin({
       return {};
     },
 
+    handleDOMEvents: {
+      dragstart(view, e) {
+        e.preventDefault();
+        return true;
+      },
+      drag(view, e) {
+        e.preventDefault();
+        return true;
+      },
+      drop(view, e) {
+        e.preventDefault();
+        return true;
+      },
+      dragover(view, e) {
+        e.preventDefault();
+        return true;
+      },
+    },
+
     decorations(state) {
       const { selection } = state;
 
@@ -83,7 +102,7 @@ export const MouseDown = new Plugin({
       if (e.shiftKey) {
         // get the current block DOM
         const currBlockDOM = e.target.closest(".block");
-
+        // ERROR handle
         if (!currBlockDOM) {
           // SHIFT and something else has been pressed
           // not a normal type of selection
@@ -94,9 +113,10 @@ export const MouseDown = new Plugin({
 
         // get current node and pos
         const currPos = view.posAtDOM(currBlockDOM) - 1;
-        const currNode = view.state.doc.nodeAt(currPos);
+        const currBlock = view.state.doc.nodeAt(currPos);
 
-        if (currNode.attrs.nodeType !== "block") {
+        // ERROR handle
+        if (currBlock.attrs.nodeType !== "block") {
           // something went completely wrong...
           e.preventDefault();
           return;
@@ -104,6 +124,8 @@ export const MouseDown = new Plugin({
 
         if (selection instanceof TextSelection) {
           if (from === to) {
+            // single selection
+            // get the block node and depth
             const result = getDepthByNodeType($from, "block");
 
             if (result === null) {
@@ -112,9 +134,9 @@ export const MouseDown = new Plugin({
             }
 
             const prevPos = $from.before(result.depth);
-            const prevNode = result.node;
+            const prevBlock = result.node;
 
-            const isSame = prevNode.attrs.id === currNode.attrs.id;
+            const isSame = prevBlock.attrs.id === currBlock.attrs.id;
 
             // ✅
             if (!isSame) {
@@ -124,8 +146,8 @@ export const MouseDown = new Plugin({
                 tr.doc,
                 Math.min(prevPos, currPos),
                 Math.max(
-                  prevPos + prevNode.nodeSize,
-                  currPos + currNode.nodeSize
+                  prevPos + prevBlock.nodeSize,
+                  currPos + currBlock.nodeSize
                 )
               );
 
@@ -136,9 +158,9 @@ export const MouseDown = new Plugin({
               return;
             }
 
-            // fix: not sure
             if (isSame) {
-              if (currNode.type.name === "table") {
+              // ⚠️
+              if (currBlock.type.name === "table") {
                 e.preventDefault();
 
                 const cellDOM = e.target.closest("td, th");
@@ -161,8 +183,7 @@ export const MouseDown = new Plugin({
               }
 
               // ✅
-              if (currNode.type.name !== "table") {
-                console.log("TEXT");
+              if (currBlock.type.name !== "table") {
                 return;
               }
             }
@@ -175,7 +196,7 @@ export const MouseDown = new Plugin({
             const multiSelection = MultiBlockSelection.create(
               tr.doc,
               Math.min(currPos, from, to),
-              Math.max(currPos + currNode.nodeSize, from, to)
+              Math.max(currPos + currBlock.nodeSize, from, to)
             );
 
             dispatch(tr.setSelection(multiSelection));
@@ -196,7 +217,7 @@ export const MouseDown = new Plugin({
           const multiSelection = MultiBlockSelection.create(
             tr.doc,
             Math.min(currPos, from),
-            Math.max(currPos + currNode.nodeSize, to)
+            Math.max(currPos + currBlock.nodeSize, to)
           );
 
           dispatch(tr.setSelection(multiSelection));
@@ -207,11 +228,11 @@ export const MouseDown = new Plugin({
         }
 
         if (selection instanceof CellSelection) {
-          const prevNode = selection.$anchorCell.node(-1);
+          const prevTable = selection.$anchorCell.node(-1);
 
-          const isSame = prevNode.attrs.id === currNode.attrs.id;
+          const isSame = prevTable.attrs.id === currBlock.attrs.id;
 
-          // fix: I am not sure about this...
+          // ⚠️
           if (isSame) {
             e.preventDefault();
 
@@ -231,7 +252,7 @@ export const MouseDown = new Plugin({
             return;
           }
 
-          // fix: I am not sure about this...
+          // ⚠️
           if (!isSame) {
             e.preventDefault();
 
@@ -241,7 +262,7 @@ export const MouseDown = new Plugin({
             const multiSelection = MultiBlockSelection.create(
               tr.doc,
               Math.min(currPos, from),
-              Math.max(currPos + currNode.nodeSize, to)
+              Math.max(currPos + currBlock.nodeSize, to)
             );
 
             dispatch(tr.setSelection(multiSelection));
@@ -328,13 +349,13 @@ export const MouseDown = new Plugin({
       };
     };
 
-    view.dom.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mousedown", handleMouseDown);
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
 
     return {
       destroy() {
-        view.dom.removeEventListener("mousedown", handleMouseDown);
+        document.removeEventListener("mousedown", handleMouseDown);
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
       },
