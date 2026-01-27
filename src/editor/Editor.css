@@ -37,10 +37,11 @@
   background-color: #1aff00 !important;
 }
 
-.ProseMirror-hideselection * {
+/* .ProseMirror-hideselection * {
   caret-color: blueviolet !important;
-}
+} */
 
-.woah {
-  background-color: #00ffdd !important;
+.table-reorder_hidden-cell {
+  background-color: rgb(75, 76, 91);
+  /* opacity: 0.5; */
 }

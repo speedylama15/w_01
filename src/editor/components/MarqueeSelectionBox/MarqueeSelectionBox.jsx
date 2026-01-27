@@ -90,9 +90,8 @@ const MarqueeSelectionBox = () => {
         })
         .sort((a, b) => a - b);
 
+      // debug
       console.log(shouldShowUpWhenPressedInEditor);
-
-      // const ids = index.search(10, 10, 20, 20, (i) => items[i].foo === 'bar');
 
       if (ids.length === 0) return;
 

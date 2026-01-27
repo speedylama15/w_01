@@ -13,9 +13,9 @@ const Editor = () => {
     <div ref={editorRef} className="editor">
       <EditorContent editor={editor} className="editor-content" />
 
-      <BlockHandle />
+      {/* <BlockHandle /> */}
 
-      <MarqueeSelectionBox />
+      {/* <MarqueeSelectionBox /> */}
     </div>
   );
 };
