@@ -97,7 +97,7 @@ const EditorProvider = ({ children }) => {
       Video,
       PDF,
       Divider,
-      Table.configure({ resizable: true, cellMinWidth: 150 }),
+      Table.configure({ resizable: false, cellMinWidth: 150 }),
       TableRow,
       TableHeader,
       TableCell,

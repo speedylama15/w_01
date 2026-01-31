@@ -9,18 +9,13 @@ const m_TableCell = TableCell.extend({
       colspan: { default: 1 },
       rowspan: { default: 1 },
       colwidth: {
-        default: [150],
+        default: 150,
         parseHTML: (element) => element.getAttribute("colwidth"),
-        renderHTML: (attributes) => ({
-          colwidth: [attributes.colwidth],
-        }),
-      },
-      elementType: {
-        default: "td",
-        parseHTML: (element) => element.getAttribute("data-element-type"),
-        renderHTML: (attributes) => ({
-          "data-element-type": attributes.elementType,
-        }),
+        renderHTML: (attributes) => {
+          return {
+            colwidth: attributes.colwidth || 150,
+          };
+        },
       },
       contentType: {
         default: this.name,

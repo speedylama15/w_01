@@ -4,6 +4,8 @@ import { CellSelection } from "@tiptap/pm/tables";
 
 import { getDepthByContentType } from "../utils/depth/getDepthByContentType";
 
+import { __pastedCells } from "@tiptap/pm/tables";
+
 const TABLE_REORDER_HIDE_CELLS = "TABLE_REORDER_HIDE_CELLS";
 const TABLE_REORDER_HOVERED_CELLS = "TABLE_REORDER_HOVERED_CELLS";
 
@@ -210,6 +212,52 @@ export const TableReorder_Plugin = new Plugin({
       if (decorations.length < 0) return DecorationSet.empty;
 
       return DecorationSet.create(state.doc, decorations);
+    },
+
+    handlePaste(view, e, slice) {
+      if (!slice) return true;
+
+      // console.log("slice", __pastedCells(slice));
+      console.log("handlePaste", slice);
+
+      const obj = {};
+
+      let rowCount = -1;
+
+      // slice.content.descendants((node, pos) => {
+      //   if (node.type.name === "tableRow") {
+      //     rowCount += 1;
+      //     if (!obj[rowCount]) obj[rowCount] = [];
+      //   }
+
+      //   if (
+      //     node.type.name === "tableCell" ||
+      //     node.type.name === "tableHeader"
+      //   ) {
+      //     obj[rowCount].push({
+      //       type: node.type.name,
+      //       content: node.textContent,
+      //     });
+
+      //     return false;
+      //   }
+      // });
+
+      return true;
+    },
+
+    // transformPasted(slice, view, plain) {
+    //   //
+    // },
+
+    // transformPastedHTML(html, view) {
+    //   console.log("transformPastedHTML", html);
+    // },
+
+    handleDOMEvents: {
+      paste(view, e) {
+        //
+      },
     },
   },
 
@@ -507,43 +555,44 @@ export const TableReorder_Plugin = new Plugin({
 
       const newMap = getTableMap(tableNode, tableData.before);
 
-      // fix
-      // arrange header and cell (did this only for ROW...)
-      if (fromIndex === 0) {
-        const headerNode = oldMap.cellGrid[0][0]?.node;
+      // fix: arrange header and cell (did this only for ROW...)
+      if (!isColumn) {
+        if (fromIndex === 0) {
+          const headerNode = oldMap.cellGrid[0][0]?.node;
 
-        if (headerNode.type.name === "tableHeader") {
-          // set this to header
-          const fromRow = newMap.cellGrid[fromIndex];
-          fromRow.forEach((cell) =>
-            tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableHeader),
-          );
+          if (headerNode.type.name === "tableHeader") {
+            // set this to header
+            const fromRow = newMap.cellGrid[fromIndex];
+            fromRow.forEach((cell) =>
+              tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableHeader),
+            );
 
-          // set this to cell
-          const toRow = newMap.cellGrid[toIndex];
-          toRow.forEach((cell) =>
-            tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableCell),
-          );
+            // set this to cell
+            const toRow = newMap.cellGrid[toIndex];
+            toRow.forEach((cell) =>
+              tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableCell),
+            );
+          }
+        }
+
+        if (toIndex === 0) {
+          const headerNode = oldMap.cellGrid[0][0]?.node;
+
+          if (headerNode.type.name === "tableHeader") {
+            const toRow = newMap.cellGrid[toIndex];
+            toRow.forEach((cell) =>
+              tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableHeader),
+            );
+
+            const nextRow = newMap.cellGrid[toIndex + 1];
+            nextRow.forEach((cell) =>
+              tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableCell),
+            );
+          }
         }
       }
 
-      if (toIndex === 0) {
-        const headerNode = oldMap.cellGrid[0][0]?.node;
-
-        if (headerNode.type.name === "tableHeader") {
-          const toRow = newMap.cellGrid[toIndex];
-          toRow.forEach((cell) =>
-            tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableHeader),
-          );
-
-          const nextRow = newMap.cellGrid[toIndex + 1];
-          nextRow.forEach((cell) =>
-            tr.setNodeMarkup(cell.pos, view.state.schema.nodes.tableCell),
-          );
-        }
-      }
-      // arrange header and cell (did this only for ROW...)
-
+      // set CellSelection
       if (isColumn) {
         tr.setSelection(selectColumn(tr.doc, newMap.cellGrid, toIndex));
       }

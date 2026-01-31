@@ -101,8 +101,39 @@ class m_TableView extends TableView {
 
     tableWrapper.append(this.table, selectionBox, columnButton);
 
+    console.log(node, this.table, this.colgroup);
+
+    // this.colgroup col elements without the width property
+    const count = node.content.content[0].content.content.length;
+
+    this.table.style.width = count * cellMinWidth + "px";
+    this.table.style.minWidth = count * cellMinWidth + "px";
+
     this.dom = block;
   }
+
+  // update(node) {
+  //   console.log("update inside of TableView", node);
+  // }
+
+  // update(node) {
+  //   if (node.type != this.node.type) return false;
+  //   this.node = node;
+  //   updateColumnsOnResize(
+  //     node,
+  //     this.colgroup,
+  //     this.table,
+  //     this.defaultCellMinWidth,
+  //   );
+  //   return true;
+  // }
+
+  // ignoreMutation(record) {
+  //   return (
+  //     record.type == "attributes" &&
+  //     (record.target == this.table || this.colgroup.contains(record.target))
+  //   );
+  // }
 }
 
 export default m_TableView;
@@ -125,3 +156,56 @@ export default m_TableView;
 // ignoreMutation() {
 //   return true;
 // }
+
+/**
+ * @public
+ */
+export function updateColumnsOnResize(
+  node,
+  colgroup,
+  table,
+  defaultCellMinWidth,
+  overrideCol,
+  overrideValue,
+) {
+  let totalWidth = 0;
+  let fixedWidth = true;
+  let nextDOM = colgroup.firstChild;
+  const row = node.firstChild;
+  if (!row) return;
+
+  for (let i = 0, col = 0; i < row.childCount; i++) {
+    const { colspan, colwidth } = row.child(i).attrs;
+    for (let j = 0; j < colspan; j++, col++) {
+      const hasWidth =
+        overrideCol == col ? overrideValue : colwidth && colwidth[j];
+      const cssWidth = hasWidth ? hasWidth + "px" : "";
+      totalWidth += hasWidth || defaultCellMinWidth;
+      if (!hasWidth) fixedWidth = false;
+      if (!nextDOM) {
+        const col = document.createElement("col");
+        col.style.width = cssWidth;
+        colgroup.appendChild(col);
+      } else {
+        if (nextDOM.style.width != cssWidth) {
+          nextDOM.style.width = cssWidth;
+        }
+        nextDOM = nextDOM.nextSibling;
+      }
+    }
+  }
+
+  while (nextDOM) {
+    const after = nextDOM.nextSibling;
+    nextDOM.parentNode?.removeChild(nextDOM);
+    nextDOM = after;
+  }
+
+  if (fixedWidth) {
+    table.style.width = totalWidth + "px";
+    table.style.minWidth = "";
+  } else {
+    table.style.width = "";
+    table.style.minWidth = totalWidth + "px";
+  }
+}

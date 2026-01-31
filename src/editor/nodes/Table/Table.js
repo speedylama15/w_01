@@ -21,8 +21,7 @@ const m_Table = Table.extend({
   },
 
   addProseMirrorPlugins() {
-    // fix
-    // const plugins = this.parent?.() || [];
+    // fix: const plugins = this.parent?.() || [];
 
     return [];
   },
