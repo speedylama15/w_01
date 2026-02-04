@@ -1,7 +1,7 @@
 import { TableHeader } from "@tiptap/extension-table";
 
 const m_TableHeader = TableHeader.extend({
-  content: "item",
+  content: "item+",
   draggable: false,
 
   addAttributes() {

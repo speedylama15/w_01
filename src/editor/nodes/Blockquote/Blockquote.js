@@ -6,7 +6,11 @@ const name = "blockquote";
 
 const Blockquote = Node.create({
   name,
+
+  marks: "bold italic underline strike textStyle highlight link",
+
   group: "block blockquote",
+
   content: "inline*",
 
   addInputRules() {

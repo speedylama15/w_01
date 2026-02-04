@@ -31,6 +31,7 @@ import Italic from "@tiptap/extension-italic";
 import Highlight from "@tiptap/extension-highlight";
 import Strike from "@tiptap/extension-strike";
 import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
 // mark
 
 // functionality
@@ -116,6 +117,7 @@ const EditorProvider = ({ children }) => {
       Italic,
       Strike,
       Underline,
+      Link,
 
       // REVIEW: functionality
       HardBreak,

@@ -6,8 +6,13 @@ const name = "paragraphItem";
 
 const ParagraphItem = Node.create({
   name,
+
+  marks: "bold italic underline strike textStyle highlight link",
+
   group: "item",
+
   content: "inline*",
+
   priority: 1000,
 
   parseHTML() {

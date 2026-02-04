@@ -1,8 +1,10 @@
+import { mergeAttributes } from "@tiptap/core";
 import { TableCell } from "@tiptap/extension-table";
 
 const m_TableCell = TableCell.extend({
-  content: "item",
-  draggable: false,
+  marks: "bold italic underline strike textStyle highlight link",
+
+  content: "item+",
 
   addAttributes() {
     return {
@@ -34,26 +36,12 @@ const m_TableCell = TableCell.extend({
     };
   },
 
-  addNodeView() {
-    return ({ HTMLAttributes }) => {
-      const td = document.createElement("td");
-
-      Object.entries(HTMLAttributes).forEach((entry) => {
-        const key = entry[0];
-        const value = entry[1];
-
-        td.setAttribute(key, value);
-      });
-
-      const contentDOM = document.createElement("div");
-      contentDOM.className = "cell-content";
-      td.append(contentDOM);
-
-      return {
-        dom: td,
-        contentDOM: contentDOM,
-      };
-    };
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "td",
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+      0,
+    ];
   },
 });
 

@@ -5,6 +5,7 @@ import { MouseDown } from "./MouseDown";
 import { RenderTableControls_Plugin } from "./RenderTableControls_Plugin";
 import { BlockHandle_Plugin } from "./BlockHandle_Plugin";
 import { TableReorder_Plugin } from "./TableReorder_Plugin";
+import { TableCopyAndPaste } from "./TableCopyAndPaste";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
@@ -14,6 +15,7 @@ export const Plugins = Extension.create({
       RenderTableControls_Plugin, // fix: rename this to renderTableControls_Plugin
       BlockHandle_Plugin,
       TableReorder_Plugin,
+      TableCopyAndPaste,
     ];
   },
 });

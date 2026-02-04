@@ -4,12 +4,15 @@ import { getNearestBlockDepth } from "../../../utils/getNearestBlockDepth";
 
 const name = "verseWithCitation";
 
-// todo: marks
-
 const VerseWithCitation = Node.create({
   name,
+
+  marks: "bold italic underline strike textStyle highlight link",
+
   group: "block verse",
+
   content: "inline*",
+
   defining: true,
 
   // handles both verse and verseWithCitation
@@ -99,7 +102,7 @@ const VerseWithCitation = Node.create({
         "div",
         mergeAttributes(
           { "data-citation": HTMLAttributes["data-citation"] },
-          this.options.contentAttrs
+          this.options.contentAttrs,
         ),
         [
           "verse-with-citation",

@@ -2,14 +2,18 @@ import { Node, mergeAttributes } from "@tiptap/core";
 
 const name = "numberedList";
 
-// todo: marks
 // todo: copy and paste rules
 // FIX: make sure add more classes inside of NumberedList.css's reset
 
 const NumberedList = Node.create({
   name,
+
+  marks: "bold italic underline strike textStyle highlight link",
+
   group: "block list",
+
   content: "inline*",
+
   defining: true,
 
   addInputRules() {

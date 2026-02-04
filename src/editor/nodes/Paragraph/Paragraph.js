@@ -2,14 +2,14 @@ import { Node, mergeAttributes } from "@tiptap/core";
 
 const name = "paragraph";
 
-// todo: marks
-// fix: I don't know why but bulletList is the data-content-type when it should be paragraph...
-
 const Paragraph = Node.create({
   name,
-  group: "block paragraph",
+
+  marks: "bold italic underline strike textStyle highlight link",
+
+  group: "block",
+
   content: "inline*",
-  priority: 200,
 
   addOptions() {
     return {

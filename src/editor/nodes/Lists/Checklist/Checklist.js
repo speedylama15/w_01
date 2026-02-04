@@ -9,8 +9,13 @@ const name = "checklist";
 
 const Checklist = Node.create({
   name,
+
+  marks: "bold italic underline strike textStyle highlight link",
+
   group: "block list",
+
   content: "inline*",
+
   defining: true,
 
   addNodeView() {
@@ -23,7 +28,7 @@ const Checklist = Node.create({
       const { block, checkbox, listItem } = createDOMChecklist(
         HTMLAttributes,
         width,
-        height
+        height,
       );
 
       const handleClick = () => {

@@ -7,8 +7,13 @@ const name = "bulletList";
 
 const BulletList = Node.create({
   name,
+
+  marks: "bold italic underline strike textStyle highlight link",
+
   group: "block list",
+
   content: "inline*",
+
   defining: true,
 
   addInputRules() {

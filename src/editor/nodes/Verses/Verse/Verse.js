@@ -6,8 +6,13 @@ const name = "verse";
 
 const Verse = Node.create({
   name,
+
+  marks: "bold italic underline strike textStyle highlight link",
+
   group: "block verse",
+
   content: "inline*",
+
   defining: true,
 
   addOptions() {
@@ -64,7 +69,7 @@ const Verse = Node.create({
         "div",
         mergeAttributes(
           { "data-verse-number": HTMLAttributes["data-verse-number"] },
-          this.options.contentAttrs
+          this.options.contentAttrs,
         ),
         [
           "verse",
