@@ -7,6 +7,9 @@ import { BlockHandle_Plugin } from "./BlockHandle_Plugin";
 import { TableReorder_Plugin } from "./TableReorder_Plugin";
 import { TableCopyAndPaste } from "./TableCopyAndPaste";
 
+import { Placeholder_Plugin } from "./Placeholder/Placeholder_Plugin";
+import { TrailingNode_Plugin } from "./TrailingNode/TrailingNode_Plugin";
+
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
     return [
@@ -16,6 +19,9 @@ export const Plugins = Extension.create({
       BlockHandle_Plugin,
       TableReorder_Plugin,
       TableCopyAndPaste,
+
+      Placeholder_Plugin,
+      TrailingNode_Plugin,
     ];
   },
 });

@@ -1,0 +1,83 @@
+.content-paragraph > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  /* fix: delete */
+  content: "Paragraph";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 300;
+  pointer-events: none;
+}
+
+.block[placeholder_empty-node="true"] p:before {
+  /* fix: remove !important */
+  content: "Enter text or type '/' for commands" !important;
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 300;
+  font-style: italic;
+  pointer-events: none;
+}
+
+.content-bulletList > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "List";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 300;
+  pointer-events: none;
+}
+
+.content-numberedList > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "List";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 300;
+  pointer-events: none;
+}
+
+.content-checklist > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "List";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 300;
+  pointer-events: none;
+}
+
+.content-verse > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Verse";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 300;
+  pointer-events: none;
+}
+
+.content-verseWithCitation
+  > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Verse";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 300;
+  pointer-events: none;
+}
+
+.content-heading1 > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Heading 1";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.content-heading2 > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Heading 2";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.content-heading3 > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Heading 3";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 700;
+  pointer-events: none;
+}

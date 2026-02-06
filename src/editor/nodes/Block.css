@@ -1,5 +1,5 @@
 .block {
-  background-color: #f9aba2;
+  background-color: #d9dbe5;
   padding: 2px 4px;
   /* border-radius: 7px; */
 }
@@ -44,9 +44,13 @@ list-item {
   line-height: 1.6;
 }
 
+.content > * {
+  min-width: 2px !important;
+}
+
 .content-bulletList {
   position: relative;
-  display: inline-flex;
+  display: flex;
 }
 
 .content-bulletList::before {
@@ -59,11 +63,13 @@ list-item {
   min-width: 28px;
   /* todo: make this a variable 통합*/
   line-height: 1.6;
+  /* review: key change */
+  pointer-events: none;
 }
 
 .content-numberedList {
   position: relative;
-  display: inline-flex;
+  display: flex;
 }
 
 .content-numberedList::before {
@@ -78,6 +84,8 @@ list-item {
   margin-right: 4px;
   /* todo: make this a variable 통합*/
   line-height: 1.6;
+  /* review: key change */
+  pointer-events: none;
 }
 
 blockquote {
@@ -88,12 +96,12 @@ blockquote {
 
 .content-verse {
   position: relative;
-  display: inline-flex;
+  display: flex;
 }
 
 .content-verseWithCitation {
   position: relative;
-  display: inline-flex;
+  display: flex;
 }
 
 /*

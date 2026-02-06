@@ -1,8 +1,6 @@
-import { Plugin, TextSelection } from "@tiptap/pm/state";
+import { Plugin } from "@tiptap/pm/state";
 import { CellSelection } from "@tiptap/pm/tables";
 import { Fragment } from "@tiptap/pm/model";
-// idea
-// import { __pastedCells } from "@tiptap/pm/tables";
 
 const getTableMap = (tableNode, tableBefore) => {
   const rowArray = [];
@@ -202,9 +200,6 @@ export const TableCopyAndPaste = new Plugin({
         targetCell.setAttribute("colspan", "1");
         targetCell.setAttribute("rowspan", "1");
       });
-
-      // debug
-      //  console.log("transformPastedHTML", doc.body);
 
       return doc.body.innerHTML;
     },

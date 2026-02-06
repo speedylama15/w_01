@@ -1,6 +1,6 @@
 .content-checklist {
   position: relative;
-  display: inline-flex;
+  display: flex;
 }
 
 .checkbox {

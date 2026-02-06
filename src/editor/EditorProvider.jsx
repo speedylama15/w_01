@@ -75,6 +75,8 @@ import "./nodes/Table/TableRow.css";
 import "./nodes/Table/TableHeader.css";
 import "./nodes/Table/TableCell.css";
 
+import "./plugins/Placeholder/Placeholder_Plugin.css";
+
 const EditorProvider = ({ children }) => {
   const editor = useEditor({
     content: JSON.parse(localStorage.getItem("editor")) || "",

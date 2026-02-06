@@ -1,6 +1,5 @@
 .editor-page {
   display: flex;
-  background-color: #e5e9ef;
   min-height: calc(100vh - 84px);
   scrollbar-gutter: stable;
 }
