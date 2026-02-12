@@ -4,6 +4,8 @@ import { useCurrentEditor, EditorContent } from "@tiptap/react";
 import BlockHandle from "./components/BlockHandle/BlockHandle.jsx";
 import MarqueeSelectionBox from "./components/MarqueeSelectionBox/MarqueeSelectionBox.jsx";
 
+import SlashMenu from "./plugins/SlashMenu/SlashMenu.jsx";
+
 const Editor = () => {
   const editor = useCurrentEditor();
 

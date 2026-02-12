@@ -108,6 +108,7 @@ const EditorProvider = ({ children }) => {
       Text,
 
       // fix
+
       KeyboardShortcuts,
       // fix
 

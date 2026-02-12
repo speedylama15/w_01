@@ -6,8 +6,9 @@ import blockHandleStore from "../../stores/blockHandleStore";
 
 import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
 
-import "./BlockHandle.css";
 import { getDepthByNodeType } from "../../utils/depth/getDepthByNodeType";
+
+import "./BlockHandle.css";
 
 // todo: add tooltip
 // todo: mousedown -> lock it

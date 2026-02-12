@@ -10,7 +10,7 @@ const m_Table = Table.extend({
 
   addKeyboardShortcuts() {
     return {
-      "/": ({ editor }) => {
+      "=": ({ editor }) => {
         return editor
           .chain()
           .focus()

@@ -11,7 +11,7 @@ export const KeyboardShortcuts = Extension.create({
       // just editor
       Backspace: ({ editor }) => {
         // debug
-        console.log("backspace");
+        // console.log("backspace");
 
         const { view } = editor;
         const { selection } = editor.state;

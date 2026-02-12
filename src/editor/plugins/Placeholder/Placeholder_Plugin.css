@@ -5,6 +5,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
+  width: 100%;
 }
 
 .block[placeholder_empty-node="true"] p:before {
@@ -15,6 +16,7 @@
   font-weight: 300;
   font-style: italic;
   pointer-events: none;
+  width: 100%;
 }
 
 .content-bulletList > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -23,6 +25,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
+  width: 100%;
 }
 
 .content-numberedList > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -31,6 +34,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
+  width: 100%;
 }
 
 .content-checklist > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -39,6 +43,16 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
+  width: 100%;
+}
+
+.content-blockquote > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Quote";
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 300;
+  pointer-events: none;
+  width: 100%;
 }
 
 .content-verse > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -47,6 +61,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
+  width: 100%;
 }
 
 .content-verseWithCitation
@@ -56,6 +71,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
+  width: 100%;
 }
 
 .content-heading1 > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -64,6 +80,7 @@
   color: #9ea0a8;
   font-weight: 700;
   pointer-events: none;
+  width: 100%;
 }
 
 .content-heading2 > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -72,6 +89,7 @@
   color: #9ea0a8;
   font-weight: 700;
   pointer-events: none;
+  width: 100%;
 }
 
 .content-heading3 > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -80,4 +98,5 @@
   color: #9ea0a8;
   font-weight: 700;
   pointer-events: none;
+  width: 100%;
 }

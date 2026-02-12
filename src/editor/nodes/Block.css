@@ -50,7 +50,7 @@ list-item {
 
 .content-bulletList {
   position: relative;
-  display: flex;
+  display: inline-flex;
 }
 
 .content-bulletList::before {
@@ -69,7 +69,7 @@ list-item {
 
 .content-numberedList {
   position: relative;
-  display: flex;
+  display: inline-flex;
 }
 
 .content-numberedList::before {
@@ -96,12 +96,12 @@ blockquote {
 
 .content-verse {
   position: relative;
-  display: flex;
+  display: inline-flex;
 }
 
 .content-verseWithCitation {
   position: relative;
-  display: flex;
+  display: inline-flex;
 }
 
 /*

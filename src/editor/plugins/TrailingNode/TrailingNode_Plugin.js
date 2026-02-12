@@ -10,8 +10,6 @@ export const TrailingNode_Plugin = new Plugin({
 
     const shouldAdd = TrailingNode_Key.getState(newState);
 
-    console.log("appendTransaction", shouldAdd);
-
     if (!shouldAdd) {
       return;
     }
