@@ -8,7 +8,7 @@ import { TableReorder_Plugin } from "./TableReorder_Plugin";
 import { TableCopyAndPaste } from "./TableCopyAndPaste";
 
 import { Placeholder_Plugin } from "./Placeholder/Placeholder_Plugin";
-import { createNodeMenuPlugin } from "./SlashMenu/SlashMenu_Plugin";
+import { createNodeMenuPlugin } from "./NodeMenu/NodeMenu_Plugin";
 import { TrailingNode_Plugin } from "./TrailingNode/TrailingNode_Plugin";
 
 export const Plugins = Extension.create({

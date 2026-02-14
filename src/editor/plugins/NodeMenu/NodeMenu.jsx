@@ -1,14 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Fuse from "fuse.js";
 
-import "./SlashMenu.css";
-
-// todo: implement searching
-// todo: implement when ESC is pressed
-// todo: implement when a button is pressed
-// todo: when re-setting selection, gotta know if button was pressed or if outside was pressed
-// idea: I need the search bar to remain at the same position
-// idea: while the results fluctuate
+import "./NodeMenu.css";
 
 const items = [
   { name: "Paragraph", type: "paragraph" },
@@ -20,7 +13,7 @@ const items = [
   { name: "Heading 3", type: "heading3", level: 3 },
 ];
 
-const SlashMenu = (props) => {
+const NodeMenu = (props) => {
   const [nodes, setNodes] = useState(items);
 
   const menuRef = useRef();
@@ -32,8 +25,6 @@ const SlashMenu = (props) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         const { editor } = props;
 
-        // fix: maybe I need to pass in selection as prop and set selection
-        // fix: gotta handle when selection is MultiSelection
         editor
           .chain()
           .focus()
@@ -97,7 +88,7 @@ const SlashMenu = (props) => {
   };
 
   return (
-    <div className="slash-menu" ref={menuRef}>
+    <div className="node-menu" ref={menuRef}>
       <input
         type="text"
         placeholder="Paragraph..."
@@ -114,13 +105,4 @@ const SlashMenu = (props) => {
   );
 };
 
-export default SlashMenu;
-
-// const pluginState = useEditorState({
-//   editor,
-//   selector: (snapshot) => {
-//     if (!snapshot.editor) return null;
-
-//     return SlashMenu_Key.getState(snapshot.editor.state);
-//   },
-// });
+export default NodeMenu;

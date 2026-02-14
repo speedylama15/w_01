@@ -2,8 +2,6 @@ import { Node, mergeAttributes } from "@tiptap/core";
 
 const name = "blockquote";
 
-// todo: marks
-
 const Blockquote = Node.create({
   name,
 
@@ -43,6 +41,9 @@ const Blockquote = Node.create({
       contentAttrs: {
         class: `content content-${name}`,
       },
+      inlineAttrs: {
+        class: `inline inline-${name}`,
+      },
     };
   },
 
@@ -80,7 +81,11 @@ const Blockquote = Node.create({
     return [
       "div",
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
-      ["div", this.options.contentAttrs, ["blockquote", {}, 0]],
+      [
+        "div",
+        this.options.contentAttrs,
+        ["blockquote", this.options.inlineAttrs, 0],
+      ],
     ];
   },
 });

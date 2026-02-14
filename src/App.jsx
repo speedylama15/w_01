@@ -10,17 +10,9 @@ import TableDropdown from "./editor/components/TableDropdown/TableDropdown.jsx";
 import "./editor/Editor.css";
 import "./editor/nodes/Block.css";
 
-import "./editor/nodes/Paragraph/Paragraph.css";
-
-import "./editor/nodes/Headings/Heading1/Heading1.css";
-import "./editor/nodes/Headings/Heading2/Heading2.css";
-import "./editor/nodes/Headings/Heading3/Heading3.css";
-
 import "./editor/nodes/Lists/BulletList/BulletList.css";
 import "./editor/nodes/Lists/NumberedList/NumberedList.css";
 import "./editor/nodes/Lists/Checklist/Checklist.css";
-
-import "./editor/nodes/Blockquote/Blockquote.css";
 
 import "./editor/nodes/Verses/Verse/Verse.css";
 import "./editor/nodes/Verses/VerseWithCitation/VerseWithCitation.css";

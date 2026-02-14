@@ -1,13 +1,18 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
-import { getNearestBlockDepth } from "../../../utils/getNearestBlockDepth";
+import {
+  setMarks,
+  setAttributes,
+  setOptions,
+} from "../../../utils/nodes/setNodeProperties";
+import { getDepthByNodeType } from "../../../utils/depth/getDepthByNodeType";
 
 const name = "verseWithCitation";
 
 const VerseWithCitation = Node.create({
   name,
 
-  marks: "bold italic underline strike textStyle highlight link",
+  marks: setMarks(name),
 
   group: "block verse",
 
@@ -15,17 +20,20 @@ const VerseWithCitation = Node.create({
 
   defining: true,
 
-  // handles both verse and verseWithCitation
   addInputRules() {
     return [
       {
         find: /^\[([^\]]+)\] $/,
         handler: ({ state, match, range, chain }) => {
-          const { $from } = state.selection;
-          const { attrs } = $from.node(getNearestBlockDepth($from));
+          const result = getDepthByNodeType(state.selection.$from, "block");
+
+          if (!result) return null;
+
+          const { attrs } = result.node;
 
           const data = match[1];
           const isNumber = /^\d+$/.test(data);
+
           if (isNumber) {
             chain()
               .deleteRange(range)
@@ -39,7 +47,7 @@ const VerseWithCitation = Node.create({
               .deleteRange(range)
               .setNode("verseWithCitation", {
                 ...attrs,
-                citation: data,
+                verseCitation: data,
               })
               .run();
           }
@@ -49,45 +57,21 @@ const VerseWithCitation = Node.create({
   },
 
   addOptions() {
-    return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
-        class: `content content-${name}`,
-      },
-    };
+    return setOptions(name);
   },
 
   addAttributes() {
-    return {
-      divType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
-        renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
-        }),
-      },
-      contentType: {
-        default: name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
-      indentLevel: {
-        default: 0,
-        parseHTML: (element) => element.getAttribute("data-indent-level"),
-        renderHTML: (attributes) => ({
-          "data-indent-level": attributes.indentLevel,
-        }),
-      },
-      citation: {
+    const other = {
+      verseCitation: {
         default: "",
-        parseHTML: (element) => element.getAttribute("data-citation"),
+        parseHTML: (element) => element.getAttribute("data-verse-citation"),
         renderHTML: (attributes) => ({
-          "data-citation": attributes.citation,
+          "data-verse-citation": attributes.verseCitation,
         }),
       },
     };
+
+    return setAttributes(name, other);
   },
 
   parseHTML() {
@@ -101,16 +85,10 @@ const VerseWithCitation = Node.create({
       [
         "div",
         mergeAttributes(
-          { "data-citation": HTMLAttributes["data-citation"] },
+          { "data-verse-citation": HTMLAttributes["data-verse-citation"] },
           this.options.contentAttrs,
         ),
-        [
-          "verse-with-citation",
-          {
-            "data-citation": HTMLAttributes["data-citation"],
-          },
-          0,
-        ],
+        ["verse-with-citation", this.options.inlineAttrs, 0],
       ],
     ];
   },

@@ -1,16 +1,18 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
+import {
+  setMarks,
+  setAttributes,
+  setOptions,
+} from "../../../utils/nodes/setNodeProperties";
 import createDOMChecklist from "./createDOMChecklist";
 
 const name = "checklist";
 
-// todo: marks
-// todo: copy and paste rules
-
 const Checklist = Node.create({
   name,
 
-  marks: "bold italic underline strike textStyle highlight link",
+  marks: setMarks(name),
 
   group: "block list",
 
@@ -85,6 +87,9 @@ const Checklist = Node.create({
       contentAttrs: {
         class: `content content-${name}`,
       },
+      inlineAttrs: {
+        class: `inline inline-${name}`,
+      },
     };
   },
 
@@ -154,7 +159,7 @@ const Checklist = Node.create({
             ],
           ],
         ],
-        ["list-item", {}, 0],
+        ["list-item", this.options.inlineAttrs, 0],
       ],
     ];
   },

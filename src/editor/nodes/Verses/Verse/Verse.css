@@ -1,5 +1,5 @@
 .content-verse::before {
-  display: inline-block;
+  display: flex;
   content: attr(data-verse-number);
   font-size: 12px;
   min-width: fit-content;

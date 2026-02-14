@@ -5,7 +5,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .block[placeholder_empty-node="true"] p:before {
@@ -16,7 +16,7 @@
   font-weight: 300;
   font-style: italic;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .content-bulletList > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -25,7 +25,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .content-numberedList > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -34,7 +34,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .content-checklist > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -43,7 +43,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .content-blockquote > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -52,7 +52,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .content-verse > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -61,7 +61,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .content-verseWithCitation
@@ -71,7 +71,7 @@
   color: #9ea0a8;
   font-weight: 300;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .content-heading1 > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -80,7 +80,7 @@
   color: #9ea0a8;
   font-weight: 700;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .content-heading2 > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -89,7 +89,7 @@
   color: #9ea0a8;
   font-weight: 700;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }
 
 .content-heading3 > *:has(.ProseMirror-trailingBreak:only-child)::before {
@@ -98,5 +98,5 @@
   color: #9ea0a8;
   font-weight: 700;
   pointer-events: none;
-  width: 100%;
+  width: max-content;
 }

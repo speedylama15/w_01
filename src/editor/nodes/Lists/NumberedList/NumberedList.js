@@ -1,14 +1,19 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
+import {
+  setMarks,
+  setAttributes,
+  setOptions,
+} from "../../../utils/nodes/setNodeProperties";
+
 const name = "numberedList";
 
-// todo: copy and paste rules
 // FIX: make sure add more classes inside of NumberedList.css's reset
 
 const NumberedList = Node.create({
   name,
 
-  marks: "bold italic underline strike textStyle highlight link",
+  marks: setMarks(name),
 
   group: "block list",
 
@@ -30,7 +35,7 @@ const NumberedList = Node.create({
           chain()
             .deleteRange(range)
             .setNode(this.name, {
-              divType: "block",
+              nodeType: "block",
               contentType: name,
               indentLevel,
             })
@@ -40,43 +45,15 @@ const NumberedList = Node.create({
     ];
   },
 
-  addOptions() {
-    return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
-        class: `content content-${name}`,
-      },
-    };
+  addAttributes() {
+    return setAttributes(name);
   },
 
-  addAttributes() {
-    return {
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
-      contentType: {
-        default: name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
-      indentLevel: {
-        default: 0,
-        parseHTML: (element) => element.getAttribute("data-indent-level"),
-        renderHTML: (attributes) => ({
-          "data-indent-level": attributes.indentLevel,
-        }),
-      },
-    };
+  addOptions() {
+    return setOptions(name);
   },
 
   parseHTML() {
-    // fix: ???
     return [{ tag: `div[data-content-type="${name}"]` }, { tag: "ol li" }];
   },
 
@@ -84,7 +61,11 @@ const NumberedList = Node.create({
     return [
       "div",
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
-      ["div", this.options.contentAttrs, ["list-item", {}, 0]],
+      [
+        "div",
+        this.options.contentAttrs,
+        ["list-item", this.options.inlineAttrs, 0],
+      ],
     ];
   },
 });

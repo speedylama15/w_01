@@ -1,13 +1,21 @@
 import { mergeAttributes, Node, textblockTypeInputRule } from "@tiptap/core";
 
-const name = "heading3";
+import {
+  setAttributes,
+  setOptions,
+} from "../../../utils/nodes/setNodeProperties";
 
-// todo: marks
+const name = "heading3";
 
 const Heading3 = Node.create({
   name,
+
+  marks: "italic underline strike textStyle highlight",
+
   group: "block heading",
+
   content: "inline*",
+
   defining: true,
 
   addInputRules() {
@@ -16,7 +24,7 @@ const Heading3 = Node.create({
         find: new RegExp(`^(#{3})\\s$`),
         type: this.type,
         getAttributes: {
-          divType: "block",
+          nodeType: "block",
           contentType: name,
           indentLevel: 0,
         },
@@ -24,39 +32,12 @@ const Heading3 = Node.create({
     ];
   },
 
-  addOptions() {
-    return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
-        class: `content content-${name}`,
-      },
-    };
+  addAttributes() {
+    return setAttributes(name);
   },
 
-  addAttributes() {
-    return {
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
-      contentType: {
-        default: name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
-      indentLevel: {
-        default: 0,
-        parseHTML: (element) => element.getAttribute("data-indent-level"),
-        renderHTML: (attributes) => ({
-          "data-indent-level": attributes.indentLevel,
-        }),
-      },
-    };
+  addOptions() {
+    return setOptions(name);
   },
 
   parseHTML() {
@@ -67,7 +48,7 @@ const Heading3 = Node.create({
     return [
       "div",
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
-      ["div", this.options.contentAttrs, ["h3", {}, 0]],
+      ["div", this.options.contentAttrs, ["h3", this.options.inlineAttrs, 0]],
     ];
   },
 });

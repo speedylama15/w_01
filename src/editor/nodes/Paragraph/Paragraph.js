@@ -1,49 +1,30 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
+import {
+  setMarks,
+  setAttributes,
+  setOptions,
+} from "../../utils/nodes/setNodeProperties";
+
 const name = "paragraph";
 
 const Paragraph = Node.create({
   name,
 
-  marks: "bold italic underline strike textStyle highlight link",
+  marks: setMarks(name),
 
   group: "block",
 
   content: "inline*",
 
-  addOptions() {
-    return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
-        class: `content content-${name}`,
-      },
-    };
-  },
+  priority: 1000,
 
   addAttributes() {
-    return {
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
-      contentType: {
-        default: name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
-      indentLevel: {
-        default: 0,
-        parseHTML: (element) => element.getAttribute("data-indent-level"),
-        renderHTML: (attributes) => ({
-          "data-indent-level": attributes.indentLevel,
-        }),
-      },
-    };
+    return setAttributes(name);
+  },
+
+  addOptions() {
+    return setOptions(name);
   },
 
   parseHTML() {
@@ -54,7 +35,7 @@ const Paragraph = Node.create({
     return [
       "div",
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
-      ["div", this.options.contentAttrs, ["p", {}, 0]],
+      ["div", this.options.contentAttrs, ["p", this.options.inlineAttrs, 0]],
     ];
   },
 });

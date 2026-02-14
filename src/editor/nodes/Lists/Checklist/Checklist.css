@@ -1,11 +1,15 @@
 .content-checklist {
   position: relative;
-  display: flex;
+  display: inline-flex;
 }
 
 .checkbox {
-  display: block;
-  margin-top: 1.8px;
+  display: flex;
+  /* idea: this is great! */
+  /* margin-top: calc((1.6 * 18px - 22px) / 2); */
+  margin-top: calc(
+    (var(--line-height) * var(--font-size) - var(--checkbox-width)) / 2
+  );
   margin-right: 6px;
   border: 1px solid #000;
   border-radius: 5px;

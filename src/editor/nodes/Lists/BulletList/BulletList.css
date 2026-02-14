@@ -1,7 +1,8 @@
 .block-bulletList[data-indent-level="0"] .content::before,
 .block-bulletList[data-indent-level="3"] .content::before,
 .block-bulletList[data-indent-level="6"] .content::before,
-.block-bulletList[data-indent-level="9"] .content::before {
+.block-bulletList[data-indent-level="9"] .content::before,
+.block-bulletList[data-indent-level="12"] .content::before {
   content: "●";
 }
 
@@ -14,6 +15,7 @@
 
 .block-bulletList[data-indent-level="2"] .content::before,
 .block-bulletList[data-indent-level="5"] .content::before,
-.block-bulletList[data-indent-level="8"] .content::before {
+.block-bulletList[data-indent-level="8"] .content::before,
+.block-bulletList[data-indent-level="11"] .content::before {
   content: "■";
 }

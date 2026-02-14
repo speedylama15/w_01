@@ -4,10 +4,6 @@
   /* border-radius: 7px; */
 }
 
-.content {
-  vertical-align: middle;
-}
-
 p,
 blockquote,
 verse,
@@ -44,7 +40,7 @@ list-item {
   line-height: 1.6;
 }
 
-.content > * {
+.content > .inline {
   min-width: 2px !important;
 }
 

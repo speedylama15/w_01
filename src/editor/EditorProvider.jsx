@@ -48,17 +48,9 @@ import { Plugins } from "./plugins/Plugins";
 import "./Editor.css";
 import "./nodes/Block.css";
 
-import "./nodes/Paragraph/Paragraph.css";
-
-import "./nodes/Headings/Heading1/Heading1.css";
-import "./nodes/Headings/Heading2/Heading2.css";
-import "./nodes/Headings/Heading3/Heading3.css";
-
 import "./nodes/Lists/BulletList/BulletList.css";
 import "./nodes/Lists/NumberedList/NumberedList.css";
 import "./nodes/Lists/Checklist/Checklist.css";
-
-import "./nodes/Blockquote/Blockquote.css";
 
 import "./nodes/Verses/Verse/Verse.css";
 import "./nodes/Verses/VerseWithCitation/VerseWithCitation.css";

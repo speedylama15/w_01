@@ -55,6 +55,7 @@ const createDOMChecklist = (HTMLAttributes, width, height) => {
   const checkbox = createCheckbox(width, height);
   const svg = createCheckmark(width, height);
   const listItem = document.createElement("list-item");
+  listItem.className = `inline inline-checklist`;
 
   block.appendChild(content);
   content.appendChild(checkbox);

@@ -1,6 +1,6 @@
 .content-verseWithCitation::before {
-  display: inline-block;
-  content: attr(data-citation);
+  display: flex;
+  content: attr(data-verse-citation);
   font-size: var(--font-size);
   font-weight: 500;
   line-height: 1.6;

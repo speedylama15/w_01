@@ -1,13 +1,17 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
-const name = "verse";
+import {
+  setMarks,
+  setAttributes,
+  setOptions,
+} from "../../../utils/nodes/setNodeProperties";
 
-// todo: marks
+const name = "verse";
 
 const Verse = Node.create({
   name,
 
-  marks: "bold italic underline strike textStyle highlight link",
+  marks: setMarks(name),
 
   group: "block verse",
 
@@ -16,37 +20,11 @@ const Verse = Node.create({
   defining: true,
 
   addOptions() {
-    return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
-        class: `content content-${name}`,
-      },
-    };
+    return setOptions(name);
   },
 
   addAttributes() {
-    return {
-      divType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
-        renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
-        }),
-      },
-      contentType: {
-        default: name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
-      indentLevel: {
-        default: 0,
-        parseHTML: (element) => element.getAttribute("data-indent-level"),
-        renderHTML: (attributes) => ({
-          "data-indent-level": attributes.indentLevel,
-        }),
-      },
+    const other = {
       verseNumber: {
         default: null,
         parseHTML: (element) => element.getAttribute("data-verse-number"),
@@ -55,6 +33,8 @@ const Verse = Node.create({
         }),
       },
     };
+
+    return setAttributes(name, other);
   },
 
   parseHTML() {
@@ -67,15 +47,11 @@ const Verse = Node.create({
       mergeAttributes(HTMLAttributes, this.options.blockAttrs),
       [
         "div",
-        mergeAttributes(
-          { "data-verse-number": HTMLAttributes["data-verse-number"] },
-          this.options.contentAttrs,
-        ),
-        [
-          "verse",
-          { "data-verse-number": HTMLAttributes["data-verse-number"] },
-          0,
-        ],
+        {
+          "data-verse-number": HTMLAttributes["data-verse-number"],
+          ...this.options.contentAttrs,
+        },
+        ["verse", this.options.inlineAttrs, 0],
       ],
     ];
   },

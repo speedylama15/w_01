@@ -16,6 +16,9 @@
   --primary-bg-color: #ffdab9;
   --font-size: 18px;
   --font-weight: 300;
+  --line-height: 1.6;
+  --checkbox-width: 22px;
+  --checkbox-height: 22px;
 }
 
 body {
