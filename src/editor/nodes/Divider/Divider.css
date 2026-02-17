@@ -1,9 +1,9 @@
-div.block-divider.ProseMirror-selectednode {
+.block.ProseMirror-selectednode {
   outline: 3px solid #84b9ff;
 }
 
 .divider-wrapper {
-  padding: 5px;
+  padding: 5px 0;
 }
 
 hr {

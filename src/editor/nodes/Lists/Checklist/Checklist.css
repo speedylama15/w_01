@@ -6,7 +6,6 @@
 .checkbox {
   display: flex;
   /* idea: this is great! */
-  /* margin-top: calc((1.6 * 18px - 22px) / 2); */
   margin-top: calc(
     (var(--line-height) * var(--font-size) - var(--checkbox-width)) / 2
   );
@@ -15,10 +14,10 @@
   border-radius: 5px;
 }
 
-.block-checklist[data-is-checked="true"] svg {
+.block-checklist[data-checkbox-status="complete"] svg {
   display: block;
 }
 
-.block-checklist[data-is-checked="false"] svg {
+.block-checklist[data-checkbox-status="incomplete"] svg {
   display: none;
 }

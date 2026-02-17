@@ -5,7 +5,7 @@ import {
   setAttributes,
   setOptions,
 } from "../../../utils/nodes/setNodeProperties";
-import createDOMChecklist from "./createDOMChecklist";
+import createChecklistDOM from "./createChecklistDOM";
 
 const name = "checklist";
 
@@ -20,38 +20,18 @@ const Checklist = Node.create({
 
   defining: true,
 
+  selectable: false,
+
   addNodeView() {
-    return ({ HTMLAttributes, editor, view, node, getPos }) => {
-      const width = 22;
-      const height = 22;
-
-      const { dispatch } = view;
-
-      const { block, checkbox, listItem } = createDOMChecklist(
+    return ({ HTMLAttributes }) => {
+      const { block, listItem } = createChecklistDOM(
         HTMLAttributes,
-        width,
-        height,
+        this.options,
       );
-
-      const handleClick = () => {
-        const { state } = editor;
-        const { tr } = state;
-
-        const isChecked = JSON.parse(node.attrs?.isChecked);
-
-        tr.setNodeAttribute(getPos(), "isChecked", !isChecked);
-
-        dispatch(tr);
-      };
-
-      checkbox.addEventListener("mousedown", handleClick);
 
       return {
         dom: block,
         contentDOM: listItem,
-        destroy: () => {
-          checkbox.removeEventListener("click", handleClick);
-        },
       };
     };
   },
@@ -70,10 +50,10 @@ const Checklist = Node.create({
           chain()
             .deleteRange(range)
             .setNode("checklist", {
-              divType: "block",
-              contentType: "checklist",
+              nodeType: "block",
+              contentType: name,
               indentLevel,
-              isChecked: false,
+              checkboxStatus: "incomplete",
             })
             .run();
         },
@@ -81,54 +61,31 @@ const Checklist = Node.create({
     ];
   },
 
-  addOptions() {
-    return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
-        class: `content content-${name}`,
-      },
-      inlineAttrs: {
-        class: `inline inline-${name}`,
+  addAttributes() {
+    const other = {
+      checkboxStatus: {
+        // review: when a node is created, it uses default
+        default: "incomplete",
+        // review: parseHTML seems to invoke when paste occurs
+        parseHTML: (element) => {
+          const status = element.getAttribute("data-checkbox-status");
+
+          return status ? status : "incomplete";
+        },
+        renderHTML: (attributes) => ({
+          "data-checkbox-status": attributes.checkboxStatus,
+        }),
       },
     };
+
+    return setAttributes(name, other);
   },
 
-  addAttributes() {
-    return {
-      nodeType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
-      },
-      contentType: {
-        default: name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
-      indentLevel: {
-        default: 0,
-        parseHTML: (element) => element.getAttribute("data-indent-level"),
-        renderHTML: (attributes) => ({
-          "data-indent-level": attributes.indentLevel,
-        }),
-      },
-      isChecked: {
-        default: false,
-        parseHTML: (element) =>
-          element.getAttribute("data-is-checked") === "true",
-        renderHTML: (attributes) => ({
-          "data-is-checked": attributes.isChecked,
-        }),
-      },
-    };
+  addOptions() {
+    return setOptions(name);
   },
 
   parseHTML() {
-    // fix: ???
     return [{ tag: `div[data-content-type="${name}"]` }];
   },
 

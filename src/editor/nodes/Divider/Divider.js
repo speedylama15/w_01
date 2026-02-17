@@ -1,16 +1,24 @@
 import { mergeAttributes, Node, canInsertNode } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
-import { getNearestBlockDepth } from "../../utils/getNearestBlockDepth";
+import { setAttributes } from "../../utils/nodes/setNodeProperties";
+import { getDepthByNodeType } from "../../utils/depth/getDepthByNodeType";
 
 const name = "divider";
 
+// review: selectable: false -> disable Node Selection
+// review: atom: true -> node has no directly editable content
+
 const Divider = Node.create({
   name,
+
   group: "block divider",
+
   atom: true,
+
   inline: false,
-  selectable: true,
+
+  selectable: false,
 
   addInputRules() {
     return [
@@ -22,10 +30,10 @@ const Divider = Node.create({
 
           if (!canInsertNode(state, state.schema.nodes.divider)) return false;
 
-          const depth = getNearestBlockDepth($from);
-          if (!depth) return;
+          const result = getDepthByNodeType($from, "block");
+          if (!result) return;
 
-          const node = $from.node(depth);
+          const { node, depth } = result;
 
           const before = $from.before(depth);
           const after = before + node.nodeSize;
@@ -33,18 +41,18 @@ const Divider = Node.create({
           const { indentLevel } = node.attrs;
 
           const divider = state.schema.nodes.divider.create({
-            divType: "block",
+            nodeType: "block",
             contentType: name,
             indentLevel,
           });
 
           const paragraph = state.schema.nodes.paragraph.create(
             {
-              divType: "block",
+              nodeType: "block",
               contentType: "paragraph",
               indentLevel,
             },
-            node.content.cut(2)
+            node.content.cut(2),
           );
 
           return tr
@@ -66,29 +74,7 @@ const Divider = Node.create({
   },
 
   addAttributes() {
-    return {
-      divType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
-        renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
-        }),
-      },
-      contentType: {
-        default: name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
-      indentLevel: {
-        default: 0,
-        parseHTML: (element) => element.getAttribute("data-indent-level"),
-        renderHTML: (attributes) => ({
-          "data-indent-level": attributes.indentLevel,
-        }),
-      },
-    };
+    return setAttributes(name);
   },
 
   parseHTML() {

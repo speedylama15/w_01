@@ -19,6 +19,8 @@ const BulletList = Node.create({
 
   defining: true,
 
+  selectable: false,
+
   addInputRules() {
     return [
       {

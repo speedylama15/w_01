@@ -1,16 +1,10 @@
 import { Plugin } from "@tiptap/pm/state";
 
-export const BlockEvents = new Plugin({
+export const BlockEvents_Plugin = new Plugin({
   props: {
     handleTripleClick(view, pos, e) {
       e.preventDefault();
       e.stopPropagation();
-      return true;
-    },
-
-    // fix: do I need this?
-    handleDrop(view, e) {
-      e.preventDefault();
       return true;
     },
 
@@ -26,15 +20,13 @@ export const BlockEvents = new Plugin({
         }
       },
 
+      // selectStart? <- will disable text selection entirely...
+
       dragstart(view, e) {
         e.preventDefault();
         return true;
       },
       drag(view, e) {
-        e.preventDefault();
-        return true;
-      },
-      drop(view, e) {
         e.preventDefault();
         return true;
       },

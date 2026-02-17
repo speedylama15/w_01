@@ -1,6 +1,8 @@
 import { TableRow } from "@tiptap/extension-table";
 
 const m_TableRow = TableRow.extend({
+  selectable: false,
+
   addAttributes() {
     return {
       contentType: {

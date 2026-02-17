@@ -19,6 +19,8 @@ const Verse = Node.create({
 
   defining: true,
 
+  selectable: false,
+
   addOptions() {
     return setOptions(name);
   },

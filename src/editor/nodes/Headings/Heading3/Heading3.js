@@ -18,6 +18,8 @@ const Heading3 = Node.create({
 
   defining: true,
 
+  selectable: false,
+
   addInputRules() {
     return [
       textblockTypeInputRule({

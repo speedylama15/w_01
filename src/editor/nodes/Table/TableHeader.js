@@ -3,6 +3,7 @@ import { TableHeader } from "@tiptap/extension-table";
 const m_TableHeader = TableHeader.extend({
   content: "item+",
   draggable: false,
+  selectable: false,
 
   addAttributes() {
     return {

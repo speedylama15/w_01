@@ -6,7 +6,10 @@ const name = "table";
 
 const m_Table = Table.extend({
   name,
+
   group: "block",
+
+  selectable: false,
 
   addKeyboardShortcuts() {
     return {

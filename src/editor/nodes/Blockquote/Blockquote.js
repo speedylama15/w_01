@@ -1,15 +1,23 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
+import {
+  setMarks,
+  setAttributes,
+  setOptions,
+} from "../../utils/nodes/setNodeProperties";
+
 const name = "blockquote";
 
 const Blockquote = Node.create({
   name,
 
-  marks: "bold italic underline strike textStyle highlight link",
+  marks: setMarks(name),
 
   group: "block blockquote",
 
   content: "inline*",
+
+  selectable: false,
 
   addInputRules() {
     return [
@@ -25,7 +33,7 @@ const Blockquote = Node.create({
           chain()
             .deleteRange(range)
             .setNode(this.name, {
-              divType: "block",
+              nodeType: "block",
               contentType: name,
               indentLevel,
             })
@@ -35,42 +43,12 @@ const Blockquote = Node.create({
     ];
   },
 
-  addOptions() {
-    return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
-        class: `content content-${name}`,
-      },
-      inlineAttrs: {
-        class: `inline inline-${name}`,
-      },
-    };
+  addAttributes() {
+    return setAttributes(name);
   },
 
-  addAttributes() {
-    return {
-      divType: {
-        default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
-        renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
-        }),
-      },
-      contentType: {
-        default: name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
-      indentLevel: {
-        default: 0,
-        parseHTML: (element) => element.getAttribute("data-indent-level"),
-        renderHTML: (attributes) => ({
-          "data-indent-level": attributes.indentLevel,
-        }),
-      },
-    };
+  addOptions() {
+    return setOptions(name);
   },
 
   parseHTML() {

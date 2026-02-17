@@ -2,15 +2,18 @@ import { Node, mergeAttributes } from "@tiptap/core";
 
 const name = "audio";
 
-// todo: marks
 // todo: add node view for resizing and alignment funtionalities
 
 const Audio = Node.create({
   name,
+
   group: "block file",
+
   atom: true,
+
   inline: false,
-  selectable: true,
+
+  selectable: false,
 
   addOptions() {
     return {
@@ -23,11 +26,11 @@ const Audio = Node.create({
 
   addAttributes() {
     return {
-      divType: {
+      nodeType: {
         default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
+        parseHTML: (element) => element.getAttribute("data-node-type"),
         renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
+          "data-node-type": attributes.nodeType,
         }),
       },
       contentType: {
@@ -44,12 +47,11 @@ const Audio = Node.create({
           "data-indent-level": attributes.indentLevel,
         }),
       },
-      audioSrc: {
-        // fix
-        default: "https://actions.google.com/sounds/v1/alarms/beep_short.ogg",
+      src: {
+        default: "",
         parseHTML: (element) => element.getAttribute("src"),
         renderHTML: (attributes) => ({
-          src: attributes.audioSrc,
+          src: attributes.src,
         }),
       },
       audioAlignment: {

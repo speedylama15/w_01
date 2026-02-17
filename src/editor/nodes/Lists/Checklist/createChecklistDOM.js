@@ -1,6 +1,6 @@
-const createBlock = (HTMLAttributes) => {
+const createBlock = (HTMLAttributes, options) => {
   const block = document.createElement("div");
-  block.className = "block block-checklist";
+  block.className = options.blockAttrs.class;
 
   Object.entries(HTMLAttributes).forEach((entry) => {
     const key = entry[0];
@@ -12,10 +12,9 @@ const createBlock = (HTMLAttributes) => {
   return block;
 };
 
-const createContent = () => {
+const createContent = (options) => {
   const content = document.createElement("div");
-  content.className = "content content-checklist";
-  content.setAttribute("data-node-type", "content");
+  content.className = options.contentAttrs.class;
 
   return content;
 };
@@ -49,13 +48,22 @@ const createCheckmark = (width, height) => {
   return svg;
 };
 
-const createDOMChecklist = (HTMLAttributes, width, height) => {
-  const block = createBlock(HTMLAttributes);
-  const content = createContent();
+const createListItem = (options) => {
+  const listItem = document.createElement("list-item");
+  listItem.className = options.inlineAttrs.class;
+
+  return listItem;
+};
+
+const createChecklistDOM = (HTMLAttributes, options) => {
+  const width = 22;
+  const height = 22;
+
+  const block = createBlock(HTMLAttributes, options);
+  const content = createContent(options);
   const checkbox = createCheckbox(width, height);
   const svg = createCheckmark(width, height);
-  const listItem = document.createElement("list-item");
-  listItem.className = `inline inline-checklist`;
+  const listItem = createListItem(options);
 
   block.appendChild(content);
   content.appendChild(checkbox);
@@ -65,4 +73,4 @@ const createDOMChecklist = (HTMLAttributes, width, height) => {
   return { block, checkbox, listItem };
 };
 
-export default createDOMChecklist;
+export default createChecklistDOM;

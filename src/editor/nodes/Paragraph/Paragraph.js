@@ -19,6 +19,8 @@ const Paragraph = Node.create({
 
   priority: 1000,
 
+  selectable: false,
+
   addAttributes() {
     return setAttributes(name);
   },

@@ -6,6 +6,8 @@ const m_TableCell = TableCell.extend({
 
   content: "item+",
 
+  selectable: false,
+
   addAttributes() {
     return {
       colspan: { default: 1 },

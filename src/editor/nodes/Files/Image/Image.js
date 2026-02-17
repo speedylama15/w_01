@@ -2,15 +2,18 @@ import { Node, mergeAttributes } from "@tiptap/core";
 
 const name = "image";
 
-// todo: marks
 // todo: add node view for resizing and alignment funtionalities
 
 const Image = Node.create({
   name,
+
   group: "block file",
+
   atom: true,
+
   inline: false,
-  selectable: true,
+
+  selectable: false,
 
   addOptions() {
     return {
@@ -23,11 +26,11 @@ const Image = Node.create({
 
   addAttributes() {
     return {
-      divType: {
+      nodeType: {
         default: "block",
-        parseHTML: (element) => element.getAttribute("data-div-type"),
+        parseHTML: (element) => element.getAttribute("data-node-type"),
         renderHTML: (attributes) => ({
-          "data-div-type": attributes.divType,
+          "data-node-type": attributes.nodeType,
         }),
       },
       contentType: {
@@ -44,13 +47,11 @@ const Image = Node.create({
           "data-indent-level": attributes.indentLevel,
         }),
       },
-      imgSrc: {
-        // fix
-        default:
-          "https://m.media-amazon.com/images/I/51b5x7TdMGL._AC_UF894,1000_QL80_.jpg",
+      src: {
+        default: "",
         parseHTML: (element) => element.getAttribute("src"),
         renderHTML: (attributes) => ({
-          src: attributes.imgSrc,
+          src: attributes.src,
         }),
       },
       imgAlignment: {
