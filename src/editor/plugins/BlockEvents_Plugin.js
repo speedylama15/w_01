@@ -19,21 +19,6 @@ export const BlockEvents_Plugin = new Plugin({
           return true;
         }
       },
-
-      // selectStart? <- will disable text selection entirely...
-
-      dragstart(view, e) {
-        e.preventDefault();
-        return true;
-      },
-      drag(view, e) {
-        e.preventDefault();
-        return true;
-      },
-      dragover(view, e) {
-        e.preventDefault();
-        return true;
-      },
     },
   },
 });

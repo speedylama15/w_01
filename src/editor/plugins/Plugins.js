@@ -12,6 +12,7 @@ import { createNodeMenuPlugin } from "./NodeMenu/NodeMenu_Plugin";
 import { createCopyAndPastePlugin } from "./CopyAndPaste_Plugin";
 import { createDragFileAndDropPlugin } from "./DragFileAndDrop_Plugin";
 import { TrailingNode_Plugin } from "./TrailingNode/TrailingNode_Plugin";
+import { MouseMove_Plugin } from "./MouseMove_Plugin";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
@@ -25,6 +26,7 @@ export const Plugins = Extension.create({
       // TableCopyAndPaste,
 
       Placeholder_Plugin,
+      MouseMove_Plugin,
       // idea: wow...
       createNodeMenuPlugin(this.editor),
       createCopyAndPastePlugin(),

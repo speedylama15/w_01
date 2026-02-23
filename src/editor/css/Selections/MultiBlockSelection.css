@@ -1,0 +1,11 @@
+.has-multi-block-selection ::selection {
+  background: transparent;
+}
+
+.multi-block-selection {
+  background-color: #1aff00 !important;
+}
+
+.table-reorder_hidden-cell {
+  background-color: rgb(75, 76, 91);
+}

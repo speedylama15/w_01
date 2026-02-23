@@ -1,19 +1,43 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
-const name = "paragraph";
+const name = "bulletList";
 
-const Paragraph = Node.create({
+const BulletList = Node.create({
   name,
 
   marks: "bold italic underline strike textStyle highlight link",
 
-  group: "block",
+  group: "block list",
 
   content: "inline*",
 
-  priority: 1000,
+  defining: true,
 
   selectable: false,
+
+  addInputRules() {
+    return [
+      {
+        find: /^\s*([-+*])\s$/,
+        handler: ({ state, range, chain }) => {
+          const { selection } = state;
+          const { $from } = selection;
+
+          const node = $from.node($from.depth);
+          const indentLevel = node?.attrs.indentLevel;
+
+          chain()
+            .deleteRange(range)
+            .setNode(this.name, {
+              nodeType: "block",
+              contentType: name,
+              indentLevel,
+            })
+            .run();
+        },
+      },
+    ];
+  },
 
   addAttributes() {
     return {
@@ -66,7 +90,7 @@ const Paragraph = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: "p" }];
+    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "ul li" }];
   },
 
   renderHTML({ HTMLAttributes }) {
@@ -75,9 +99,9 @@ const Paragraph = Node.create({
     return [
       "div",
       mergeAttributes(HTMLAttributes, blockOptions),
-      ["div", contentOptions, ["p", inlineOptions, 0]],
+      ["div", contentOptions, ["list-item", inlineOptions, 0]],
     ];
   },
 });
 
-export default Paragraph;
+export default BulletList;

@@ -1,5 +1,6 @@
-import { Plugin, TextSelection } from "@tiptap/pm/state";
-import { getDepthByNodeType } from "../utils/depth/getDepthByNodeType";
+import { Plugin } from "@tiptap/pm/state";
+
+// idea: this place will handle custom drag and drop as well...
 
 const imageTypes = [
   "image/jpeg",
@@ -12,7 +13,7 @@ const imageTypes = [
 
 const audioTypes = [
   "audio/mpeg",
-  "audio/mp4 (M4A)",
+  "audio/mp4",
   "audio/wav",
   "audio/ogg",
   "audio/webm",
@@ -20,79 +21,96 @@ const audioTypes = [
 
 const videoTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
 
+const getValidFiles = (files) => {
+  const validFiles = [];
+
+  files.forEach((file) => {
+    if (imageTypes.includes(file.type)) {
+      validFiles.push({ type: "image", file });
+    }
+
+    if (audioTypes.includes(file.type)) {
+      validFiles.push({ type: "audio", file });
+    }
+
+    if (videoTypes.includes(file.type)) {
+      validFiles.push({ type: "video", file });
+    }
+  });
+
+  return validFiles;
+};
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => resolve(e.target.result);
+
+    reader.onerror = reject;
+
+    reader.readAsDataURL(file);
+  });
+}
+
+const uploadFiles = async (view, validFiles, startPos) => {
+  const { dispatch } = view;
+  const { tr, schema } = view.state;
+
+  const nodes = await Promise.all(
+    validFiles.map(async (item) => {
+      const base64Data = await fileToBase64(item.file);
+
+      return schema.nodes[item.type].create({ src: base64Data });
+    }),
+  );
+
+  let offset = 0;
+
+  for (const node of nodes) {
+    tr.insert(startPos + offset, node);
+
+    offset += node.nodeSize;
+  }
+
+  dispatch(tr);
+};
+
 export const createDragFileAndDropPlugin = () => {
   return new Plugin({
     props: {
-      async handleDrop(view, e) {
+      handleDrop(view, e) {
         e.preventDefault();
 
-        // will need to add or subtract 50
+        // fix: either add or subtract 50
         const pos = view.posAtCoords({ left: e.clientX + 50, top: e.clientY });
-
         if (pos === null) return true;
-
-        if (pos.inside === -1) {
-          // add it at the end of the doc
-          return true;
-        }
-
-        const { tr } = view.state;
-        const { dispatch } = view;
-
-        tr.setSelection(TextSelection.create(tr.doc, pos.pos));
-
-        const result = getDepthByNodeType(tr.selection.$from, "block");
-        if (!result) return true;
-
-        const after = tr.selection.$from.after(result.depth);
+        if (pos.inside === -1) return true;
 
         const files = Array.from(e.dataTransfer.files);
 
-        const validFiles = [];
+        const validFiles = getValidFiles(files);
 
-        files.forEach((file) => {
-          if (imageTypes.includes(file.type)) {
-            validFiles.push({ type: "image", file });
-          }
-
-          if (audioTypes.includes(file.type)) {
-            validFiles.push({ type: "audio", file });
-          }
-
-          if (videoTypes.includes(file.type)) {
-            validFiles.push({ type: "video", file });
-          }
-        });
-
-        // will need add conditions
-        const results = await Promise.all(
-          validFiles.map((data) => {
-            const { type, file } = data;
-
-            return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-
-              reader.onload = (e) => resolve({ type, data: e.target.result });
-
-              reader.onerror = reject;
-
-              reader.readAsDataURL(file);
-            });
-            //
-          }),
-        );
-
-        results.forEach((result) => {
-          const { type, data } = result;
-
-          const node = view.state.schema.nodes[type].create({ src: data });
-
-          tr.insert(tr.mapping.map(after), node);
-        });
-
-        dispatch(tr);
+        uploadFiles(view, validFiles, pos.pos);
 
         return true;
+      },
+
+      handleDOMEvents: {
+        dragstart(view, e) {
+          e.preventDefault();
+          return true;
+        },
+
+        dragover(view, e) {
+          e.preventDefault();
+          return true;
+        },
+
+        drag(view, e) {
+          e.preventDefault();
+          return true;
+        },
       },
     },
   });

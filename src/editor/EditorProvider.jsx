@@ -3,13 +3,17 @@ import { useEditor, EditorContext } from "@tiptap/react";
 
 import Text from "@tiptap/extension-text";
 import Document from "./nodes/Document/Document";
+
 import Paragraph from "./nodes/Paragraph/Paragraph";
-import Heading1 from "./nodes/Headings/Heading1/Heading1";
-import Heading2 from "./nodes/Headings/Heading2/Heading2";
-import Heading3 from "./nodes/Headings/Heading3/Heading3";
-import BulletList from "./nodes/Lists/BulletList/BulletList";
-import NumberedList from "./nodes/Lists/NumberedList/NumberedList";
-import Checklist from "./nodes/Lists/Checklist/Checklist";
+
+import Heading1 from "./nodes/Headings/Heading1";
+import Heading2 from "./nodes/Headings/Heading2";
+import Heading3 from "./nodes/Headings/Heading3";
+
+import BulletList from "./nodes/Lists/BulletList";
+import NumberedList from "./nodes/Lists/NumberedList";
+import Checklist from "./nodes/Lists/Checklist";
+
 import Blockquote from "./nodes/Blockquote/Blockquote";
 import Verse from "./nodes/Verses/Verse/Verse";
 import VerseWithCitation from "./nodes/Verses/VerseWithCitation/VerseWithCitation";
@@ -45,27 +49,13 @@ import { KeyboardShortcuts } from "./shortcuts/KeyboardShortcuts";
 
 import { Plugins } from "./plugins/Plugins";
 
-import "./Editor.css";
-import "./nodes/Block.css";
-
-import "./nodes/Lists/BulletList/BulletList.css";
-import "./nodes/Lists/NumberedList/NumberedList.css";
-import "./nodes/Lists/Checklist/Checklist.css";
-
-import "./nodes/Verses/Verse/Verse.css";
-import "./nodes/Verses/VerseWithCitation/VerseWithCitation.css";
-
-import "./nodes/Files/Image/Image.css";
-import "./nodes/Files/Audio/Audio.css";
-import "./nodes/Files/Video/Video.css";
-import "./nodes/Files/PDF/PDF.css";
-
-import "./nodes/Divider/Divider.css";
-
-import "./nodes/Table/Table.css";
-import "./nodes/Table/TableRow.css";
-import "./nodes/Table/TableHeader.css";
-import "./nodes/Table/TableCell.css";
+import "./css/Editor/Editor.css";
+import "./css/Block/Block.css";
+import "./css/Content/Content.css";
+import "./css/Headings/Headings.css";
+import "./css/Lists/BulletList.css";
+import "./css/Lists/Checklist.css";
+import "./css/Lists/NumberedList.css";
 
 import "./plugins/Placeholder/Placeholder_Plugin.css";
 
@@ -98,11 +88,6 @@ const EditorProvider = ({ children }) => {
       TableCell,
       ParagraphItem,
       Text,
-
-      // fix
-
-      KeyboardShortcuts,
-      // fix
 
       // REVIEW: mark
       TextStyle,

@@ -3,10 +3,3 @@
   min-height: calc(100vh - 84px);
   scrollbar-gutter: stable;
 }
-
-.editor-node {
-  /* background-color: #f2d6b3; */
-  width: 900px;
-  height: 400px;
-  margin: 70px auto auto auto;
-}

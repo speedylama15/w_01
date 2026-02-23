@@ -2,8 +2,6 @@ import { Node, mergeAttributes } from "@tiptap/core";
 
 const name = "image";
 
-// todo: add node view for resizing and alignment funtionalities
-
 const Image = Node.create({
   name,
 
@@ -54,21 +52,65 @@ const Image = Node.create({
           src: attributes.src,
         }),
       },
-      imgAlignment: {
+      alignment: {
         default: "center",
-        parseHTML: (element) => element.getAttribute("data-image-alignment"),
+        parseHTML: (element) => element.getAttribute("data-alignment"),
         renderHTML: (attributes) => ({
-          "data-image-alignment": attributes.imgAlignment,
+          "data-alignment": attributes.alignment,
         }),
       },
-      imgWidth: {
-        // review: maybe I should have it be 100%
-        default: "100%",
-        parseHTML: (element) => element.getAttribute("data-image-width"),
+      width: {
+        default: "900",
+        parseHTML: (element) => element.getAttribute("data-width"),
         renderHTML: (attributes) => ({
-          "data-image-width": attributes.imgWidth,
+          "data-width": attributes.width,
         }),
       },
+    };
+  },
+
+  addNodeView() {
+    return ({ HTMLAttributes }) => {
+      const block = document.createElement("div");
+
+      Object.entries(HTMLAttributes).forEach((entry) => {
+        const key = entry[0];
+        const value = entry[1];
+
+        if (key !== "src" || key !== "data-width")
+          block.setAttribute(key, value);
+      });
+
+      block.className = this.options.blockAttrs.class;
+
+      const content = document.createElement("div");
+      content.className = this.options.contentAttrs.class;
+
+      const wrapper = document.createElement("div");
+      wrapper.style.width = `${HTMLAttributes["data-width"]}px`;
+      wrapper.className = "image-wrapper";
+
+      const leftResizer = document.createElement("div");
+      leftResizer.className = "image-resizer image-left-resizer";
+      leftResizer.setAttribute("data-direction", "left");
+      leftResizer.append(document.createElement("div"));
+
+      const rightResizer = document.createElement("div");
+      rightResizer.className = "image-resizer image-right-resizer";
+      rightResizer.setAttribute("data-direction", "right");
+      rightResizer.append(document.createElement("div"));
+
+      const image = document.createElement("img");
+      // image.style.width = `${HTMLAttributes["data-width"]}px`;
+      image.src = HTMLAttributes.src;
+
+      block.append(content);
+      content.append(wrapper);
+      wrapper.append(image, leftResizer, rightResizer);
+
+      return {
+        dom: block,
+      };
     };
   },
 
@@ -93,7 +135,7 @@ const Image = Node.create({
         "div",
         {
           ...this.options.contentAttrs,
-          style: `width: ${HTMLAttributes["data-image-width"]};`,
+          style: `width: ${HTMLAttributes["data-width"]}px;`,
         },
         [
           "div",

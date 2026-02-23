@@ -1,19 +1,33 @@
-import { Node, mergeAttributes } from "@tiptap/core";
+import { mergeAttributes, Node, textblockTypeInputRule } from "@tiptap/core";
 
-const name = "paragraph";
+const name = "heading3";
 
-const Paragraph = Node.create({
+const Heading3 = Node.create({
   name,
 
-  marks: "bold italic underline strike textStyle highlight link",
+  marks: "italic underline strike textStyle highlight",
 
-  group: "block",
+  group: "block heading",
 
   content: "inline*",
 
-  priority: 1000,
+  defining: true,
 
   selectable: false,
+
+  addInputRules() {
+    return [
+      textblockTypeInputRule({
+        find: new RegExp(`^(#{3})\\s$`),
+        type: this.type,
+        getAttributes: {
+          nodeType: "block",
+          contentType: name,
+          indentLevel: 0,
+        },
+      }),
+    ];
+  },
 
   addAttributes() {
     return {
@@ -66,7 +80,7 @@ const Paragraph = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: "p" }];
+    return [{ tag: "h3" }];
   },
 
   renderHTML({ HTMLAttributes }) {
@@ -75,9 +89,9 @@ const Paragraph = Node.create({
     return [
       "div",
       mergeAttributes(HTMLAttributes, blockOptions),
-      ["div", contentOptions, ["p", inlineOptions, 0]],
+      ["div", contentOptions, ["h3", inlineOptions, 0]],
     ];
   },
 });
 
-export default Paragraph;
+export default Heading3;

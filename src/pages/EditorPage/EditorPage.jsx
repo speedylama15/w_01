@@ -5,9 +5,7 @@ import "./EditorPage.css";
 const EditorPage = () => {
   return (
     <div className="editor-page">
-      <div className="editor-node">
-        <Editor />
-      </div>
+      <Editor />
     </div>
   );
 };

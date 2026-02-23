@@ -4,7 +4,7 @@ import {
   setMarks,
   setAttributes,
   setOptions,
-} from "../../../utils/nodes/setNodeProperties";
+} from "../../utils/nodes/setNodeProperties";
 import createChecklistDOM from "./createChecklistDOM";
 
 const name = "checklist";
@@ -90,33 +90,17 @@ const Checklist = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
+    const { blockOptions, contentOptions, inlineOptions } = this.options;
+
     return [
       "div",
-      mergeAttributes(HTMLAttributes, this.options.blockAttrs),
+      mergeAttributes(HTMLAttributes, blockOptions),
       [
         "div",
-        this.options.contentAttrs,
-        [
-          "button",
-          { class: "checkbox" },
-          [
-            "svg",
-            {
-              class: "checkmark",
-              xmlns: "http://www.w3.org/2000/svg",
-              width: "24",
-              height: "24",
-              viewBox: "0 0 24 24",
-            },
-            [
-              "path",
-              {
-                d: "M20 6 9 17l-5-5",
-              },
-            ],
-          ],
-        ],
-        ["list-item", this.options.inlineAttrs, 0],
+        contentOptions,
+        ["button", {}, ["svg", {}, ["path", { d: "" }]]],
+
+        ["list-item", inlineOptions, 0],
       ],
     ];
   },

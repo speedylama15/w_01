@@ -1,0 +1,73 @@
+p,
+list-item,
+blockquote,
+verse,
+verse-with-citation {
+  display: block;
+  font-size: var(--font-size);
+  font-weight: var(--font-weight);
+  line-height: 1.6;
+}
+
+blockquote {
+  line-height: 1.6;
+  padding-left: 12px;
+  border-left: 3px solid #000;
+}
+
+.block {
+  /* review: cannot set block as flex because the end of the block will not get selected */
+  /* review: cannot set as inline-flex as well */
+  display: block;
+}
+
+.content > .inline {
+  /* review: need this for Placeholder */
+  min-width: 2px !important;
+}
+
+/*
+div[data-indent-level="0"] {
+  margin-left: 0px;
+}
+
+div[data-indent-level="1"] {
+  margin-left: 30px;
+}
+
+div[data-indent-level="2"] {
+  margin-left: 60px;
+}
+
+div[data-indent-level="3"] {
+  margin-left: 90px;
+}
+
+div[data-indent-level="4"] {
+  margin-left: 120px;
+}
+
+div[data-indent-level="5"] {
+  margin-left: 150px;
+}
+
+div[data-indent-level="6"] {
+  margin-left: 180px;
+}
+
+div[data-indent-level="7"] {
+  margin-left: 210px;
+}
+
+div[data-indent-level="8"] {
+  margin-left: 240px;
+}
+
+div[data-indent-level="9"] {
+  margin-left: 270px;
+}
+
+div[data-indent-level="10"] {
+  margin-left: 300px;
+} 
+*/

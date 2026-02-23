@@ -1,31 +1,44 @@
-/* Reset counters using classes or attributes */
-.counter-reset {
-  counter-reset: level-0 level-1 level-2 level-3 level-4 level-5 level-6 level-7
-    level-8 level-9 level-10;
+.content-numberedList::before {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--font-size);
+  font-weight: var(--font-weight);
+  line-height: var(--line-height);
+  min-width: 30px;
+  padding-right: 4px;
+  pointer-events: none;
 }
 
-/* Reset counters when paragraph blocks appear */
+.counter-reset {
+  counter-reset: level-0 level-1 level-2 level-3 level-4 level-5 level-6 level-7
+    level-8 level-9 level-10 level-11 level-12;
+}
+
 .block-paragraph,
-.block-bulletList,
-.block-numberedList,
-.block-checklist,
 .block-heading1,
 .block-heading2,
 .block-heading3,
+.block-bulletList,
+.block-numberedList,
+.block-checklist,
 .block-verse,
 .block-verseWithCitation,
 .block-blockquote,
-.block-table {
-  /* fix: make sure to add more */
+.block-table,
+.block-image,
+.block-audio,
+.block-video {
+  /* fix: add more */
   counter-reset: level-0 level-1 level-2 level-3 level-4 level-5 level-6 level-7
-    level-8 level-9 level-10;
+    level-8 level-9 level-10 level-11 level-12;
 }
 
 /* Level 0 (root level) */
 .block-numberedList[data-indent-level="0"] {
   counter-increment: level-0;
   counter-reset: level-1 level-2 level-3 level-4 level-5 level-6 level-7 level-8
-    level-9 level-10;
+    level-9 level-10 level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="0"] .content::before {
@@ -36,7 +49,7 @@
 .block-numberedList[data-indent-level="1"] {
   counter-increment: level-1;
   counter-reset: level-2 level-3 level-4 level-5 level-6 level-7 level-8 level-9
-    level-10;
+    level-10 level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="1"] .content::before {
@@ -47,7 +60,7 @@
 .block-numberedList[data-indent-level="2"] {
   counter-increment: level-2;
   counter-reset: level-3 level-4 level-5 level-6 level-7 level-8 level-9
-    level-10;
+    level-10 level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="2"] .content::before {
@@ -57,7 +70,8 @@
 /* Level 3 */
 .block-numberedList[data-indent-level="3"] {
   counter-increment: level-3;
-  counter-reset: level-4 level-5 level-6 level-7 level-8 level-9 level-10;
+  counter-reset: level-4 level-5 level-6 level-7 level-8 level-9 level-10
+    level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="3"] .content::before {
@@ -67,7 +81,8 @@
 /* Level 4 */
 .block-numberedList[data-indent-level="4"] {
   counter-increment: level-4;
-  counter-reset: level-5 level-6 level-7 level-8 level-9 level-10;
+  counter-reset: level-5 level-6 level-7 level-8 level-9 level-10 level-11
+    level-12;
 }
 
 .block-numberedList[data-indent-level="4"] .content::before {
@@ -77,7 +92,7 @@
 /* Level 5 */
 .block-numberedList[data-indent-level="5"] {
   counter-increment: level-5;
-  counter-reset: level-6 level-7 level-8 level-9 level-10;
+  counter-reset: level-6 level-7 level-8 level-9 level-10 level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="5"] .content::before {
@@ -87,7 +102,7 @@
 /* Level 6 */
 .block-numberedList[data-indent-level="6"] {
   counter-increment: level-6;
-  counter-reset: level-7 level-8 level-9 level-10;
+  counter-reset: level-7 level-8 level-9 level-10 level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="6"] .content::before {
@@ -97,7 +112,7 @@
 /* Level 7 */
 .block-numberedList[data-indent-level="7"] {
   counter-increment: level-7;
-  counter-reset: level-8 level-9 level-10;
+  counter-reset: level-8 level-9 level-10 level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="7"] .content::before {
@@ -107,7 +122,7 @@
 /* Level 8 */
 .block-numberedList[data-indent-level="8"] {
   counter-increment: level-8;
-  counter-reset: level-9 level-10;
+  counter-reset: level-9 level-10 level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="8"] .content::before {
@@ -117,7 +132,7 @@
 /* Level 9 */
 .block-numberedList[data-indent-level="9"] {
   counter-increment: level-9;
-  counter-reset: level-10;
+  counter-reset: level-10 level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="9"] .content::before {
@@ -127,8 +142,28 @@
 /* Level 10 */
 .block-numberedList[data-indent-level="10"] {
   counter-increment: level-10;
+  counter-reset: level-11 level-12;
 }
 
 .block-numberedList[data-indent-level="10"] .content::before {
   content: counter(level-10, lower-alpha) ".";
+}
+
+/* Level 11 */
+.block-numberedList[data-indent-level="11"] {
+  counter-increment: level-11;
+  counter-reset: level-12;
+}
+
+.block-numberedList[data-indent-level="11"] .content::before {
+  content: counter(level-11, lower-alpha) ".";
+}
+
+/* Level 12 */
+.block-numberedList[data-indent-level="12"] {
+  counter-increment: level-12;
+}
+
+.block-numberedList[data-indent-level="12"] .content::before {
+  content: counter(level-12, lower-alpha) ".";
 }

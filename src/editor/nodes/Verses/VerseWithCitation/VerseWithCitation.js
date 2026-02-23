@@ -41,6 +41,7 @@ const VerseWithCitation = Node.create({
               .deleteRange(range)
               .setNode("verse", {
                 ...attrs,
+                contentType: "verse",
                 verseNumber: parseInt(data),
               })
               .run();
@@ -49,6 +50,7 @@ const VerseWithCitation = Node.create({
               .deleteRange(range)
               .setNode("verseWithCitation", {
                 ...attrs,
+                contentType: "verseWithCitation",
                 verseCitation: data,
               })
               .run();

@@ -1,3 +1,32 @@
+.content-bulletList {
+  --size: 14px;
+  --line-height-ratio: 1.6;
+
+  display: flex;
+  align-items: flex-start;
+}
+
+.content-bulletList::before {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 18px;
+  line-height: 1;
+
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+
+  color: #000;
+
+  min-width: 30px;
+
+  /* review: hopefully this is correct */
+  padding-top: calc(
+    (var(--size) * var(--line-height-ratio) - var(--size) + 1px) / 2
+  );
+
+  pointer-events: none;
+}
+
 .block-bulletList[data-indent-level="0"] .content::before,
 .block-bulletList[data-indent-level="3"] .content::before,
 .block-bulletList[data-indent-level="6"] .content::before,
