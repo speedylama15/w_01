@@ -1,16 +1,14 @@
 import { mergeAttributes, Node, canInsertNode } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
-import { setAttributes } from "../../utils/nodes/setNodeProperties";
 import { getDepthByNodeType } from "../../utils/depth/getDepthByNodeType";
 
 const name = "divider";
 
-// review: selectable: false -> disable Node Selection
-// review: atom: true -> node has no directly editable content
-
 const Divider = Node.create({
   name,
+
+  marks: "",
 
   group: "block divider",
 
@@ -64,17 +62,51 @@ const Divider = Node.create({
     ];
   },
 
-  addOptions() {
+  addAttributes() {
     return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
-        class: `content content-${name}`,
+      nodeType: {
+        default: "block",
+        parseHTML: (element) => {
+          return element.getAttribute("data-node-type");
+        },
+        renderHTML: (attributes) => {
+          return {
+            "data-node-type": attributes.nodeType,
+          };
+        },
+      },
+      contentType: {
+        default: name,
+        parseHTML: (element) => {
+          return element.getAttribute("data-content-type");
+        },
+        renderHTML: (attributes) => {
+          return {
+            "data-content-type": attributes.contentType,
+          };
+        },
+      },
+      indentLevel: {
+        default: 0,
+        parseHTML: (element) => {
+          return element.getAttribute("data-indent-level");
+        },
+        renderHTML: (attributes) => {
+          return {
+            "data-indent-level": attributes.indentLevel,
+          };
+        },
       },
     };
   },
 
-  addAttributes() {
-    return setAttributes(name);
+  addOptions() {
+    return {
+      blockOptions: { class: `block block-${name}` },
+      contentOptions: {
+        class: `content content-${name}`,
+      },
+    };
   },
 
   parseHTML() {
@@ -84,10 +116,10 @@ const Divider = Node.create({
   renderHTML({ HTMLAttributes }) {
     return [
       "div",
-      mergeAttributes(HTMLAttributes, this.options.blockAttrs),
+      mergeAttributes(HTMLAttributes, this.options.blockOptions),
       [
         "div",
-        this.options.contentAttrs,
+        this.options.contentOptions,
         ["div", { class: "divider-wrapper" }, ["hr", {}]],
       ],
     ];

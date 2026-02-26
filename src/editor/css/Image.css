@@ -1,0 +1,80 @@
+.block-image {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.content-image {
+  width: 100%;
+}
+
+.content-wrapper {
+  display: flex;
+  background-color: #4e95ff;
+  width: 100%;
+}
+
+.block-image[data-alignment="center"] .content-wrapper {
+  justify-content: center;
+}
+
+.block-image[data-alignment="left"] .content-wrapper {
+  justify-content: flex-start;
+}
+
+.block-image[data-alignment="right"] .content-wrapper {
+  justify-content: flex-end;
+}
+
+.image-wrapper {
+  position: relative;
+}
+
+.image-wrapper > img {
+  width: 100%;
+  height: 100%;
+  /* max-width: 800px; */
+  min-width: 120px;
+  min-height: 120px;
+  border-radius: 7px;
+  object-fit: cover;
+  outline: 2px solid #0065ff;
+}
+
+.image-resizer {
+  position: absolute;
+  top: 0;
+  width: 16px;
+  height: 100%;
+  cursor: col-resize;
+  /* background-color: #ffffff8f; */
+}
+
+.image-resizer[data-image-resizer-direction="left"] {
+  left: 0;
+  transform: translateX(calc(-50% - 1px));
+}
+
+.image-resizer[data-image-resizer-direction="right"] {
+  right: 0;
+  transform: translateX(calc(50% + 1px));
+}
+
+.image-resizer button {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 50px;
+  border: 2px solid #1e7aff;
+  border-radius: 7px;
+  pointer-events: none;
+}
+
+.image-resizer[data-image-resizer-direction="left"] > button {
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.image-resizer[data-image-resizer-direction="right"] > button {
+  right: 50%;
+  transform: translate(50%, -50%);
+}

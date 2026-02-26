@@ -1,0 +1,49 @@
+.block-checklist[data-checkbox-status="incomplete"] .checkbox > svg > * {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------- */
+
+.block-checklist[data-checkbox-status="in-progress"] .checkbox {
+  background-color: #ffd700;
+  border: none;
+}
+
+.block-checklist[data-checkbox-status="in-progress"] .in-progress-path {
+  display: block;
+}
+
+.block-checklist[data-checkbox-status="in-progress"]
+  svg
+  > :not(.in-progress-path) {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------- */
+
+.block-checklist[data-checkbox-status="complete"] .checkbox {
+  background-color: #00e800;
+  border: none;
+}
+
+.block-checklist[data-checkbox-status="complete"] .complete-path {
+  display: block;
+}
+
+.block-checklist[data-checkbox-status="complete"] svg > :not(.complete-path) {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------- */
+
+.checkbox {
+  display: flex;
+  width: var(--checkbox-edge-length);
+  height: var(--checkbox-edge-length);
+  margin-top: calc(
+    (var(--line-height) * var(--font-size) - var(--checkbox-edge-length)) / 2
+  );
+  margin-right: 6px;
+  border: 1px solid #000;
+  border-radius: 7px;
+}

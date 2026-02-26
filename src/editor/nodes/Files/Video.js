@@ -1,11 +1,11 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
-const name = "audio";
+const name = "video";
 
-// todo: add node view for resizing and alignment funtionalities
-
-const Audio = Node.create({
+const Video = Node.create({
   name,
+
+  marks: "",
 
   group: "block file",
 
@@ -17,8 +17,8 @@ const Audio = Node.create({
 
   addOptions() {
     return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
+      blockOptions: { class: `block block-${name}` },
+      contentOptions: {
         class: `content content-${name}`,
       },
     };
@@ -54,26 +54,11 @@ const Audio = Node.create({
           src: attributes.src,
         }),
       },
-      audioAlignment: {
-        default: "center",
-        parseHTML: (element) => element.getAttribute("data-audio-alignment"),
-        renderHTML: (attributes) => ({
-          "data-audio-alignment": attributes.audioAlignment,
-        }),
-      },
-      audioWidth: {
-        // review: maybe I should have it be 100%
-        default: "100%",
-        parseHTML: (element) => element.getAttribute("data-audio-width"),
-        renderHTML: (attributes) => ({
-          "data-audio-width": attributes.audioWidth,
-        }),
-      },
     };
   },
 
   parseHTML() {
-    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "audio" }];
+    return [{ tag: `div[data-content-type="${name}"]` }, { tag: "video" }];
   },
 
   renderHTML({ HTMLAttributes }) {
@@ -86,29 +71,24 @@ const Audio = Node.create({
       if (key !== "src") html_attributes[key] = value;
     });
 
+    const { blockOptions, contentOptions } = this.options;
+
     return [
       "div",
-      mergeAttributes(html_attributes, this.options.blockAttrs),
+      mergeAttributes(html_attributes, blockOptions),
       [
         "div",
-        {
-          ...this.options.contentAttrs,
-          style: `width: ${HTMLAttributes["data-audio-width"]};`,
-        },
+        contentOptions,
         [
-          "div",
-          { class: "audio-wrapper" },
-          [
-            "audio",
-            {
-              src: HTMLAttributes.src,
-              controls: true,
-            },
-          ],
+          "video",
+          {
+            src: HTMLAttributes.src,
+            controls: true,
+          },
         ],
       ],
     ];
   },
 });
 
-export default Audio;
+export default Video;

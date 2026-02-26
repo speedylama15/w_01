@@ -8,15 +8,15 @@
   /* font-family: -apple-system, Helvetica, Arial, sans-serif; */
   /* font-family: "Poppins", sans-serif; */
   /* font-family: "Playfair Display", serif; */
-  font-family: "Outfit", sans-serif;
   /* font-family: "Google Sans", sans-serif; */
+  font-family: "Outfit", sans-serif;
 }
 
 :root {
   --font-size: 18px;
   --font-weight: 300;
   --line-height: 1.6;
-  --checkbox-width: 22px;
+  --checkbox-edge-length: 22px;
 }
 
 body {

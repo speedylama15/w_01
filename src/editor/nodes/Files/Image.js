@@ -5,6 +5,8 @@ const name = "image";
 const Image = Node.create({
   name,
 
+  marks: "",
+
   group: "block file",
 
   atom: true,
@@ -15,8 +17,8 @@ const Image = Node.create({
 
   addOptions() {
     return {
-      blockAttrs: { class: `block block-${name}` },
-      contentAttrs: {
+      blockOptions: { class: `block block-${name}` },
+      contentOptions: {
         class: `content content-${name}`,
       },
     };
@@ -59,6 +61,7 @@ const Image = Node.create({
           "data-alignment": attributes.alignment,
         }),
       },
+      // fix: should I set this as pixels or percentage?
       width: {
         default: "900",
         parseHTML: (element) => element.getAttribute("data-width"),
@@ -72,41 +75,44 @@ const Image = Node.create({
   addNodeView() {
     return ({ HTMLAttributes }) => {
       const block = document.createElement("div");
-
+      block.className = this.options.blockOptions.class;
       Object.entries(HTMLAttributes).forEach((entry) => {
         const key = entry[0];
         const value = entry[1];
 
-        if (key !== "src" || key !== "data-width")
+        if (key !== "src" || key !== "data-width") {
           block.setAttribute(key, value);
+        }
       });
 
-      block.className = this.options.blockAttrs.class;
-
       const content = document.createElement("div");
-      content.className = this.options.contentAttrs.class;
+      content.className = this.options.contentOptions.class;
 
-      const wrapper = document.createElement("div");
-      wrapper.style.width = `${HTMLAttributes["data-width"]}px`;
-      wrapper.className = "image-wrapper";
+      const contentWrapper = document.createElement("div");
+      contentWrapper.className = "content-wrapper";
 
-      const leftResizer = document.createElement("div");
-      leftResizer.className = "image-resizer image-left-resizer";
-      leftResizer.setAttribute("data-direction", "left");
-      leftResizer.append(document.createElement("div"));
-
-      const rightResizer = document.createElement("div");
-      rightResizer.className = "image-resizer image-right-resizer";
-      rightResizer.setAttribute("data-direction", "right");
-      rightResizer.append(document.createElement("div"));
+      const imageWrapper = document.createElement("div");
+      imageWrapper.className = "image-wrapper";
+      imageWrapper.style.width = `${HTMLAttributes["data-width"]}px`; // fix: ?
 
       const image = document.createElement("img");
-      // image.style.width = `${HTMLAttributes["data-width"]}px`;
       image.src = HTMLAttributes.src;
 
-      block.append(content);
-      content.append(wrapper);
-      wrapper.append(image, leftResizer, rightResizer);
+      const createResizer = (direction) => {
+        const resizer = document.createElement("div");
+        resizer.className = "image-resizer";
+
+        resizer.dataset.imageResizerDirection = direction;
+
+        resizer.appendChild(document.createElement("button"));
+
+        return resizer;
+      };
+
+      imageWrapper.append(image, createResizer("left"), createResizer("right"));
+      contentWrapper.appendChild(imageWrapper);
+      content.appendChild(contentWrapper);
+      block.appendChild(content);
 
       return {
         dom: block,
@@ -119,32 +125,34 @@ const Image = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    const html_attributes = {};
+    const attributes = {};
 
     Object.entries(HTMLAttributes).forEach((entry) => {
       const key = entry[0];
       const value = entry[1];
 
-      if (key !== "src") html_attributes[key] = value;
+      if (key !== "src" || key !== "data-width") attributes[key] = value;
     });
+
+    const { blockOptions, contentOptions } = this.options;
 
     return [
       "div",
-      mergeAttributes(html_attributes, this.options.blockAttrs),
+      mergeAttributes(attributes, blockOptions),
       [
         "div",
-        {
-          ...this.options.contentAttrs,
-          style: `width: ${HTMLAttributes["data-width"]}px;`,
-        },
+        contentOptions,
         [
           "div",
-          { class: "image-wrapper" },
+          { class: "content-wrapper" },
           [
-            "img",
+            "div",
             {
-              src: HTMLAttributes.src,
+              class: "image-wrapper",
+              // fix
+              style: `width: ${HTMLAttributes["data-width"]}px;`,
             },
+            ["img", { src: HTMLAttributes.src }],
           ],
         ],
       ],
