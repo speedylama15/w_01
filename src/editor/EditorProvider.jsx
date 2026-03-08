@@ -20,11 +20,11 @@ import Image from "./nodes/Files/Image";
 import Audio from "./nodes/Files/Audio";
 import Video from "./nodes/Files/Video";
 
-import Table from "./nodes/Table/Table";
-import TableRow from "./nodes/Table/TableRow";
-import TableHeader from "./nodes/Table/TableHeader";
-import TableCell from "./nodes/Table/TableCell";
-import ParagraphItem from "./nodes/Table/content/ParagraphItem";
+// import Table from "./nodes/Table/Table";
+// import TableRow from "./nodes/Table/TableRow";
+// import TableHeader from "./nodes/Table/TableHeader";
+// import TableCell from "./nodes/Table/TableCell";
+// import ParagraphItem from "./nodes/Table/content/ParagraphItem";
 
 // mark
 import { TextStyle, Color } from "@tiptap/extension-text-style";
@@ -58,8 +58,10 @@ import "./css/Divider.css";
 import "./css/Image.css";
 import "./css/Audio.css";
 import "./css/Video.css";
+import "./css/Table.css";
 
 import "./plugins/Placeholder/Placeholder_Plugin.css";
+import "./plugins/MarqueeSelection/MarqueeBlockSelection.css";
 
 const EditorProvider = ({ children }) => {
   const editor = useEditor({
@@ -80,11 +82,11 @@ const EditorProvider = ({ children }) => {
       Image,
       Audio,
       Video,
-      Table.configure({ resizable: false, cellMinWidth: 150 }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      ParagraphItem,
+      // Table.configure({ resizable: false, cellMinWidth: 150 }),
+      // TableRow,
+      // TableHeader,
+      // TableCell,
+      // ParagraphItem,
       Text,
 
       // REVIEW: mark
@@ -96,6 +98,8 @@ const EditorProvider = ({ children }) => {
       Strike,
       Underline,
       Link,
+
+      KeyboardShortcuts,
 
       // REVIEW: functionality
       HardBreak,
@@ -113,7 +117,7 @@ const EditorProvider = ({ children }) => {
           Audio.name,
           Video.name,
           Divider.name,
-          Table.name,
+          // Table.name,
         ],
       }),
 

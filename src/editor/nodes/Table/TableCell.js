@@ -4,7 +4,8 @@ import { TableCell } from "@tiptap/extension-table";
 const m_TableCell = TableCell.extend({
   marks: "bold italic underline strike textStyle highlight link",
 
-  content: "item+",
+  content: "item",
+  // content: "inline*",
 
   selectable: false,
 

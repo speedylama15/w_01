@@ -24,20 +24,11 @@ const m_Table = Table.extend({
   },
 
   addProseMirrorPlugins() {
-    // fix: const plugins = this.parent?.() || [];
-
     return [];
   },
 
   addAttributes() {
     return {
-      elementType: {
-        default: "table",
-        parseHTML: (element) => element.getAttribute("data-element-type"),
-        renderHTML: (attributes) => ({
-          "data-element-type": attributes.elementType,
-        }),
-      },
       // either block or content
       // table is block
       // tableRow, tableHeader, tableCell are all content

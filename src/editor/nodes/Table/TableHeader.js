@@ -1,7 +1,10 @@
+import { mergeAttributes } from "@tiptap/core";
 import { TableHeader } from "@tiptap/extension-table";
 
 const m_TableHeader = TableHeader.extend({
-  content: "item+",
+  content: "item",
+  // content: "inline*",
+
   draggable: false,
   selectable: false,
 
@@ -35,26 +38,12 @@ const m_TableHeader = TableHeader.extend({
     };
   },
 
-  addNodeView() {
-    return ({ HTMLAttributes }) => {
-      const th = document.createElement("th");
-
-      Object.entries(HTMLAttributes).forEach((entry) => {
-        const key = entry[0];
-        const value = entry[1];
-
-        th.setAttribute(key, value);
-      });
-
-      const contentDOM = document.createElement("div");
-      contentDOM.className = "cell-content";
-      th.append(contentDOM);
-
-      return {
-        dom: th,
-        contentDOM,
-      };
-    };
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "th",
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+      0,
+    ];
   },
 });
 

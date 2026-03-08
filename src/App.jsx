@@ -5,6 +5,7 @@ import EditorPage from "./pages/EditorPage/EditorPage.jsx";
 import WhiteboardPage from "./pages/WhiteboardPage/WhiteboardPage.jsx";
 import Navbar from "./components/Navbar/Navbar.jsx";
 import TableDropdown from "./editor/components/TableDropdown/TableDropdown.jsx";
+import MarqueeSelection from "./editor/plugins/MarqueeSelection/MarqueeSelection.jsx";
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
       </div>
 
       <div className="portal">
-        <TableDropdown />
+        <MarqueeSelection />
       </div>
     </EditorProvider>
   );

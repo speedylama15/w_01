@@ -1,4 +1,4 @@
-import { Plugin } from "@tiptap/pm/state";
+import { Plugin, TextSelection } from "@tiptap/pm/state";
 
 // idea: this place will handle custom drag and drop as well...
 
@@ -79,6 +79,8 @@ const uploadFiles = async (view, validFiles, startPos) => {
 export const createDragFileAndDropPlugin = () => {
   return new Plugin({
     props: {
+      // createSelectionBetween(view, anchor, head) {},
+
       handleDrop(view, e) {
         e.preventDefault();
 
@@ -97,21 +99,118 @@ export const createDragFileAndDropPlugin = () => {
       },
 
       handleDOMEvents: {
-        dragstart(view, e) {
-          e.preventDefault();
-          return true;
+        // mousemove(view, e) {
+        //   e.preventDefault();
+        //   return true;
+        // },
+
+        selectionchange(view, e) {
+          console.log(e);
         },
 
-        dragover(view, e) {
-          e.preventDefault();
-          return true;
-        },
+        // dragstart(view, e) {
+        //   e.preventDefault();
+        //   return true;
+        // },
 
-        drag(view, e) {
-          e.preventDefault();
-          return true;
-        },
+        // dragover(view, e) {
+        //   e.preventDefault();
+        //   return true;
+        // },
+
+        // drag(view, e) {
+        //   e.preventDefault();
+        //   return true;
+        // },
       },
+    },
+
+    view() {
+      let isDown = false;
+
+      let anchorDOM = null;
+      let anchorOffset = null;
+
+      const handleMouseDown = () => {
+        isDown = true;
+      };
+
+      const handleMove = (e) => {
+        if (!isDown) return;
+
+        const tableDOM = e.target.closest(".block-table");
+
+        if (!tableDOM) return;
+
+        // e.preventDefault();
+
+        // const sel = window.getSelection();
+
+        // if (sel?.rangeCount && anchorDOM === null) {
+        //   anchorDOM = sel.anchorNode;
+        //   anchorOffset = sel.anchorOffset;
+        // }
+
+        // if (!anchorDOM) return;
+
+        // const range = document.createRange();
+
+        // range.setStartAfter(tableDOM);
+        // range.setEnd(anchorDOM, anchorOffset);
+
+        // sel.removeAllRanges();
+        // sel.addRange(range);
+      };
+
+      const handleMouseUp = () => {
+        isDown = false;
+      };
+
+      const handleSelectionChange = () => {
+        console.log("selectionchange fired");
+
+        const sel = window.getSelection();
+        if (!sel?.rangeCount) return;
+
+        const range = sel.getRangeAt(0);
+        const tableDOM = document.querySelector(".block-table");
+
+        if (!tableDOM) return;
+
+        const focusInTable =
+          tableDOM.contains(range.endContainer) ||
+          tableDOM.contains(range.startContainer);
+
+        if (focusInTable) {
+          const anchorDOM = sel.anchorNode;
+          const anchorOffset = sel.anchorOffset;
+
+          // Correct the selection synchronously before ProseMirror reads it
+          const newRange = document.createRange();
+          newRange.setStart(anchorDOM, anchorOffset);
+          newRange.setEndBefore(tableDOM);
+
+          sel.removeAllRanges();
+          // sel.addRange(newRange);
+        }
+      };
+
+      document.addEventListener("mousedown", handleMouseDown);
+      document.addEventListener("mousemove", handleMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.addEventListener("selectionchange", handleSelectionChange);
+
+      return {
+        destroy() {
+          document.removeEventListener("mousedown", handleMouseDown);
+          document.removeEventListener("mousemove", handleMove);
+          document.removeEventListener("mouseup", handleMouseUp);
+          document.removeEventListener(
+            "selectionchange",
+            handleSelectionChange,
+          );
+        },
+      };
     },
   });
 };
