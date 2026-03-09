@@ -1,45 +1,17 @@
 import { Plugin, TextSelection } from "@tiptap/pm/state";
-import { DecorationSet, Decoration } from "@tiptap/pm/view";
 import Flatbush from "flatbush";
 
 import MarqueeSelectionStore from "./MarqueeSelectionStore";
 
 import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
 
-// todo: when making selection via Marquee Selection, I need to prevent Chrome's native selection
-// todo: set a class at the editor level so that I can hide native selection or the caret?
+// fix: better scrolling
+// fix: need to determine if the mousedown was for a simple click (blur it) or if it was for Marquee selection
 
 export const MarqueeSelection_Plugin = () => {
   return new Plugin({
-    // fix
-    props: {
-      attributes(state) {
-        if (state.selection instanceof MultiBlockSelection) {
-          return { class: "has-multi-block-selection" };
-        }
-        return {};
-      },
-
-      decorations(state) {
-        const { selection } = state;
-
-        if (selection instanceof MultiBlockSelection) {
-          const decos = selection.positions.map((pos) =>
-            Decoration.node(pos.before, pos.after, {
-              class: "multi-block-selection",
-            }),
-          );
-
-          return DecorationSet.create(state.doc, decos);
-        }
-
-        return DecorationSet.empty;
-      },
-    },
-    // fix
-
     view(view) {
-      let operation = null; // idea: mouseOperation (Zustand state?)
+      let operation = null; // fix: remove this
       let flatTree = null;
       let rafID = null;
 
@@ -52,6 +24,9 @@ export const MarqueeSelection_Plugin = () => {
         // review: very important condition
         if (!editorDOM.contains(e.target) && editorPageDOM.contains(e.target)) {
           e.preventDefault();
+
+          // fix: sometimes I need to blur it
+          view.focus(); // set focus on the editor
 
           const { tr } = view.state;
           const { dispatch } = view;

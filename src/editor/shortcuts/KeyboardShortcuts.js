@@ -18,6 +18,8 @@ export const KeyboardShortcuts = Extension.create({
         const { dispatch } = editor.view;
         const { from, $from, to } = selection;
 
+        console.log(selection);
+
         // text selection, single, and offset is 0
         if (
           selection instanceof TextSelection &&

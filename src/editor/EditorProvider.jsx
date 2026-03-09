@@ -61,7 +61,7 @@ import "./css/Video.css";
 import "./css/Table.css";
 
 import "./plugins/Placeholder/Placeholder_Plugin.css";
-import "./plugins/MarqueeSelection/MarqueeBlockSelection.css";
+import "./selections/MultiBlockSelection.css";
 
 const EditorProvider = ({ children }) => {
   const editor = useEditor({
@@ -145,6 +145,8 @@ const EditorProvider = ({ children }) => {
   const memoizedEditor = useMemo(() => {
     return editor;
   }, [editor]);
+
+  console.log("HEY");
 
   return (
     <EditorContext.Provider value={memoizedEditor}>

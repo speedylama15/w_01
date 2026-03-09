@@ -20,6 +20,9 @@ export class MultiBlockSelection extends Selection {
   }
 
   static create(doc, from, to = from) {
+    // from and to are integers
+    // use doc.resolve() to provide ResolvedPos objects as arguments
+    // ResolvedPos objects provide contextual data around that pos
     return new MultiBlockSelection(doc.resolve(from), doc.resolve(to));
   }
 
@@ -53,7 +56,9 @@ export class MultiBlockSelection extends Selection {
     const fromResult = mapping.mapResult(this.from);
     const toResult = mapping.mapResult(this.to);
 
+    // IF the 'to' point was deleted...
     if (toResult.deleted) {
+      // ...find a safe place to put a regular cursor near the 'from' point.
       return Selection.near(doc.resolve(fromResult.pos));
     }
 
@@ -63,7 +68,7 @@ export class MultiBlockSelection extends Selection {
 
     return new MultiBlockSelection(
       doc.resolve(fromResult.pos),
-      doc.resolve(toResult.pos)
+      doc.resolve(toResult.pos),
     );
   }
 
@@ -82,6 +87,35 @@ export class MultiBlockSelection extends Selection {
     // constructor() constructs both nodes and positions
     return MultiBlockSelection.create(doc, json.anchor, json.head);
   }
+
+  getBookmark() {
+    return new MultiBlockBookmark(this.anchor, this.head);
+  }
+
+  // prevents ProseMirror from invoking a method in which makes native selection
+  get visible() {
+    return false;
+  }
 }
 
 Selection.jsonID("multi-block-selection", MultiBlockSelection);
+
+class MultiBlockBookmark {
+  constructor(anchor, head) {
+    this.anchor = anchor;
+    this.head = head;
+  }
+
+  // mapping is used for tr.mapping.map(pos)
+  map(mapping) {
+    return new MultiBlockBookmark(
+      mapping.map(this.anchor),
+      mapping.map(this.head),
+    );
+  }
+
+  // converts the bookmark back into your custom Selection object
+  resolve(doc) {
+    return MultiBlockSelection.create(doc, this.anchor, this.head);
+  }
+}
