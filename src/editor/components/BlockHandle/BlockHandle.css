@@ -1,15 +1,14 @@
 .block-handle {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 20px;
-  height: 20px;
-  background-color: aqua;
-  border: 1px solid #000;
+  height: 25px;
+  background-color: #0040ff;
+  border: 1px solid #fff;
+  border-radius: 5px;
   cursor: grab;
   user-select: none;
 }
 
 .block-handle:active {
+  background-color: #082477;
   cursor: grabbing;
 }

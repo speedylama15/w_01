@@ -1,100 +1,143 @@
-import { TextSelection } from "@tiptap/pm/state";
+import { useEffect, useRef } from "react";
 import { useCurrentEditor } from "@tiptap/react";
 import { useStore } from "zustand";
+import { TextSelection } from "@tiptap/pm/state";
 
-import blockHandleStore from "../../stores/blockHandleStore";
+import BlockHandleStore from "../../stores/BlockHandleStore";
 
 import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
 
-import { getDepthByNodeType } from "../../utils/depth/getDepthByNodeType";
+import isLeftClick from "../../../utils/isLeftClick";
 
 import "./BlockHandle.css";
-
-// todo: add tooltip
-// todo: mousedown -> lock it
-// todo: mouseup -> unlock it
-// todo: multiple node/s drag and drop
 
 const BlockHandle = () => {
   const editor = useCurrentEditor();
 
+  const handleRef = useRef();
+  const startCoords = useRef(null);
+  const currentCoords = useRef(null);
+
   const {
     isOpen,
+    isDown,
+    isDragging,
+    isMenuOpen,
     rect,
-    pos: handlePos,
-    node: handleNode,
-  } = useStore(blockHandleStore);
+    setIsDown,
+    setIsDragging,
+    setIsMenuOpen,
+  } = useStore(BlockHandleStore);
 
   const handleMouseDown = (e) => {
-    // idea: maintains focus on the editor
-    e.preventDefault();
+    e.preventDefault(); // prevent text selection
+    e.stopPropagation(); // review: prevent mousedown from reaching document's mousedown
 
-    const { view } = editor;
-    const { tr } = view.state;
-    const { dispatch } = view;
-    const { selection } = tr;
-    const { $from, $to, from, to } = selection;
+    if (!isLeftClick(e)) return;
 
-    // when ranged TextSelection and handleState.pos is inclusive
-    if (selection instanceof TextSelection && from !== to) {
-      const fromResult = getDepthByNodeType($from, "block");
-      const toResult = getDepthByNodeType($to, "block");
+    console.log("HANDLE MOUSEDOWN", isMenuOpen); // fix
 
-      // handle error
-      if (fromResult === null || toResult === null) return;
+    if (isMenuOpen) return;
 
-      const fromBefore = $from.before(fromResult.depth);
-      const toAfter = $to.after(toResult.depth);
+    startCoords.current = { x: e.pageX, y: e.pageY };
 
-      if (handlePos >= fromBefore && handlePos < toAfter) {
-        const multiSelection = MultiBlockSelection.create(
-          tr.doc,
-          fromBefore,
-          toAfter,
-        );
-
-        dispatch(tr.setSelection(multiSelection));
-
-        window.getSelection()?.removeAllRanges();
-
-        return;
-      }
-    }
-
-    // when MultiSelection and handleState.pos is inclusive
-    if (selection instanceof MultiBlockSelection) {
-      const { $anchor, $head } = selection;
-
-      if (handlePos >= $anchor.pos && handlePos < $head.pos) {
-        const multiSelection = MultiBlockSelection.create(
-          tr.doc,
-          $anchor.pos,
-          $head.pos,
-        );
-
-        dispatch(tr.setSelection(multiSelection));
-
-        window.getSelection()?.removeAllRanges();
-
-        return;
-      }
-    }
-
-    if (!handleNode) return;
-
-    // normally just multi select the corresponding block when it was pressed
-    const multiSelection = MultiBlockSelection.create(
-      tr.doc,
-      handlePos,
-      handlePos + handleNode.nodeSize,
+    const elements = editor.view.root.elementsFromPoint(
+      e.clientX + 50,
+      e.clientY,
     );
 
-    dispatch(tr.setSelection(multiSelection));
+    const block = elements.find((el) => el.classList.contains("block"));
 
-    window.getSelection()?.removeAllRanges();
+    if (!block) return;
 
-    return;
+    const before = editor.view.posAtDOM(block) - 1;
+    const node = editor.state.doc.nodeAt(before);
+    const after = before + node.nodeSize;
+    const start = before + 1;
+    const end = after - 1;
+
+    const { selection, tr } = editor.state;
+    const { dispatch } = editor.view;
+
+    let newSelection = selection;
+
+    // ranged TextSelection that overlaps with start and end of the node is all that matters
+    if (
+      selection instanceof TextSelection &&
+      selection.from !== selection.to &&
+      selection.from < end &&
+      selection.to > start
+    ) {
+      const from = Math.min(start, selection.from, selection.to);
+      const to = Math.max(end, selection.from, selection.to);
+
+      newSelection = MultiBlockSelection.create(tr.doc, from, to);
+    } else {
+      newSelection = MultiBlockSelection.create(tr.doc, before, after);
+    }
+
+    dispatch(tr.setSelection(newSelection));
+
+    setIsDown(true);
   };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (startCoords.current === null) return;
+
+      currentCoords.current = { x: e.pageX, y: e.pageY };
+
+      const distance =
+        Math.pow(Math.abs(currentCoords.current.x - startCoords.current.x), 2) +
+        Math.pow(Math.abs(currentCoords.current.y - startCoords.current.y), 2);
+
+      if (distance > 25) {
+        setIsDragging(true);
+      }
+    };
+
+    const handleMouseUp = () => {
+      console.log("HANDLE MOUSE UP", { isDown, isDragging, isMenuOpen }); // fix
+
+      // mouse was down but did not drag
+      if (isDown && !isMenuOpen && !isDragging) {
+        // render dropdown
+        const portal = document.querySelector(".portal");
+        const parent = portal.parentNode;
+
+        Array.from(parent.children).forEach((dom) => {
+          if (dom !== portal) {
+            dom.setAttribute("inert", "");
+            dom.style.overflow = "hidden";
+          }
+        });
+
+        document.body.style.overflow = "hidden";
+
+        setIsMenuOpen(true);
+      }
+
+      // isDragging is set in mouse move
+      // if true, alter the editor's content
+      if (isDragging) {
+        // this is place to alter the editor data
+        // maybe in mouse move I can identify if the block/s can be placed or not
+
+        setIsDragging(false);
+      }
+
+      startCoords.current = null;
+      currentCoords.current = null;
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDown, isDragging, isMenuOpen, setIsMenuOpen, setIsDragging]);
 
   return (
     <>
@@ -102,14 +145,16 @@ const BlockHandle = () => {
         <div
           tabIndex="-1"
           className="block-handle"
+          ref={handleRef}
           style={{
-            transform: `
-              translate(calc(${rect.x}px - 100%), 
-              ${rect.y + window.scrollY + 4}px)
-            `,
+            position: "absolute",
+            top: `${rect.y + window.scrollY}px`,
+            left: `${rect.x}px`,
+            // fix: line-height and font-size
+            transform: `translate(-120%, ${(18 * 1.6 - 25).toFixed(2) / 2}px)`,
           }}
           onMouseDown={handleMouseDown}
-        ></div>
+        />
       )}
     </>
   );

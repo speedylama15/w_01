@@ -146,8 +146,6 @@ const EditorProvider = ({ children }) => {
     return editor;
   }, [editor]);
 
-  console.log("HEY");
-
   return (
     <EditorContext.Provider value={memoizedEditor}>
       {children}

@@ -1,19 +1,13 @@
 import { useStore } from "zustand";
 
-import MarqueeSelectionStore from "./MarqueeSelectionStore";
+import { mainStore } from "../../../../stores";
+import { editorMarqueeSelectionStore } from "../../../stores";
 
-const MarqueeSelection = () => {
-  const isOpen = useStore(MarqueeSelectionStore, (state) => state.isOpen);
-  const startCoords = useStore(
-    MarqueeSelectionStore,
-    (state) => state.startCoords,
-  );
-  const currentCoords = useStore(
-    MarqueeSelectionStore,
-    (state) => state.currentCoords,
-  );
+const EditorMarqueeSelection = () => {
+  const { operation } = useStore(mainStore);
+  const { startCoords, currentCoords } = useStore(editorMarqueeSelectionStore);
 
-  if (isOpen) {
+  if (operation === "EDITOR_MARQUEE_SELECTION") {
     const top = Math.min(startCoords.pageY, currentCoords.pageY);
     const left = Math.min(startCoords.pageX, currentCoords.pageX);
     const width = Math.abs(currentCoords.pageX - startCoords.pageX);
@@ -37,4 +31,4 @@ const MarqueeSelection = () => {
   }
 };
 
-export default MarqueeSelection;
+export default EditorMarqueeSelection;

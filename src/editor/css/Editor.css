@@ -15,7 +15,9 @@
 }
 
 .editor-content {
+  background-color: #c2cfdd;
   height: fit-content;
+  /* margin: 50px 0; */
 }
 
 .editor-contenteditable {

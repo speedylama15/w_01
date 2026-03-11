@@ -1,5 +1,6 @@
 .editor-gap {
   display: flex;
+  background-color: #deedfd;
   width: 100%;
   height: 75px;
 }
