@@ -1,23 +1,39 @@
 import { Plugin, TextSelection } from "@tiptap/pm/state";
 
 import { mainStore } from "../../../../stores";
-import { editorMarqueeSelectionStore } from "../../../stores";
+import editorMarqueeSelectionStore from "../stores/editorMarqueeSelectionStore";
 
 import { MultiBlockSelection } from "../../../selections/MultiBlockSelection";
 
-import { isClickOrDrag, isLeftClick } from "../../../../utils";
+import { clamp, isClickOrDrag, isLeftClick } from "../../../../utils";
 import getEditorTree from "../utils/getEditorTree";
 
-export const EditorMarqueeSelection_Plugin = () => {
+import {
+  IS_EDITOR_MARQUEE_SELECTION,
+  EDITOR_MARQUEE_SELECTION,
+} from "../operations";
+
+// todo: convert this to a constant
+const IDLE = "IDLE";
+const DOWN = "DOWN";
+const DRAG = "DRAG";
+// todo: convert this to a constant
+
+const EditorMarqueeSelection_Plugin = () => {
   return new Plugin({
     view(view) {
       const handleMouseDown = (e) => {
         if (!isLeftClick(e)) return; // idea: essential
 
-        const { setMouseState, setOperation } = mainStore.getState();
-        const { setBothCoords } = editorMarqueeSelectionStore.getState();
+        const { tr } = view.state;
+        const { dispatch } = view;
 
-        setMouseState("DOWN"); // idea: essential
+        const { setMouseState, setOperation } = mainStore.getState();
+
+        const { setStartCoords, setCurrentCoords } =
+          editorMarqueeSelectionStore.getState();
+
+        setMouseState(DOWN); // idea: essential
 
         const contentDOM = document.querySelector(".editor-content");
         const pageDOM = document.querySelector(".editor-page");
@@ -26,15 +42,20 @@ export const EditorMarqueeSelection_Plugin = () => {
         if (!contentDOM.contains(e.target) && pageDOM.contains(e.target)) {
           e.preventDefault();
 
-          setBothCoords({
+          const selection = MultiBlockSelection.create(tr.doc, 0, 0);
+          dispatch(tr.setSelection(selection));
+          view.focus();
+
+          const coords = {
             clientX: e.clientX,
             clientY: e.clientY,
             pageX: e.pageX,
             pageY: e.pageY,
-          });
-          setOperation("IS_EDITOR_MARQUEE_SELECTION"); // can be EDITOR_MARQUEE_SELECTION
+          };
 
-          view.focus();
+          setStartCoords(coords);
+          setCurrentCoords(coords);
+          setOperation(IS_EDITOR_MARQUEE_SELECTION);
         }
       };
 
@@ -53,10 +74,10 @@ export const EditorMarqueeSelection_Plugin = () => {
         } = editorMarqueeSelectionStore.getState();
 
         // idea: essential -> do nothing if the mouse is "IDLE"
-        if (mouseState === "IDLE") return;
+        if (mouseState === IDLE) return;
 
         // will this become Marquee selection or end as a simple click?
-        if (operation === "IS_EDITOR_MARQUEE_SELECTION") {
+        if (operation === IS_EDITOR_MARQUEE_SELECTION) {
           const coords = {
             clientX: e.clientX,
             clientY: e.clientY,
@@ -66,14 +87,11 @@ export const EditorMarqueeSelection_Plugin = () => {
 
           setCurrentCoords(coords);
 
-          const currentCoords =
-            editorMarqueeSelectionStore.getState().currentCoords;
-
           // it can bounce back between click or drag depending on the the distance
           const state = isClickOrDrag(
             startCoords,
-            currentCoords,
-            20,
+            coords,
+            12,
             (obj) => {
               return obj.pageX;
             },
@@ -82,16 +100,14 @@ export const EditorMarqueeSelection_Plugin = () => {
             },
           );
 
-          console.log(state);
-
           // but once it becomes "drag" -> set operation to "EDITOR_MARQUEE_SELECTION"
           if (state === "drag") {
-            setOperation("EDITOR_MARQUEE_SELECTION");
-            setMouseState("DRAG");
+            setOperation(EDITOR_MARQUEE_SELECTION);
+            setMouseState(DRAG);
           }
         }
 
-        if (operation === "EDITOR_MARQUEE_SELECTION") {
+        if (operation === EDITOR_MARQUEE_SELECTION) {
           const coords = {
             clientX: e.clientX,
             clientY: e.clientY,
@@ -105,7 +121,6 @@ export const EditorMarqueeSelection_Plugin = () => {
           if (editorTree === null) {
             const { blocks, tree } = getEditorTree(view);
 
-            // fix: better naming convention?
             setEditorBlocks(blocks);
             setEditorTree(tree);
           }
@@ -118,9 +133,9 @@ export const EditorMarqueeSelection_Plugin = () => {
             const onFrameScrollY = () => {
               const {
                 currentCoords,
-                setCurrentCoords,
                 editorTree,
                 editorBlocks,
+                setCurrentCoords,
               } = editorMarqueeSelectionStore.getState();
 
               // if it's NOT at the top then scroll
@@ -134,8 +149,13 @@ export const EditorMarqueeSelection_Plugin = () => {
 
                 setCurrentCoords(coords);
 
-                // fix: better this
-                window.scrollBy(0, -5);
+                const base = 22;
+                const distance = 0 - currentCoords.clientY;
+
+                const value = base + distance;
+                const speed = clamp(value, 5, 50);
+
+                window.scrollBy(0, -speed);
               }
 
               // if it's not at the bottom then scroll
@@ -150,8 +170,14 @@ export const EditorMarqueeSelection_Plugin = () => {
 
                 setCurrentCoords(coords);
 
-                // fix: better this
-                window.scrollBy(0, 5);
+                const base = 22;
+                const distance =
+                  0 - (window.innerHeight - currentCoords?.clientY);
+
+                const value = base + distance;
+                const speed = clamp(value, 5, 50);
+
+                window.scrollBy(0, speed);
               }
 
               // obtain fresh data
@@ -175,18 +201,18 @@ export const EditorMarqueeSelection_Plugin = () => {
               }
 
               if (indexes.length === 1) {
-                const anchorIndex = indexes[0];
-                const anchorBefore =
-                  view.posAtDOM(editorBlocks[anchorIndex]) - 1;
+                const anchor = indexes[0];
+
+                const anchorBefore = view.posAtDOM(editorBlocks[anchor]) - 1;
                 const anchorNode = view.state.doc.nodeAt(anchorBefore);
 
-                const multiSelection = MultiBlockSelection.create(
+                const selection = MultiBlockSelection.create(
                   tr.doc,
                   anchorBefore,
                   anchorBefore + anchorNode.nodeSize,
                 );
 
-                dispatch(tr.setSelection(multiSelection));
+                dispatch(tr.setSelection(selection));
               }
 
               if (indexes.length > 1) {
@@ -198,13 +224,13 @@ export const EditorMarqueeSelection_Plugin = () => {
                 const headNode = view.state.doc.nodeAt(headBefore);
                 const headAfter = headBefore + headNode.nodeSize;
 
-                const multiSelection = MultiBlockSelection.create(
+                const selection = MultiBlockSelection.create(
                   tr.doc,
                   anchorBefore,
                   headAfter,
                 );
 
-                dispatch(tr.setSelection(multiSelection));
+                dispatch(tr.setSelection(selection));
               }
 
               setRafID(requestAnimationFrame(onFrameScrollY));
@@ -216,39 +242,34 @@ export const EditorMarqueeSelection_Plugin = () => {
       };
 
       const handleMouseUp = () => {
+        const { tr } = view.state;
+        const { dispatch } = view;
+
         const { mouseState, operation, setOperation, setMouseState } =
           mainStore.getState();
 
-        const {
-          rafID,
-          setBothCoords,
-          setEditorTree,
-          setEditorBlocks,
-          setRafID,
-        } = editorMarqueeSelectionStore.getState();
+        const { rafID, reset } = editorMarqueeSelectionStore.getState();
 
         // do nothing if the mouse is "IDLE"
-        if (mouseState === "IDLE") return;
+        if (mouseState === IDLE) return;
 
-        if (operation === "IS_EDITOR_MARQUEE_SELECTION") {
-          // lose focus on the editor
-          view.dom.blur();
-          setOperation(null);
-          setMouseState("IDLE");
+        if (operation === IS_EDITOR_MARQUEE_SELECTION) {
+          const selection = TextSelection.create(tr.doc, 1);
+          dispatch(tr.setSelection(selection));
+          view.dom.blur(); // lose focus
+
+          setOperation(null); // idea: essential
+          setMouseState(IDLE); // idea: essential
+          reset();
         }
 
-        if (operation === "EDITOR_MARQUEE_SELECTION") {
+        if (operation === EDITOR_MARQUEE_SELECTION) {
           view.focus();
 
-          // reset
-          // fix: need a better reset
-          setOperation(null);
           cancelAnimationFrame(rafID); // need this
-          setBothCoords(null);
-          setEditorTree(null);
-          setEditorBlocks(null);
-          setRafID(null);
-          setMouseState("IDLE");
+          setOperation(null); // idea: essential
+          setMouseState(IDLE); // idea: essential
+          reset();
         }
       };
 
@@ -266,3 +287,5 @@ export const EditorMarqueeSelection_Plugin = () => {
     },
   });
 };
+
+export default EditorMarqueeSelection_Plugin;

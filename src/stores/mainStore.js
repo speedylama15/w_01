@@ -3,7 +3,7 @@ import { createStore } from "zustand";
 const mainStore = createStore((set) => {
   return {
     operation: null, // later compile this into variables
-    format: null, // "editor" || "whiteboard"
+    format: null, // "EDITOR" || "WHITEBOARD"
     mouseState: "IDLE", // "IDLE" || "DOWN" || "DRAG"
 
     setOperation: (operation) => set({ operation }),

@@ -5,14 +5,6 @@ import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
 
 export const RenderSelection_Plugin = new Plugin({
   props: {
-    // attributes(state) {
-    //   if (state.selection instanceof MultiBlockSelection) {
-    //     return { class: "has-multi-block-selection" };
-    //   }
-
-    //   return {};
-    // },
-
     decorations(state) {
       const { selection } = state;
 

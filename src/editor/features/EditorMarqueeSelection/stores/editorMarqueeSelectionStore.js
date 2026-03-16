@@ -1,6 +1,6 @@
 import { createStore } from "zustand/vanilla";
 
-const MarqueeSelectionStore = createStore((set) => ({
+const editorMarqueeSelectionStore = createStore((set) => ({
   startCoords: null,
   currentCoords: null,
   editorTree: null,
@@ -9,11 +9,18 @@ const MarqueeSelectionStore = createStore((set) => ({
 
   setStartCoords: (coords) => set({ startCoords: coords }),
   setCurrentCoords: (coords) => set({ currentCoords: coords }),
-  setBothCoords: (coords) =>
-    set({ startCoords: coords, currentCoords: coords }),
   setEditorTree: (tree) => set({ editorTree: tree }),
   setEditorBlocks: (blocks) => set({ editorBlocks: blocks }),
   setRafID: (id) => set({ rafID: id }),
+
+  reset: () =>
+    set({
+      startCoords: null,
+      currentCoords: null,
+      editorTree: null,
+      editorBlocks: null,
+      rafID: null,
+    }),
 }));
 
-export default MarqueeSelectionStore;
+export default editorMarqueeSelectionStore;

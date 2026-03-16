@@ -1,4 +1,4 @@
-.block-handle-menu {
+.block-handle-dropdown {
   display: flex;
   flex-direction: column;
   background-color: #fff;
@@ -10,7 +10,7 @@
   top: 30px;
 }
 
-.block-handle-menu > button {
+.block-handle-dropdown > button {
   font-size: 16px;
   font-weight: 400;
   padding: 12px;

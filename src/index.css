@@ -24,9 +24,17 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-.ProseMirror-selectednode {
-  /* fix: remove this later, only for testing purposes */
-  outline: 2px solid blue;
+body[data-cursor="default"] {
+  cursor: default;
+}
+
+body[data-cursor="marquee"] {
+  cursor: crosshair;
+}
+
+body[data-cursor="drag-and-drop"] {
+  /* fix: need to adjust this later */
+  cursor: grab;
 }
 
 .portal {

@@ -6,6 +6,11 @@
   font-feature-settings: "liga" 0;
 }
 
+.editor-page {
+  /* review: note this */
+  overscroll-behavior: none;
+}
+
 .editor {
   display: flex;
   flex-direction: column;

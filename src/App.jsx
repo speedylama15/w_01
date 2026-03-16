@@ -4,10 +4,12 @@ import EditorProvider from "./editor/EditorProvider.jsx";
 import EditorPage from "./pages/EditorPage/EditorPage.jsx";
 import WhiteboardPage from "./pages/WhiteboardPage/WhiteboardPage.jsx";
 import Navbar from "./components/Navbar/Navbar.jsx";
-import EditorMarqueeSelection from "./editor/components/EditorMarqueeSelection/EditorMarqueeSelection.jsx";
 
-import BlockHandle from "./editor/components/BlockHandle/BlockHandle.jsx";
-import BlockHandleMenu from "./editor/components/BlockHandleDropdown/BlockHandleMenu.jsx";
+import {
+  BlockHandle,
+  BlockHandleDropdown,
+  EditorBoxSelect,
+} from "./editor/features";
 
 function App() {
   return (
@@ -25,11 +27,12 @@ function App() {
       </div>
 
       <div className="portal">
-        {/* <BlockHandle /> */}
+        <BlockHandle />
+        <BlockHandleDropdown />
 
-        {/* <BlockHandleMenu /> */}
+        <EditorBoxSelect />
 
-        <EditorMarqueeSelection />
+        {/* <RadialMenu /> */}
       </div>
     </EditorProvider>
   );
