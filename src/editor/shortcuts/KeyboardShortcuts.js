@@ -18,8 +18,6 @@ export const KeyboardShortcuts = Extension.create({
         const { dispatch } = editor.view;
         const { from, $from, to } = selection;
 
-        console.log(selection);
-
         // text selection, single, and offset is 0
         if (
           selection instanceof TextSelection &&
@@ -227,8 +225,19 @@ export const KeyboardShortcuts = Extension.create({
               $from.parentOffset,
               node.content.size,
             );
+
+            const attrs = {};
+            Object.entries(node.attrs).forEach((entry) => {
+              const key = entry[0];
+              const value = entry[1];
+
+              if (key !== "id") {
+                attrs[key] = value;
+              }
+            });
+
             const nextNode = editor.schema.nodes[node.type.name].create(
-              { ...node.attrs },
+              { ...attrs },
               nextContent,
             );
 

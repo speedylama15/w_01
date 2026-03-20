@@ -8,6 +8,7 @@
 
 .editor-page {
   /* review: note this */
+  /* fix: maybe this is causing some issue? */
   overscroll-behavior: none;
 }
 
@@ -21,7 +22,9 @@
 
 .editor-content {
   background-color: #c2cfdd;
+  width: 900px;
   height: fit-content;
+  /* fix: maybe this could be a solution to EditorGap? */
   /* margin: 50px 0; */
 }
 
@@ -32,4 +35,20 @@
   /* review: the padding for Block Handle is here */
   padding-inline: 50px;
   outline: none;
+}
+
+.dnd-up-right {
+  border-top: 2px solid blue;
+}
+
+.dnd-up-left {
+  border-top: 2px solid red;
+}
+
+.dnd-down-right {
+  border-bottom: 2px solid blue;
+}
+
+.dnd-down-left {
+  border-bottom: 2px solid red;
 }

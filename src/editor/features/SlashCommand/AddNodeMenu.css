@@ -1,0 +1,57 @@
+.add-node-menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background-color: #fff;
+  padding: 8px;
+  border: 1px solid #dae1e8;
+  border-radius: 20px;
+}
+
+.add-node-menu > input {
+  font-size: 16px;
+  border: 1px solid #bdc3d7;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.add-node-menu > input:focus {
+  outline: 1px solid rgb(37, 96, 244);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background-color: #fff;
+  border-radius: 12px;
+}
+
+.buttons > button {
+  font-size: 16px;
+  background-color: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+}
+
+.buttons > button:hover {
+  cursor: pointer;
+  background-color: #f0f1f5;
+}
+
+/* SLASH COMMAND */
+
+.slash-command {
+  color: #7988a0;
+  background-color: #c7cde2;
+}
+
+.slash-command::after {
+  content: "Type to search";
+  color: #7988a0;
+  font-weight: 300;
+  padding: 3px 0;
+  border-radius: 5px;
+}

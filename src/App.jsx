@@ -11,9 +11,13 @@ import {
   EditorBoxSelect,
 } from "./editor/features";
 
+import AddNodeMenu from "./editor/features/SlashCommand/AddNodeMenu.jsx";
+import Portal from "./Portal.jsx";
+
 function App() {
   return (
     <EditorProvider>
+      {/* idea: I can change the className by fetching the url and changing it accordingly */}
       <div className="t-page">
         <HashRouter>
           <Navbar />
@@ -26,14 +30,7 @@ function App() {
         </HashRouter>
       </div>
 
-      <div className="portal">
-        <BlockHandle />
-        <BlockHandleDropdown />
-
-        <EditorBoxSelect />
-
-        {/* <RadialMenu /> */}
-      </div>
+      <Portal />
     </EditorProvider>
   );
 }

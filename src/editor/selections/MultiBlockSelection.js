@@ -20,10 +20,26 @@ export class MultiBlockSelection extends Selection {
   }
 
   static create(doc, from, to = from) {
-    // from and to are integers
-    // use doc.resolve() to provide ResolvedPos objects as arguments
+    const $from = doc.resolve(from);
+    const $to = doc.resolve(to);
+
+    const arr = [];
+
+    $from.doc.nodesBetween($from.pos, $to.pos, (node, start) => {
+      if (node.attrs.nodeType === "block") {
+        arr.push({ before: start, after: start + node.nodeSize });
+
+        return false;
+      }
+    });
+
+    if (!arr.length) return Selection.near($from); // idea: not sure what this does
+
+    const anchor = arr[0].before;
+    const head = arr[arr.length - 1].after;
+
     // ResolvedPos objects provide contextual data around that pos
-    return new MultiBlockSelection(doc.resolve(from), doc.resolve(to));
+    return new MultiBlockSelection(doc.resolve(anchor), doc.resolve(head));
   }
 
   content() {

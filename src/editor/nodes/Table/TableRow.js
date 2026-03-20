@@ -5,19 +5,27 @@ const m_TableRow = TableRow.extend({
 
   addAttributes() {
     return {
-      contentType: {
-        default: this.name,
-        parseHTML: (element) => element.getAttribute("data-content-type"),
-        renderHTML: (attributes) => ({
-          "data-content-type": attributes.contentType,
-        }),
-      },
       nodeType: {
         default: "content",
-        parseHTML: (element) => element.getAttribute("data-node-type"),
-        renderHTML: (attributes) => ({
-          "data-node-type": attributes.nodeType,
-        }),
+        parseHTML: (element) => {
+          return element.getAttribute("data-node-type");
+        },
+        renderHTML: (attributes) => {
+          return {
+            "data-node-type": attributes.nodeType,
+          };
+        },
+      },
+      contentType: {
+        default: this.name,
+        parseHTML: (element) => {
+          return element.getAttribute("data-content-type");
+        },
+        renderHTML: (attributes) => {
+          return {
+            "data-content-type": attributes.contentType,
+          };
+        },
       },
     };
   },

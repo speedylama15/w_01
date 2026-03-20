@@ -17,9 +17,6 @@ table {
   table-layout: fixed;
   border-collapse: collapse;
   background-color: #c5dde8;
-
-  /* fix: quick fix for table that refuses to react when cells get deleted */
-  min-width: 1000px !important;
 }
 
 th {

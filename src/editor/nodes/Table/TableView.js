@@ -40,44 +40,74 @@ class m_TableView extends TableView {
     return tableWrapper;
   }
 
-  createSelectionBox() {
-    const tableSelectionBox = document.createElement("div");
-    tableSelectionBox.className = "table-selection-box";
+  getTableWidth(node) {
+    let tableWidth = 0;
 
-    const tableCellButton = document.createElement("button");
-    tableCellButton.className = "table-cell-button";
+    const row = node.firstChild;
 
-    tableSelectionBox.append(tableCellButton);
+    row.content.content.forEach(
+      (cell) => (tableWidth += parseInt(cell.attrs.colwidth)),
+    );
 
-    return tableSelectionBox;
+    return tableWidth;
   }
 
-  createColumnButton(tableID) {
-    const button = document.createElement("button");
+  setInitColgroup(node, colgroup, cellMinWidth) {
+    const cols = Array.from(colgroup.children);
 
-    button.className = "table-button table-column-button";
+    node.firstChild.content.content.forEach((cell, i) => {
+      const col = cols[i];
 
-    button.contentEditable = false;
-
-    button.setAttribute("data-is-column", true);
-    button.setAttribute("data-from-index", null);
-    button.setAttribute("data-table-id", tableID);
-
-    return button;
+      col.style.width = parseInt(cell.attrs.colwidth) + "px";
+      col.style.minWidth = cellMinWidth + "px";
+    });
   }
 
-  createRowButton(tableID) {
-    const button = document.createElement("button");
+  updateColgroup(node, cellMinWidth) {
+    const cellNodes = node.firstChild.content.content;
+    const cellNodeCount = cellNodes.length;
+    const cellColWidths = cellNodes.map((cell) => cell.attrs.colwidth);
 
-    button.className = "table-button table-row-button";
+    const colDOMs = Array.from(this.colgroup.children);
+    const colDOMCount = colDOMs.length;
 
-    button.contentEditable = false;
+    // updated node had its column/s deleted
+    // delete col/s until it matches the updated node's column count
+    if (colDOMCount > cellNodeCount) {
+      let count = colDOMCount;
 
-    button.setAttribute("data-is-column", false);
-    button.setAttribute("data-from-index", null);
-    button.setAttribute("data-table-id", tableID);
+      for (let i = colDOMs.length - 1; i >= 0; i--) {
+        const col = colDOMs[i];
 
-    return button;
+        col.remove();
+
+        count -= 1;
+
+        if (count === cellNodeCount) {
+          break;
+        }
+      }
+    }
+
+    cellColWidths.forEach((colwidth, i) => {
+      const col = colDOMs[i];
+
+      // if exist -> mutate the style attributes
+      if (col) {
+        col.style.width = colwidth + "px";
+        col.style.minWidth = cellMinWidth + "px";
+      }
+
+      // if it DOES not exist -> create a new col and append
+      if (!col) {
+        const newCol = document.createElement("col");
+
+        newCol.style.width = colwidth + "px";
+        newCol.style.minWidth = cellMinWidth + "px";
+
+        this.colgroup.append(newCol);
+      }
+    });
   }
 
   constructor(node, cellMinWidth, view, getPos, HTMLAttributes) {
@@ -91,55 +121,31 @@ class m_TableView extends TableView {
     block.append(content);
     content.append(contentWrapper);
     contentWrapper.append(tableWrapper);
+    tableWrapper.append(this.table);
 
-    const rowButton = this.createRowButton(HTMLAttributes["data-id"]);
+    const tableWidth = this.getTableWidth(node);
 
-    contentWrapper.append(rowButton);
+    // review: establish table's width
+    this.table.style.width = tableWidth + "px";
+    this.table.style.minWidth = tableWidth + "px";
 
-    const selectionBox = this.createSelectionBox();
-    const columnButton = this.createColumnButton(HTMLAttributes["data-id"]);
-
-    tableWrapper.append(this.table, selectionBox, columnButton);
-
-    // this.colgroup col elements without the width property
-    const count = node.content.content[0].content.content.length;
-
-    this.table.style.width = count * cellMinWidth + "px";
-    this.table.style.minWidth = count * cellMinWidth + "px";
-
-    // block.addEventListener("mousedown", (e) => {
-    //   e.preventDefault();
-    // });
-
-    // block.addEventListener("selectstart", (e) => {
-    //   e.preventDefault();
-
-    //   console.log("HEY");
-
-    //   return;
-    // });
+    // review: establish init colgroup
+    this.setInitColgroup(node, this.colgroup, cellMinWidth);
 
     this.dom = block;
+  }
+
+  update(node) {
+    // not sure how this can happen, but it can happen
+    if (node.type !== this.node.type) return false;
+
+    this.node = node;
+
+    // review: need to check if this will work...
+    this.updateColgroup(node, this.cellMinWidth);
+
+    return true;
   }
 }
 
 export default m_TableView;
-
-// review: return true -> Keep instance and update the existing DOM
-// review: return false -> Destroy and recreate everything from scratch
-// update(node, decorations, innerDecorations) {
-//   // update method does not have access to the editor...
-//   // maybe I can make use of state? Bring in the state? // idea
-
-//   // it needs to be able to know if the selection is Cell or Text
-//   // but update() does not have access to the most up to date selection... // fix
-
-//   return true;
-// }
-
-// review: return true = Ignore this DOM change - ProseMirror won't try to reparse it
-// review: return false = Handle this DOM change - ProseMirror will reparse and potentially update the document
-// Use true for mutations you caused yourself (like updating <col> widths) to prevent ProseMirror from interfering.
-// ignoreMutation() {
-//   return true;
-// }
