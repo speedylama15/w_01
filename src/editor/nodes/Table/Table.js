@@ -23,10 +23,9 @@ const m_Table = Table.extend({
     };
   },
 
-  // addProseMirrorPlugins() {
-  //   console.log(this.parent?.());
-  //   return [];
-  // },
+  addProseMirrorPlugins() {
+    return [];
+  },
 
   addAttributes() {
     return {

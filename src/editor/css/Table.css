@@ -51,6 +51,10 @@ td.display-resizer .col-resizer {
   display: flex;
 }
 
+paragraph-item {
+  display: block;
+}
+
 .table-selection-box {
   position: absolute;
   display: none;

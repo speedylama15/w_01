@@ -13,7 +13,7 @@ const ParagraphItem = Node.create({
 
   content: "inline*",
 
-  priority: 1000,
+  priority: 10000,
 
   parseHTML() {
     return [{ tag: "paragraph-item" }, { tag: "th p" }, { tag: "td p" }];

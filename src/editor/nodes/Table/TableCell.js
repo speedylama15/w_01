@@ -1,11 +1,11 @@
 import { mergeAttributes } from "@tiptap/core";
 import { TableCell } from "@tiptap/extension-table";
+import { DOMParser, Fragment } from "@tiptap/pm/model";
 
 const m_TableCell = TableCell.extend({
   marks: "bold italic underline strike textStyle highlight link",
 
-  content: "item",
-  // content: "inline*",
+  content: "item+",
 
   selectable: false,
 
@@ -45,6 +45,36 @@ const m_TableCell = TableCell.extend({
         },
       },
     };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "td",
+        getContent(dom, schema) {
+          const parser = DOMParser.fromSchema(schema);
+          const parsedDOM = parser.parse(dom);
+
+          const arr = [];
+
+          parsedDOM.content.descendants((node) => {
+            if (node.isText) {
+              const { paragraphItem } = schema.nodes;
+
+              const item = paragraphItem.create({}, Fragment.from(node));
+
+              arr.push(item);
+
+              return false;
+            }
+
+            return undefined;
+          });
+
+          return Fragment.fromArray(arr);
+        },
+      },
+    ];
   },
 
   renderHTML({ HTMLAttributes }) {

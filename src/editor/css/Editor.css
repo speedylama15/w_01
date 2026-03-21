@@ -9,7 +9,7 @@
 .editor-page {
   /* review: note this */
   /* fix: maybe this is causing some issue? */
-  overscroll-behavior: none;
+  /* overscroll-behavior: none; */
 }
 
 .editor {
