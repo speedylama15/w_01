@@ -17,10 +17,13 @@
   --font-weight: 300;
   --line-height: 1.6;
   --checkbox-edge-length: 22px;
+  --bg-color-body: #e4e8ed;
+  --bg-color-editor-content: #fff;
+  --bg-color-block: #d2d7e3;
 }
 
 body {
-  background-color: #e5e9ef;
+  background-color: var(--bg-color-body);
   text-rendering: optimizeLegibility;
 }
 
@@ -37,6 +40,11 @@ body[data-cursor="drag-and-drop"] {
   cursor: grab;
 }
 
+.page {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+}
+
 .portal {
   position: absolute;
   z-index: 999; /* Ensure this is higher than anything in .page */
@@ -47,4 +55,20 @@ body[data-cursor="drag-and-drop"] {
 
 .portal > * {
   pointer-events: auto; /* Re-enable clicks for the actual menu items */
+}
+
+.dnd-up-right {
+  border-top: 2px solid blue;
+}
+
+.dnd-up-left {
+  border-top: 2px solid red;
+}
+
+.dnd-down-right {
+  border-bottom: 2px solid blue;
+}
+
+.dnd-down-left {
+  border-bottom: 2px solid red;
 }

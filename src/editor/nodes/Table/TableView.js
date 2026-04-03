@@ -123,6 +123,21 @@ class m_TableView extends TableView {
     contentWrapper.append(tableWrapper);
     tableWrapper.append(this.table);
 
+    const tableResizer = document.createElement("div");
+    tableResizer.className = "table-resizer";
+    tableResizer.contentEditable = false;
+    tableResizer.style.cssText = `
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: #0051ff82;
+      width: 5px;
+      height: 100%;
+    `;
+    tableWrapper.append(tableResizer);
+    this.resizer = tableResizer;
+
     const tableWidth = this.getTableWidth(node);
 
     // review: establish table's width
@@ -139,10 +154,25 @@ class m_TableView extends TableView {
     // not sure how this can happen, but it can happen
     if (node.type !== this.node.type) return false;
 
+    console.log("UPDATE TABLE NODE VIEW");
+
     this.node = node;
 
     // review: need to check if this will work...
     this.updateColgroup(node, this.cellMinWidth);
+
+    return true;
+  }
+
+  // fix: just return true for everything
+  ignoreMutation(mutation) {
+    if (mutation.target === this.resizer) {
+      console.log("RESIZE MUTATION"); // fix
+
+      return true;
+    }
+
+    console.log("ignoreMutation"); // fix
 
     return true;
   }

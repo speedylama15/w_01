@@ -10,19 +10,23 @@ import {
   DragAndDrop_Plugin,
   EditorBoxSelect_Plugin,
   SlashCommand_Plugin,
+  TableResize_Plugin,
+  PreventNativeDrag_Plugin,
 } from "../features";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
     return [
+      PreventNativeDrag_Plugin,
       Placeholder_Plugin,
       TrailingNode_Plugin,
-      CopyAndPaste_Plugin,
+      // CopyAndPaste_Plugin,
       // BlockHandle_Plugin,
       // DragAndDrop_Plugin(this.editor),
       // EditorBoxSelect_Plugin(this.editor),
       RenderSelection_Plugin,
       // SlashCommand_Plugin(this.editor),
+      TableResize_Plugin,
     ];
   },
 });

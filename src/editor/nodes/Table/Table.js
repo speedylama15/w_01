@@ -62,6 +62,7 @@ const m_Table = Table.extend({
           };
         },
       },
+      // fix
     };
   },
 

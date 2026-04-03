@@ -12,3 +12,7 @@ export { default as DragAndDrop_Plugin } from "./DragAndDrop/DragAndDrop_Plugin.
 export { default as SlashCommand_Plugin } from "./SlashCommand/SlashCommand_Plugin.js";
 
 export { default as CopyAndPaste_Plugin } from "./CopyAndPaste/CopyAndPaste_Plugin.js";
+
+export { default as TableResize_Plugin } from "./TableResize/TableResize_Plugin.js";
+
+export { default as PreventNativeDrag_Plugin } from "./PreventNativeDrag/PreventNativeDrag_Plugin.js";

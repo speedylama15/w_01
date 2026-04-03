@@ -1,6 +1,6 @@
 import { memo, useCallback, useRef } from "react";
 
-import Editor from "../../editor/Editor.jsx";
+import Editor from "../../editor/EditorSection.jsx";
 
 import useNodes from "../../stores/useNodes";
 import useMouse from "../../stores/useMouse";
@@ -15,7 +15,7 @@ const Node = memo(({ nodeID }) => {
 
   const set_mouseState = useMouse((state) => state.set_mouseState);
   const set_singleSelectedNode = useSelection(
-    (state) => state.set_singleSelectedNode
+    (state) => state.set_singleSelectedNode,
   );
 
   const set_nodesTree = useTrees((state) => state.set_nodesTree);
@@ -38,7 +38,7 @@ const Node = memo(({ nodeID }) => {
 
       return;
     },
-    [node, set_mouseState, set_singleSelectedNode, set_nodesTree]
+    [node, set_mouseState, set_singleSelectedNode, set_nodesTree],
   );
 
   // debug: check on this seldomly

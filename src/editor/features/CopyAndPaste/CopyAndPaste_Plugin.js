@@ -192,8 +192,6 @@ const CopyAndPaste_Plugin = new Plugin({
                 type = "tableHeader";
               }
 
-              console.log(type);
-
               // revise existing cell or create a filler cell
               const newCell = cell
                 ? schema.nodes[type].create(

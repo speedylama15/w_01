@@ -51,12 +51,6 @@ const DragAndDrop_Plugin = (editor) => {
       decorations(state) {
         return this.getState(state);
       },
-
-      handleDOMEvents: {
-        dragstart(view, e) {
-          e.preventDefault();
-        },
-      },
     },
 
     state: {
