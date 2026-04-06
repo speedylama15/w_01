@@ -12,6 +12,7 @@ import {
   SlashCommand_Plugin,
   TableResize_Plugin,
   PreventNativeDrag_Plugin,
+  CellSelecting_Plugin,
 } from "../features";
 
 export const Plugins = Extension.create({
@@ -26,7 +27,8 @@ export const Plugins = Extension.create({
       // EditorBoxSelect_Plugin(this.editor),
       RenderSelection_Plugin,
       // SlashCommand_Plugin(this.editor),
-      TableResize_Plugin,
+      // TableResize_Plugin,
+      CellSelecting_Plugin,
     ];
   },
 });

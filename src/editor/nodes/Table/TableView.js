@@ -40,141 +40,130 @@ class m_TableView extends TableView {
     return tableWrapper;
   }
 
-  getTableWidth(node) {
+  createTableResizer() {
+    const resizer = document.createElement("div");
+    resizer.className = "table-resizer";
+
+    const line = document.createElement("div");
+
+    resizer.append(line);
+
+    return resizer;
+  }
+
+  createSelectionBox() {
+    const box = document.createElement("div");
+    box.className = "selection-box";
+
+    return box;
+  }
+
+  syncTableWidth(node, table, cellMinWidth) {
+    const firstRow = node.firstChild;
+    const cells = firstRow.children;
+
     let tableWidth = 0;
 
-    const row = node.firstChild;
+    cells.forEach((cell) => {
+      const width = parseInt(cell.attrs.colwidth) || cellMinWidth;
 
-    row.content.content.forEach(
-      (cell) => (tableWidth += parseInt(cell.attrs.colwidth)),
-    );
-
-    return tableWidth;
-  }
-
-  setInitColgroup(node, colgroup, cellMinWidth) {
-    const cols = Array.from(colgroup.children);
-
-    node.firstChild.content.content.forEach((cell, i) => {
-      const col = cols[i];
-
-      col.style.width = parseInt(cell.attrs.colwidth) + "px";
-      col.style.minWidth = cellMinWidth + "px";
+      tableWidth += width;
     });
+
+    table.style.width = tableWidth + "px";
+    table.style.minWidth = tableWidth + "px";
   }
 
-  updateColgroup(node, cellMinWidth) {
-    const cellNodes = node.firstChild.content.content;
-    const cellNodeCount = cellNodes.length;
-    const cellColWidths = cellNodes.map((cell) => cell.attrs.colwidth);
+  syncColgroup(node, colgroup, cellMinWidth) {
+    const cols = Array.from(colgroup.children);
+    const domColCount = cols.length;
 
-    const colDOMs = Array.from(this.colgroup.children);
-    const colDOMCount = colDOMs.length;
+    const firstRow = node.firstChild;
+    const nodeColumnCount = firstRow.children.length;
 
-    // updated node had its column/s deleted
-    // delete col/s until it matches the updated node's column count
-    if (colDOMCount > cellNodeCount) {
-      let count = colDOMCount;
+    // 3 - 5 = -2 -> need to remove 2 cols
+    // 7 - 5 = 2 -> need to add 2 cols
+    const count = nodeColumnCount - domColCount;
 
-      for (let i = colDOMs.length - 1; i >= 0; i--) {
-        const col = colDOMs[i];
+    // sync colgroup's length to node's column count
+    if (count < 0) {
+      // need to remove cols
+      for (let i = 0; i < Math.abs(count); i++) {
+        colgroup.lastElementChild.remove();
+      }
+    }
+    if (count > 0) {
+      // need to add cols
+      for (let i = 0; i < Math.abs(count); i++) {
+        const newCol = document.createElement("col");
+        newCol.style.width = cellMinWidth + "px";
+        newCol.style.minWidth = cellMinWidth + "px";
 
-        col.remove();
-
-        count -= 1;
-
-        if (count === cellNodeCount) {
-          break;
-        }
+        colgroup.append(newCol);
       }
     }
 
-    cellColWidths.forEach((colwidth, i) => {
-      const col = colDOMs[i];
+    // loop and sync width/min-width to colwidth
+    const cells = firstRow.children;
+    Array.from(colgroup.children).forEach((col, i) => {
+      const cellNode = cells[i];
+      const colwidth = cellNode.attrs.colwidth || cellMinWidth;
 
-      // if exist -> mutate the style attributes
-      if (col) {
-        col.style.width = colwidth + "px";
-        col.style.minWidth = cellMinWidth + "px";
-      }
-
-      // if it DOES not exist -> create a new col and append
-      if (!col) {
-        const newCol = document.createElement("col");
-
-        newCol.style.width = colwidth + "px";
-        newCol.style.minWidth = cellMinWidth + "px";
-
-        this.colgroup.append(newCol);
-      }
+      col.style.width = colwidth + "px";
+      col.style.minWidth = cellMinWidth + "px";
     });
+
+    return colgroup;
   }
 
   constructor(node, cellMinWidth, view, getPos, HTMLAttributes) {
     super(node, cellMinWidth);
 
+    this.syncTableWidth(node, this.table, cellMinWidth);
+    this.syncColgroup(node, this.colgroup, cellMinWidth);
+
     const block = this.createBlock(HTMLAttributes);
     const content = this.createContent();
     const contentWrapper = this.createContentWrapper();
     const tableWrapper = this.createTableWrapper();
+    const tableResizer = this.createTableResizer();
+    const selectionBox = this.createSelectionBox();
 
     block.append(content);
     content.append(contentWrapper);
     contentWrapper.append(tableWrapper);
-    tableWrapper.append(this.table);
-
-    const tableResizer = document.createElement("div");
-    tableResizer.className = "table-resizer";
-    tableResizer.contentEditable = false;
-    tableResizer.style.cssText = `
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      background-color: #0051ff82;
-      width: 5px;
-      height: 100%;
-    `;
-    tableWrapper.append(tableResizer);
-    this.resizer = tableResizer;
-
-    const tableWidth = this.getTableWidth(node);
-
-    // review: establish table's width
-    this.table.style.width = tableWidth + "px";
-    this.table.style.minWidth = tableWidth + "px";
-
-    // review: establish init colgroup
-    this.setInitColgroup(node, this.colgroup, cellMinWidth);
+    tableWrapper.append(this.table, tableResizer, selectionBox);
 
     this.dom = block;
+    this.selectionBox = selectionBox;
   }
 
+  // TODO: make sure that the syncing is not getting spammed
   update(node) {
     // not sure how this can happen, but it can happen
-    if (node.type !== this.node.type) return false;
-
-    console.log("UPDATE TABLE NODE VIEW");
+    if (node.type != this.node.type) return false;
 
     this.node = node;
 
-    // review: need to check if this will work...
-    this.updateColgroup(node, this.cellMinWidth);
+    this.syncTableWidth(node, this.table, this.cellMinWidth);
+    this.syncColgroup(node, this.colgroup, this.cellMinWidth);
 
     return true;
   }
 
-  // fix: just return true for everything
   ignoreMutation(mutation) {
-    if (mutation.target === this.resizer) {
-      console.log("RESIZE MUTATION"); // fix
-
+    if (
+      mutation.type == "attributes" &&
+      mutation.target === this.selectionBox
+    ) {
       return true;
     }
 
-    console.log("ignoreMutation"); // fix
-
-    return true;
+    // idea: this is how Prosemirror handles ignoreMutation()
+    return (
+      mutation.type == "attributes" &&
+      (mutation.target == this.table || this.colgroup.contains(mutation.target))
+    );
   }
 }
 

@@ -1,0 +1,19 @@
+.show-table-resizer .table-resizer {
+  display: flex !important;
+  justify-content: center;
+}
+
+.table-resizer {
+  display: none;
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 100%;
+}
+
+.table-resizer > div {
+  background-color: #144bff;
+  width: 4px;
+  height: 100%;
+}

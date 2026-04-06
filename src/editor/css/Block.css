@@ -20,6 +20,8 @@ blockquote {
   /* review: cannot set as inline-flex as well */
   display: block;
   background-color: var(--bg-color-block);
+
+  padding: 3px;
 }
 
 .content > .inline {

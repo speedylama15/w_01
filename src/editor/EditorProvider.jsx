@@ -59,6 +59,8 @@ import "./css/Image.css";
 import "./css/Audio.css";
 import "./css/Video.css";
 import "./css/Table.css";
+import "./features/CellSelecting/CellSelecting.css";
+import "./features/TableResize/TableResize.css";
 
 import "./plugins/Placeholder/Placeholder_Plugin.css";
 import "./selections/MultiBlockSelection.css";
