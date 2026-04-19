@@ -14,11 +14,14 @@ const m_Table = Table.extend({
   addKeyboardShortcuts() {
     return {
       "=": ({ editor }) => {
-        return editor
-          .chain()
-          .focus()
-          .insertTable({ rows: 5, cols: 7, withHeaderRow: true })
-          .run();
+        return (
+          editor
+            .chain()
+            .focus()
+            // 25 cols and 200 rows max
+            .insertTable({ cols: 25, rows: 25, withHeaderRow: false })
+            .run()
+        );
       },
     };
   },
@@ -62,13 +65,34 @@ const m_Table = Table.extend({
           };
         },
       },
-      // fix
+      isHeaderColumn: {
+        default: false,
+        parseHTML: (element) => {
+          return element.getAttribute("data-is-header-column");
+        },
+        renderHTML: (attributes) => {
+          return {
+            "data-is-header-column": attributes.isHeaderColumn,
+          };
+        },
+      },
+      isHeaderRow: {
+        default: false,
+        parseHTML: (element) => {
+          return element.getAttribute("data-is-header-row");
+        },
+        renderHTML: (attributes) => {
+          return {
+            "data-is-header-row": attributes.isHeaderRow,
+          };
+        },
+      },
     };
   },
 
   addNodeView() {
-    return ({ HTMLAttributes, getPos, node, view }) => {
-      return new m_TableView(node, 150, view, getPos, HTMLAttributes);
+    return ({ editor, HTMLAttributes, getPos, node, view }) => {
+      return new m_TableView(editor, node, 150, view, getPos, HTMLAttributes);
     };
   },
 

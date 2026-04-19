@@ -1,7 +1,0 @@
-.cell-selecting *::selection {
-  background-color: transparent;
-}
-
-.selected-cell {
-  background-color: #a6e7ff;
-}

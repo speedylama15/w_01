@@ -58,6 +58,22 @@ class m_TableView extends TableView {
     return box;
   }
 
+  createColumnButton() {
+    const button = document.createElement("button");
+    button.className = "table-button column-button";
+    button.setAttribute("data-button-type", "column");
+
+    return button;
+  }
+
+  createRowButton() {
+    const button = document.createElement("button");
+    button.className = "table-button row-button";
+    button.setAttribute("data-button-type", "row");
+
+    return button;
+  }
+
   syncTableWidth(node, table, cellMinWidth) {
     const firstRow = node.firstChild;
     const cells = firstRow.children;
@@ -116,7 +132,7 @@ class m_TableView extends TableView {
     return colgroup;
   }
 
-  constructor(node, cellMinWidth, view, getPos, HTMLAttributes) {
+  constructor(editor, node, cellMinWidth, view, getPos, HTMLAttributes) {
     super(node, cellMinWidth);
 
     this.syncTableWidth(node, this.table, cellMinWidth);
@@ -128,14 +144,18 @@ class m_TableView extends TableView {
     const tableWrapper = this.createTableWrapper();
     const tableResizer = this.createTableResizer();
     const selectionBox = this.createSelectionBox();
+    const columnButton = this.createColumnButton();
+    const rowButton = this.createRowButton();
 
     block.append(content);
     content.append(contentWrapper);
-    contentWrapper.append(tableWrapper);
-    tableWrapper.append(this.table, tableResizer, selectionBox);
+    contentWrapper.append(tableWrapper, rowButton);
+    tableWrapper.append(this.table, tableResizer, selectionBox, columnButton);
 
     this.dom = block;
     this.selectionBox = selectionBox;
+    this.columnButton = columnButton;
+    this.rowButton = rowButton;
   }
 
   // TODO: make sure that the syncing is not getting spammed
@@ -156,6 +176,17 @@ class m_TableView extends TableView {
       mutation.type == "attributes" &&
       mutation.target === this.selectionBox
     ) {
+      return true;
+    }
+
+    if (
+      mutation.type == "attributes" &&
+      mutation.target === this.columnButton
+    ) {
+      return true;
+    }
+
+    if (mutation.type == "attributes" && mutation.target === this.rowButton) {
       return true;
     }
 

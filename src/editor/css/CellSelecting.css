@@ -1,0 +1,52 @@
+.hide-native-selection *::selection {
+  background-color: transparent;
+}
+
+.active-table .selection-box,
+.active-table .column-button,
+.active-table .row-button {
+  display: flex;
+}
+
+.active-table td::after,
+.active-table th::after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  inset: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.selection-box {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 3px solid rgb(0, 224, 22);
+  transform: translate(-1px, -1px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.column-button {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px;
+  height: 7px;
+  transform: translateX(-50%);
+  z-index: 10;
+  cursor: pointer;
+}
+
+.row-button {
+  display: none;
+  position: absolute;
+  width: 7px;
+  height: 24px;
+  transform: translateY(-50%);
+  z-index: 10;
+  cursor: pointer;
+}

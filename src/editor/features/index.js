@@ -17,4 +17,4 @@ export { default as TableResize_Plugin } from "./TableResize/TableResize_Plugin.
 
 export { default as PreventNativeDrag_Plugin } from "./PreventNativeDrag/PreventNativeDrag_Plugin.js";
 
-export { default as CellSelecting_Plugin } from "./CellSelecting/CellSelecting_Plugin";
+export { default as TableReordering_Plugin } from "./TableReordering/TableReordering_Plugin.js";

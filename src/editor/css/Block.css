@@ -21,7 +21,7 @@ blockquote {
   display: block;
   background-color: var(--bg-color-block);
 
-  padding: 3px;
+  /* padding: 3px; */
 }
 
 .content > .inline {

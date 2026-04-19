@@ -19,7 +19,7 @@
 .editor {
   display: flex;
   flex-direction: column;
-  width: 500px;
+  width: 900px;
   height: fit-content;
   margin: 70px auto;
 }

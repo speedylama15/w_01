@@ -12,8 +12,10 @@ import {
   SlashCommand_Plugin,
   TableResize_Plugin,
   PreventNativeDrag_Plugin,
-  CellSelecting_Plugin,
+  TableReordering_Plugin,
 } from "../features";
+
+import CellSelecting_Plugin from "../nodes/Table/plugins/CellSelecting_Plugin";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
@@ -27,8 +29,10 @@ export const Plugins = Extension.create({
       // EditorBoxSelect_Plugin(this.editor),
       RenderSelection_Plugin,
       // SlashCommand_Plugin(this.editor),
-      // TableResize_Plugin,
+
       CellSelecting_Plugin,
+      // TableResize_Plugin,
+      // TableReordering_Plugin,
     ];
   },
 });
