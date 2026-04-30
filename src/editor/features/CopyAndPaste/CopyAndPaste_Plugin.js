@@ -2,7 +2,7 @@ import { Fragment, Slice } from "@tiptap/pm/model";
 import { Plugin } from "@tiptap/pm/state";
 
 const createFillerCell = (schema, type) => {
-  const item = schema.nodes.paragraphItem.create({});
+  const item = schema.nodes.tableItem.create({});
 
   const cell = schema.nodes[type].create({}, item);
 

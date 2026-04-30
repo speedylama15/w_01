@@ -93,12 +93,12 @@ export const TableCopyAndPaste = new Plugin({
 
         const tableCell = view.state.schema.nodes.tableCell.create(
           { colspan: 1, rowspan: 1, colwidth: 150 },
-          view.state.schema.nodes.paragraphItem.create({}),
+          view.state.schema.nodes.tableItem.create({}),
         );
 
         const tableHeader = view.state.schema.nodes.tableHeader.create(
           { colspan: 1, rowspan: 1, colwidth: 150 },
-          view.state.schema.nodes.paragraphItem.create({}),
+          view.state.schema.nodes.tableItem.create({}),
         );
 
         if (col_to_add > 0) {

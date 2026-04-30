@@ -24,7 +24,7 @@ import Table from "./nodes/Table/Table";
 import TableRow from "./nodes/Table/TableRow";
 import TableHeader from "./nodes/Table/TableHeader";
 import TableCell from "./nodes/Table/TableCell";
-import ParagraphItem from "./nodes/Table/content/ParagraphItem";
+import TableItem from "./nodes/Table/TableItem";
 
 // mark
 import { TextStyle, Color } from "@tiptap/extension-text-style";
@@ -43,6 +43,7 @@ import HardBreak from "@tiptap/extension-hard-break";
 
 // shortcuts
 import { KeyboardShortcuts } from "./shortcuts/KeyboardShortcuts";
+import Arrows from "./shortcuts/Arrows";
 // shortcuts
 
 import { Plugins } from "./plugins/Plugins";
@@ -89,7 +90,7 @@ const EditorProvider = ({ children }) => {
       TableRow,
       TableHeader,
       TableCell,
-      ParagraphItem,
+      TableItem,
       Text,
 
       // REVIEW: mark
@@ -103,6 +104,7 @@ const EditorProvider = ({ children }) => {
       Link,
 
       KeyboardShortcuts,
+      Arrows,
 
       // REVIEW: functionality
       HardBreak,

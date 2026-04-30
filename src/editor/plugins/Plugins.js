@@ -15,7 +15,12 @@ import {
   TableReordering_Plugin,
 } from "../features";
 
+import DragAndDropFiles_Plugin from "./DragAndDropFiles/DragAndDropFiles_Plugin";
+
 import CellSelecting_Plugin from "../nodes/Table/plugins/CellSelecting_Plugin";
+import TableResizing_Plugin from "../nodes/Table/plugins/TableResizing_Plugin";
+import Character from "../shortcuts/Character";
+import Arrows from "../shortcuts/Arrows";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
@@ -23,15 +28,21 @@ export const Plugins = Extension.create({
       PreventNativeDrag_Plugin,
       Placeholder_Plugin,
       TrailingNode_Plugin,
+
+      RenderSelection_Plugin, // idea: maybe I should use ::after on the node to prevent text selection?
+
+      Character,
+      DragAndDropFiles_Plugin,
+
       // CopyAndPaste_Plugin,
       // BlockHandle_Plugin,
       // DragAndDrop_Plugin(this.editor),
       // EditorBoxSelect_Plugin(this.editor),
-      RenderSelection_Plugin,
+
       // SlashCommand_Plugin(this.editor),
 
-      CellSelecting_Plugin,
-      // TableResize_Plugin,
+      // CellSelecting_Plugin,
+      // TableResizing_Plugin,
       // TableReordering_Plugin,
     ];
   },

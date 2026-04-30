@@ -8,16 +8,6 @@
   display: flex;
 }
 
-.active-table td::after,
-.active-table th::after {
-  z-index: 2;
-  position: absolute;
-  content: "";
-  inset: 0;
-  background: transparent;
-  pointer-events: none;
-}
-
 .selection-box {
   display: none;
   position: absolute;

@@ -11,21 +11,6 @@ const m_Table = Table.extend({
 
   selectable: false,
 
-  addKeyboardShortcuts() {
-    return {
-      "=": ({ editor }) => {
-        return (
-          editor
-            .chain()
-            .focus()
-            // 25 cols and 200 rows max
-            .insertTable({ cols: 25, rows: 25, withHeaderRow: false })
-            .run()
-        );
-      },
-    };
-  },
-
   addProseMirrorPlugins() {
     return [];
   },

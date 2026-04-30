@@ -59,9 +59,9 @@ const m_TableCell = TableCell.extend({
 
           parsedDOM.content.descendants((node) => {
             if (node.isText) {
-              const { paragraphItem } = schema.nodes;
+              const { tableItem } = schema.nodes;
 
-              const item = paragraphItem.create({}, Fragment.from(node));
+              const item = tableItem.create({}, Fragment.from(node));
 
               arr.push(item);
 

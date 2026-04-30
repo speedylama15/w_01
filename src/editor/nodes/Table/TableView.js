@@ -153,6 +153,7 @@ class m_TableView extends TableView {
     tableWrapper.append(this.table, tableResizer, selectionBox, columnButton);
 
     this.dom = block;
+    this.tableResizer = tableResizer;
     this.selectionBox = selectionBox;
     this.columnButton = columnButton;
     this.rowButton = rowButton;
@@ -165,6 +166,22 @@ class m_TableView extends TableView {
 
     this.node = node;
 
+    const {
+      id,
+      indentLevel,
+      isHeaderColumn,
+      isHeaderRow,
+      contentType,
+      nodeType,
+    } = node.attrs;
+
+    this.dom.setAttribute("data-id", id);
+    this.dom.setAttribute("data-indent-level", indentLevel);
+    this.dom.setAttribute("data-is-header-column", isHeaderColumn);
+    this.dom.setAttribute("data-is-header-row", isHeaderRow);
+    this.dom.setAttribute("data-content-type", contentType);
+    this.dom.setAttribute("data-node-type", nodeType);
+
     this.syncTableWidth(node, this.table, this.cellMinWidth);
     this.syncColgroup(node, this.colgroup, this.cellMinWidth);
 
@@ -172,6 +189,14 @@ class m_TableView extends TableView {
   }
 
   ignoreMutation(mutation) {
+    console.log("HEY");
+    if (
+      mutation.type == "attributes" &&
+      mutation.target === this.tableResizer
+    ) {
+      return true;
+    }
+
     if (
       mutation.type == "attributes" &&
       mutation.target === this.selectionBox

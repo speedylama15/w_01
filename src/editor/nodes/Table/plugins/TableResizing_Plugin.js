@@ -1,73 +1,12 @@
 import { Plugin } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
+import mainStore from "../../../../stores/mainStore";
+
 const hideResizer = (tr, dispatch) => {
   const set = DecorationSet.create(tr.doc, []);
 
   dispatch(tr.setMeta("table-resizer", set));
-};
-
-const getCellRect = (e, container, cell) => {
-  const rect = container.getBoundingClientRect();
-
-  const { offsetLeft, offsetWidth, offsetHeight } = cell;
-
-  const cellLeft = rect.left + offsetLeft;
-  const cellRight = rect.left + offsetLeft + offsetWidth;
-
-  return {
-    cellLeft,
-    cellRight,
-    cellWidth: offsetWidth,
-    cellHeight: offsetHeight,
-    offsetLeft,
-    offsetRight: offsetLeft + offsetWidth,
-  };
-};
-
-const getTableMap = (tableNode, tableBefore) => {
-  const rows = [];
-  const grid = [];
-
-  let rowIndex = null;
-
-  tableNode.descendants((node, pos, parent, index) => {
-    const nodePos = tableBefore + pos + 1;
-
-    const type = node.firstChild.type.name || "tableCell";
-
-    if (node.type.name === "tableRow") {
-      const row = {
-        type,
-        pos: nodePos,
-        node,
-      };
-
-      rows.push(row);
-
-      rowIndex = index;
-    }
-
-    if (node.type.name === "tableHeader" || node.type.name === "tableCell") {
-      const cell = {
-        type: node.type.name || "tableCell",
-        pos: nodePos,
-        node,
-      };
-
-      const row = grid[rowIndex];
-
-      if (!row) {
-        grid.push([cell]);
-      } else {
-        row.push(cell);
-      }
-
-      return false;
-    }
-  });
-
-  return { rows, grid };
 };
 
 const TableResizing_Plugin = new Plugin({
@@ -92,16 +31,6 @@ const TableResizing_Plugin = new Plugin({
   },
 
   view(view) {
-    let operation = null;
-    let mouseState = "IDLE";
-
-    let newWidth = null;
-    let activeResizerDOM = null;
-    let startX = null;
-    let tableNode = null;
-    let tableBefore = null;
-    let activeBlock = null;
-
     const down = (e) => {
       const { tr } = view.state;
       const { dispatch } = view;
@@ -111,17 +40,17 @@ const TableResizing_Plugin = new Plugin({
       if (resizer) {
         e.preventDefault();
 
-        operation = "TABLE_RESIZE";
-        activeResizerDOM = resizer;
+        // operation = "TABLE_RESIZE";
+        // activeResizerDOM = resizer;
 
-        const block = resizer.closest(".block-table");
+        // const block = resizer.closest(".block-table");
 
-        activeBlock = block;
+        // activeBlock = block;
 
-        tableBefore = view.posAtDOM(block) - 1;
-        tableNode = tr.doc.nodeAt(tableBefore);
+        // tableBefore = view.posAtDOM(block) - 1;
+        // tableNode = tr.doc.nodeAt(tableBefore);
 
-        startX = e.pageX;
+        // startX = e.pageX;
       }
     };
 
@@ -129,120 +58,100 @@ const TableResizing_Plugin = new Plugin({
       const { tr } = view.state;
       const { dispatch } = view;
 
-      // render resizer
+      const { operation } = mainStore.getState();
+
       if (operation === null) {
         const resizer = e.target.closest(".table-resizer");
         if (resizer) return;
 
+        // I need both the block and cell to exist
         const block = e.target.closest(".block-table");
-
-        // mouse did not enter a table
-        // hide the resizer widgets
-        if (!block) {
-          hideResizer(tr, dispatch);
-
-          return;
-        }
-
-        // if cell does not exist
-        // most likely the mouse is at the padding area
         const cell = e.target.closest("th, td");
-
-        if (!cell) {
+        if (!block || !cell) {
           hideResizer(tr, dispatch);
 
           return;
         }
 
-        // idea: need to get the scrollLeft of the scrollable element, as of now, the block is what is scrollable
-        const scrollLeft = block.scrollLeft;
-
-        // idea: this mouse coord takes the scroll into account
-        const mouseX = e.pageX + scrollLeft;
+        const mouseX = e.pageX;
 
         const { cellIndex } = cell;
-        const { cellLeft, cellRight, offsetLeft, offsetRight } = getCellRect(
-          e,
-          block,
-          cell,
-        );
+        const cellRect = cell.getBoundingClientRect();
+        const cellLeft = cellRect.left;
+        const cellRight = cellRect.right;
 
         const leftGap = Math.abs(cellLeft - mouseX);
         const rightGap = Math.abs(cellRight - mouseX);
 
-        const tableBefore = view.posAtDOM(block) - 1;
-        const tableNode = tr.doc.nodeAt(tableBefore);
-
         if (leftGap <= 5 && cellIndex !== 0) {
-          const dec = Decoration.node(
-            tableBefore,
-            tableBefore + tableNode.nodeSize,
-            {
-              class: "show-table-resizer",
-            },
-          );
+          const before = view.posAtDOM(block) - 1;
+          const node = tr.doc.nodeAt(before);
 
+          const dec = Decoration.node(before, before + node.nodeSize, {
+            class: "show-table-resizer",
+          });
           const set = DecorationSet.create(tr.doc, [dec]);
           dispatch(tr.setMeta("table-resizer", set));
 
           const resizer = block.querySelector(".table-resizer");
-          resizer.style.left = offsetLeft + "px";
+          resizer.style.left = cell.offsetLeft + "px";
           resizer.style.transform = "translateX(-50%)";
           resizer.setAttribute("data-cellIndex", cellIndex - 1);
-          resizer.setAttribute("data-left", offsetLeft);
+          resizer.setAttribute("data-left", cell.offsetLeft); // why?
 
           return;
-        } else if (rightGap <= 5) {
-          const dec = Decoration.node(
-            tableBefore,
-            tableBefore + tableNode.nodeSize,
-            {
-              class: "show-table-resizer",
-            },
-          );
+        }
+
+        if (rightGap <= 5) {
+          const before = view.posAtDOM(block) - 1;
+          const node = tr.doc.nodeAt(before);
+
+          const dec = Decoration.node(before, before + node.nodeSize, {
+            class: "show-table-resizer",
+          });
 
           const set = DecorationSet.create(tr.doc, [dec]);
 
           dispatch(tr.setMeta("table-resizer", set));
 
           const resizer = block.querySelector(".table-resizer");
-          resizer.style.left = offsetRight + "px";
+          resizer.style.left = cell.offsetLeft + cell.offsetWidth + "px";
           resizer.setAttribute("data-cellIndex", cellIndex);
-          resizer.setAttribute("data-left", offsetRight);
+          resizer.setAttribute("data-left", cell.offsetRight);
 
           if (cellIndex === cell.parentNode.children.length - 1) {
-            resizer.style.transform = "translateX(-100%)";
+            resizer.style.transform = "translateX(-7px)";
           } else {
             resizer.style.transform = "translateX(-50%)";
           }
 
           return;
-        } else {
-          hideResizer(tr, dispatch);
-
-          return;
         }
+
+        hideResizer(tr, dispatch);
+
+        return;
       }
 
-      if (operation === "TABLE_RESIZE" && activeResizerDOM) {
-        const cellIndex = parseInt(
-          activeResizerDOM.getAttribute("data-cellIndex"),
-        );
-        const resizerLeft = parseInt(
-          activeResizerDOM.getAttribute("data-left"),
-        );
+      // if (operation === "TABLE_RESIZE" && activeResizerDOM) {
+      //   const cellIndex = parseInt(
+      //     activeResizerDOM.getAttribute("data-cellIndex"),
+      //   );
+      //   const resizerLeft = parseInt(
+      //     activeResizerDOM.getAttribute("data-left"),
+      //   );
 
-        const firstRow = tableNode.firstChild;
-        const cell = firstRow.children[cellIndex];
-        const initWidth = cell.attrs.colwidth;
+      //   const firstRow = tableNode.firstChild;
+      //   const cell = firstRow.children[cellIndex];
+      //   const initWidth = cell.attrs.colwidth;
 
-        const delta = e.pageX - startX;
+      //   const delta = e.pageX - startX;
 
-        newWidth = Math.max(initWidth + delta, 150);
+      //   newWidth = Math.max(initWidth + delta, 150);
 
-        activeResizerDOM.style.left =
-          Math.max(resizerLeft - initWidth + 150, resizerLeft + delta) + "px";
-      }
+      //   activeResizerDOM.style.left =
+      //     Math.max(resizerLeft - initWidth + 150, resizerLeft + delta) + "px";
+      // }
     };
 
     const up = () => {
