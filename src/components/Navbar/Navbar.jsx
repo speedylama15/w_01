@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useCurrentEditor } from "@tiptap/react";
 
-import { getTableMap } from "../../editor/features/utils/getTableMap";
+import { getTableMap } from "../../editor/utils";
 
 import "./Navbar.css";
 

@@ -43,7 +43,10 @@ import HardBreak from "@tiptap/extension-hard-break";
 
 // shortcuts
 import { KeyboardShortcuts } from "./shortcuts/KeyboardShortcuts";
-import Arrows from "./shortcuts/Arrows";
+import ArrowUp from "./shortcuts/Arrows/ArrowUp";
+import ArrowDown from "./shortcuts/Arrows/ArrowDown";
+import ArrowRight from "./shortcuts/Arrows/ArrowRight";
+import ArrowLeft from "./shortcuts/Arrows/ArrowLeft";
 // shortcuts
 
 import { Plugins } from "./plugins/Plugins";
@@ -61,8 +64,8 @@ import "./css/Audio.css";
 import "./css/Video.css";
 import "./css/Table.css";
 import "./css/CellSelecting.css";
-import "./features/TableResize/TableResize.css";
-import "./features/TableReordering/TableReordering.css";
+import "./plugins/TableResizing/TableResize.css";
+import "./plugins/TableReordering/TableReordering.css";
 
 import "./plugins/Placeholder/Placeholder_Plugin.css";
 import "./selections/MultiBlockSelection.css";
@@ -104,7 +107,10 @@ const EditorProvider = ({ children }) => {
       Link,
 
       KeyboardShortcuts,
-      Arrows,
+      ArrowUp,
+      ArrowDown,
+      ArrowRight,
+      ArrowLeft,
 
       // REVIEW: functionality
       HardBreak,

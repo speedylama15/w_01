@@ -1,7 +1,7 @@
 import { mergeAttributes, Node, canInsertNode } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
-import { getDepthByNodeType } from "../../utils/depth/getDepthByNodeType";
+import { getNodeByNodeType } from "../../utils";
 
 const name = "divider";
 
@@ -28,7 +28,7 @@ const Divider = Node.create({
 
           if (!canInsertNode(state, state.schema.nodes.divider)) return false;
 
-          const result = getDepthByNodeType($from, "block");
+          const result = getNodeByNodeType($from, "block");
           if (!result) return;
 
           const { node, depth } = result;

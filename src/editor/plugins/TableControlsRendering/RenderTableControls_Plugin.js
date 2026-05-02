@@ -1,8 +1,8 @@
 import { Plugin, TextSelection } from "@tiptap/pm/state";
 import { CellSelection } from "@tiptap/pm/tables";
 
-import { getDepthByContentType } from "../utils/depth/getDepthByContentType";
-import { getDepthByNodeType } from "../utils/depth/getDepthByNodeType";
+import { getDepthByContentType } from "../../utils/depth/getDepthByContentType";
+import { getDepthByNodeType } from "../../utils/depth/getDepthByNodeType";
 
 export const RenderTableControls_Plugin = new Plugin({
   view() {

@@ -189,7 +189,7 @@ class m_TableView extends TableView {
   }
 
   ignoreMutation(mutation) {
-    console.log("HEY");
+    console.log("TableView ignoreMutation");
     if (
       mutation.type == "attributes" &&
       mutation.target === this.tableResizer

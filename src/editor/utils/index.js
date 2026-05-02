@@ -5,3 +5,8 @@ export { default as getNearestNode } from "./getNearestNode";
 export { default as getNodeByContentType } from "./getNodeByContentType";
 export { default as getNodeByNodeType } from "./getNodeByNodeType";
 export { default as getTableMap } from "./getTableMap";
+export { default as getCurrNode } from "./getCurrNode";
+export { default as getPrevNode } from "./getPrevNode";
+export { default as getNextNode } from "./getNextNode";
+export { default as getFirstNodeInRangedSelection } from "./getFirstNodeInRangedSelection";
+export { default as getLastNodeInRangedSelection } from "./getLastNodeInRangedSelection";
