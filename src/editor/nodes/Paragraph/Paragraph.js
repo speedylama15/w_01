@@ -55,7 +55,10 @@ const Paragraph = Node.create({
 
   addOptions() {
     return {
-      blockOptions: { class: `block block-${name}` },
+      blockOptions: {
+        class: `block block-${name}`, // fix
+        // style: `background-color: blue; color: green`, // idea: this is how you do it!!!
+      },
       contentOptions: {
         class: `content content-${name}`,
       },
@@ -71,6 +74,11 @@ const Paragraph = Node.create({
 
   renderHTML({ HTMLAttributes }) {
     const { blockOptions, contentOptions, inlineOptions } = this.options;
+
+    // idea: if I need to do something conditional, I could do it here
+    // fix: but does this get called only once?
+    // review: no, each time the attribute gets updated, this gets triggered
+    // console.log("RENDERHTML P");
 
     return [
       "div",

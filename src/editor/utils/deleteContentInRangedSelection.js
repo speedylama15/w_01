@@ -2,14 +2,14 @@ const deleteContentInRangedSelection = (tr, from, to) => {
   tr.doc.nodesBetween(from, to, (node, pos) => {
     // delete block
     if (node.attrs.nodeType === "block") {
-      const node_bef = pos;
-      const node_aft = pos + node.nodeSize;
+      const nodeBefore = pos;
+      const nodeAfter = pos + node.nodeSize;
 
-      if (node_bef >= from && node_aft <= to) {
-        const mapped_b = tr.mapping.map(pos);
-        const mapped_a = tr.mapping.map(pos + node.nodeSize);
+      if (nodeBefore >= from && nodeAfter <= to) {
+        const mappedBefore = tr.mapping.map(pos);
+        const mappedAfter = tr.mapping.map(pos + node.nodeSize);
 
-        tr.delete(mapped_b, mapped_a);
+        tr.delete(mappedBefore, mappedAfter);
 
         return false;
       }
@@ -17,16 +17,27 @@ const deleteContentInRangedSelection = (tr, from, to) => {
 
     // delete table block
     if (node.type.name === "table") {
-      const text_bef = pos + 4;
-      const text_aft = pos + node.nodeSize - 4;
+      const textBefore = pos + 4;
+      const textAfter = pos + node.nodeSize - 4;
 
       // review: use raw pos in conditions
-      if (text_bef >= from && text_aft <= to) {
-        const node_b = pos;
-        const node_a = pos + node.nodeSize;
+      if (textBefore >= from && textAfter <= to) {
+        const nodeBefore = pos;
+        const nodeAfter = pos + node.nodeSize;
 
         // review: use mapping in actual operation
-        tr.delete(tr.mapping.map(node_b), tr.mapping.map(node_a));
+        tr.delete(tr.mapping.map(nodeBefore), tr.mapping.map(nodeAfter));
+
+        return false;
+      }
+    }
+
+    if (node.type.name === "tableRow") {
+      const nodeBefore = pos;
+      const nodeAfter = pos + node.nodeSize;
+
+      if (nodeBefore >= from && nodeAfter <= to) {
+        tr.delete(tr.mapping.map(nodeBefore), tr.mapping.map(nodeAfter));
 
         return false;
       }
@@ -35,22 +46,27 @@ const deleteContentInRangedSelection = (tr, from, to) => {
     // corresponding table block has not been deleted
     // empty out the cells or let it move on to the text node
     if (node.type.name === "tableCell" || node.type.name === "tableHeader") {
-      const text_bef = pos + 2;
-      const text_aft = pos + node.nodeSize - 2;
+      const textBefore = pos + 2;
+      const textAfter = pos + node.nodeSize - 2;
 
-      // if from and to wraps text's before and after
-      // that means, I need to delete the texts of the cell
-      if (from >= text_bef && to <= text_aft) {
-        // let is go to the text node
+      // blue highlight is completely within the cell
+      // from is in between the text's before and after
+      // to is in between the text's before and after
+      if (
+        (from >= textBefore && to <= textAfter) ||
+        (from >= textBefore && from <= textAfter) ||
+        (to >= textBefore && to <= textAfter)
+      ) {
+        // let it go to the text node
         return true;
+      } else {
+        // otherwise, empty out the cell
+        // but do not delete the paragraph item
+        // it does not matter if I use pos + 1 or pos + 2 and its respective end pos
+        tr.deleteRange(tr.mapping.map(textBefore), tr.mapping.map(textAfter));
+
+        return false;
       }
-
-      // otherwise, empty out the cell
-      // but do not delete the paragraph item
-      // it does not matter if I use pos + 1 or pos + 2 and its respective end pos
-      tr.deleteRange(tr.mapping.map(text_bef), tr.mapping.map(text_aft));
-
-      return false;
     }
 
     // delete the texts

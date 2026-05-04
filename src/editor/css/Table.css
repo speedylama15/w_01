@@ -1,9 +1,49 @@
 .block-table {
-  width: 100%;
+  max-width: fit-content;
+  border: 1px solid #2264ff;
+}
+.block-table[data-indent-level="0"] {
+  width: calc(100% - 0);
+}
+.block-table[data-indent-level="1"] {
+  width: calc(100% - 30px);
+}
+.block-table[data-indent-level="2"] {
+  width: calc(100% - 60px);
+}
+.block-table[data-indent-level="3"] {
+  width: calc(100% - 90px);
+}
+.block-table[data-indent-level="4"] {
+  width: calc(100% - 120px);
+}
+.block-table[data-indent-level="5"] {
+  width: calc(100% - 150px);
+}
+.block-table[data-indent-level="6"] {
+  width: calc(100% - 180px);
+}
+.block-table[data-indent-level="7"] {
+  width: calc(100% - 210px);
+}
+.block-table[data-indent-level="8"] {
+  width: calc(100% - 240px);
+}
+.block-table[data-indent-level="9"] {
+  width: calc(100% - 270px);
+}
+.block-table[data-indent-level="10"] {
+  width: calc(100% - 300px);
+}
+.block-table[data-indent-level="11"] {
+  width: calc(100% - 330px);
+}
+.block-table[data-indent-level="12"] {
+  width: calc(100% - 360px);
 }
 
 .content-table {
-  width: inherit;
+  width: 100%;
 }
 
 .contentWrapper {
@@ -14,10 +54,9 @@
 .tableWrapper {
   position: relative;
   display: flex;
-  overflow-x: scroll;
+  width: inherit;
   border-radius: inherit;
-  width: 100%;
-  border: 1px solid #ff5722;
+  overflow-x: scroll;
 }
 
 table {

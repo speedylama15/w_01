@@ -2,20 +2,20 @@ import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { CellSelection } from "prosemirror-tables";
 import { DecorationSet, Decoration } from "@tiptap/pm/view";
 
-import mainStore from "../../../../stores/mainStore";
+import { mainStore } from "../../../stores";
 
-import { getDepthByNodeType } from "../../../utils/depth/getDepthByNodeType";
-import { getDepthByContentType } from "../../../utils/depth/getDepthByContentType";
+import { isInclusive, isLeftClick } from "../../../utils";
+import { getNearestNode, getNodeByContentType, isCellNode } from "../../utils";
 
-// todo: left click, disallow scrolling, only 1 operation
+// todo: left click, disallow scrolling, only 1 operation, chain the events
 // todo: add an raf that allows scrolling to occur in the table
+// fix: I can see why inactive table starts to scroll. It's because I allow the browser's native highlighting
 
 const IDLE = "IDLE";
 const DOWN = "DOWN";
 const DRAG = "DRAG";
 const MOVE = "MOVE"; // there is a difference between drag and move
 const CELL_SELECTING = "CELL_SELECTING";
-const HIDE_NATIVE_SELECTION = "HIDE_NATIVE_SELECTION";
 
 const setTableControls = (container, anchorCell, headCell) => {
   const box = container.querySelector(".selection-box");
@@ -29,15 +29,15 @@ const setTableControls = (container, anchorCell, headCell) => {
   const left = Math.min(anchorRect.left, headRect.left);
   const right = Math.max(anchorRect.right, headRect.right);
 
-  box.style.top = top - containerRect.top + "px";
-  box.style.left = left - containerRect.left + container.scrollLeft + "px";
+  box.style.top = top - containerRect.top + 1 + "px";
+  box.style.left = left - containerRect.left + container.scrollLeft + 1 + "px";
   box.style.width = right - left + "px";
   box.style.height = bottom - top + "px";
 
   const columnButton = container.querySelector(".column-button");
   const cellIndex = headCell.cellIndex;
   columnButton.setAttribute("data-index", cellIndex);
-  columnButton.style.top = 0 + "px";
+  columnButton.style.top = -1 + "px";
   columnButton.style.left =
     headRect.left -
     containerRect.left +
@@ -51,11 +51,7 @@ const setTableControls = (container, anchorCell, headCell) => {
   rowButton.setAttribute("data-index", rowIndex);
   rowButton.style.top =
     headRect.top - containerRect.top + headRect.height / 2 + "px";
-  rowButton.style.left = 0 + "px";
-};
-
-const isInclusive = (pos, from, to) => {
-  return pos >= from && pos <= to;
+  rowButton.style.left = -1 + "px";
 };
 
 const mousedownOnCell = (e, view, tr, dispatch, start, end) => {
@@ -74,16 +70,6 @@ const mousedownOnCell = (e, view, tr, dispatch, start, end) => {
 
     dispatch(tr);
   }
-};
-
-const getCellDataFromDOM = (view, cellDOM) => {
-  const before = view.posAtDOM(cellDOM) - 1;
-  const node = view.state.doc.nodeAt(before);
-  const after = before + node.nodeSize;
-  const start = before + 2; // add and subtract by 2
-  const end = after - 2;
-
-  return { before, start, end, after, node };
 };
 
 const CellSelecting_Key = new PluginKey("CellSelecting_Key");
@@ -110,20 +96,16 @@ const CellSelecting_Plugin = new Plugin({
   },
 
   props: {
-    attributes(state) {
-      const { selection } = state;
-
-      if (selection instanceof CellSelection) {
-        return { class: "hide-native-selection" };
-      }
-
-      return null;
-    },
-
     createSelectionBetween(view) {
       const cellSelecting = CellSelecting_Key.getState(view.state);
 
-      if (cellSelecting?.isCellSelecting) return view.state.selection; // disable this and performance drops
+      if (
+        cellSelecting?.isCellSelecting &&
+        view.state.selection instanceof CellSelection
+      ) {
+        // disable this and performance drops
+        return view.state.selection;
+      }
 
       return null;
     },
@@ -134,8 +116,7 @@ const CellSelecting_Plugin = new Plugin({
 
       if (selection instanceof TextSelection) {
         // get the table
-        const result = getDepthByContentType($anchor, "table");
-
+        const result = getNodeByContentType($anchor, "table");
         if (!result) return DecorationSet.empty;
 
         const { node, depth } = result;
@@ -164,27 +145,32 @@ const CellSelecting_Plugin = new Plugin({
       const { tr } = view.state;
       const { dispatch } = view;
 
+      // idea: essential
+      if (!isLeftClick(e)) {
+        e.preventDefault();
+
+        return;
+      }
+
       // get the cell DOM
-      const cell = e.target.closest("td, th");
+      const cellDOM = e.target.closest("td, th");
+      if (!cellDOM) return;
 
-      if (!cell) return;
+      const cellBefore = view.posAtDOM(cellDOM) - 1;
+      const cellNode = view.state.doc.nodeAt(cellBefore);
+      const cellAfter = cellBefore + cellNode.nodeSize;
+      const cellStart = cellBefore + 2; // add and subtract by 2
+      const cellEnd = cellAfter - 2;
 
-      const { setMouseState } = mainStore.getState();
-
-      const { before, start, end } = getCellDataFromDOM(view, cell);
-
-      const tableDOM = cell.closest(".block-table");
+      const tableDOM = cellDOM.closest(".block-table");
       if (!tableDOM) return;
 
       const tableID = tableDOM.getAttribute("data-id");
 
-      setMouseState(DOWN);
+      mainStore.getState().setMouseState(DOWN);
 
-      // when mouse is down, not down and up, just down
-      // I need to make a selection
-      // Either I need to place the caret at the start of the cell
-      // or at the position in which the user has pressed the mouse down
-      mousedownOnCell(e, view, tr, dispatch, start, end);
+      // when mouse is down on a cell, I MUST make a selection
+      mousedownOnCell(e, view, tr, dispatch, cellStart, cellEnd);
 
       const handleMouseLeave = () => {
         const { mouseState, setMouseState, setOperation } =
@@ -194,19 +180,22 @@ const CellSelecting_Plugin = new Plugin({
         const { dispatch } = view;
 
         if (mouseState === DOWN) {
+          setMouseState(DRAG);
+          setOperation(CELL_SELECTING);
+
           tr.setMeta(CELL_SELECTING, {
             isCellSelecting: true,
             tableID,
-            anchorPos: before,
-          });
-          tr.setSelection(CellSelection.create(tr.doc, before));
-          dispatch(tr);
+            anchorPos: cellBefore,
+          }).setSelection(CellSelection.create(tr.doc, cellBefore));
 
-          setMouseState(DRAG);
-          setOperation(CELL_SELECTING);
+          dispatch(tr);
         }
 
         if (mouseState !== DOWN) {
+          setMouseState(IDLE);
+          setOperation(null);
+
           tr.setMeta(CELL_SELECTING, {
             isCellSelecting: false,
             tableID: null,
@@ -216,13 +205,16 @@ const CellSelecting_Plugin = new Plugin({
           dispatch(tr);
         }
 
-        cell.removeEventListener("mouseleave", handleMouseLeave);
+        cellDOM.removeEventListener("mouseleave", handleMouseLeave);
       };
 
-      cell.addEventListener("mouseleave", handleMouseLeave);
+      cellDOM.addEventListener("mouseleave", handleMouseLeave);
     };
 
     const move = (e) => {
+      const { tr } = view.state;
+      const { dispatch } = view;
+
       const { operation } = mainStore.getState();
 
       if (operation === CELL_SELECTING) {
@@ -231,23 +223,20 @@ const CellSelecting_Plugin = new Plugin({
         // I am looking for a viable cell. That is all I need to do
         if (!cell) return;
 
-        const currentTableDOM = cell.closest(".block-table");
-        if (!currentTableDOM) return;
+        const currTableDOM = cell.closest(".block-table");
+        if (!currTableDOM) return;
 
         const { tableID, anchorPos } = CellSelecting_Key.getState(view.state);
 
-        const currentTableID = currentTableDOM.getAttribute("data-id");
-        if (tableID !== currentTableID) return;
+        const currTableID = currTableDOM.getAttribute("data-id");
+        if (tableID !== currTableID) return;
 
-        const { tr } = view.state;
-        const { dispatch } = view;
+        const headBefore = view.posAtDOM(cell) - 1;
 
-        const cellSelection = CellSelection.create(
-          tr.doc,
-          anchorPos,
-          view.posAtDOM(cell) - 1,
-        );
-        tr.setSelection(cellSelection);
+        // console.log("What is going on here?", cell); // fix
+
+        tr.setSelection(CellSelection.create(tr.doc, anchorPos, headBefore));
+
         dispatch(tr);
       }
     };
@@ -258,16 +247,20 @@ const CellSelecting_Plugin = new Plugin({
 
       const { setMouseState, setOperation } = mainStore.getState();
 
-      dispatch(
+      setMouseState(IDLE);
+      setOperation(null);
+
+      const pluginState = CellSelecting_Key.getState(view.state);
+
+      if (pluginState.isCellSelecting) {
         tr.setMeta(CELL_SELECTING, {
           isCellSelecting: false,
           tableID: null,
           anchorPos: null,
-        }),
-      );
+        });
 
-      setMouseState(IDLE);
-      setOperation(null);
+        dispatch(tr);
+      }
     };
 
     document.addEventListener("mousedown", down);
@@ -281,24 +274,25 @@ const CellSelecting_Plugin = new Plugin({
         if (selection instanceof TextSelection) {
           const { $anchor } = selection;
 
-          const result = getDepthByNodeType($anchor, "content");
-
+          const result = getNearestNode($anchor);
           if (!result) return;
 
-          // here we have some sort of cell node
-          const { depth } = result;
-          const before = $anchor.before(depth);
-          const cellDOM = view.domAtPos(before + 1);
+          const { node, depth } = result;
 
-          if (!cellDOM) return;
+          if (isCellNode(node)) {
+            const cellBefore = $anchor.before(depth);
+            const cellDOM = view.domAtPos(cellBefore + 1);
 
-          const containerDOM = cellDOM.node.closest(".tableWrapper");
+            if (!cellDOM) return;
 
-          // review: for some reason, the .block-table disappears in the init stage
-          // review: therefore, I need this guard
-          if (!containerDOM) return;
+            const containerDOM = cellDOM.node.closest(".tableWrapper");
 
-          setTableControls(containerDOM, cellDOM.node, cellDOM.node);
+            // review: for some reason, the .block-table disappears in the init stage
+            // review: therefore, I need this guard
+            if (!containerDOM) return;
+
+            setTableControls(containerDOM, cellDOM.node, cellDOM.node);
+          }
         }
 
         if (selection instanceof CellSelection) {

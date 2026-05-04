@@ -162,6 +162,7 @@ class m_TableView extends TableView {
   // TODO: make sure that the syncing is not getting spammed
   update(node) {
     // not sure how this can happen, but it can happen
+    // I assume this happens when I undo or redo something
     if (node.type != this.node.type) return false;
 
     this.node = node;
@@ -189,7 +190,8 @@ class m_TableView extends TableView {
   }
 
   ignoreMutation(mutation) {
-    console.log("TableView ignoreMutation");
+    // console.log("TableView ignoreMutation"); // fix
+
     if (
       mutation.type == "attributes" &&
       mutation.target === this.tableResizer

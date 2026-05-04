@@ -1,4 +1,6 @@
 import { Extension } from "@tiptap/core";
+import { Slice, Fragment } from "prosemirror-model";
+import { ReplaceAroundStep, ReplaceStep } from "@tiptap/pm/transform";
 import { Table } from "@tiptap/extension-table";
 import { TextSelection } from "@tiptap/pm/state";
 import { MultiBlockSelection } from "../selections/MultiBlockSelection";
@@ -17,6 +19,34 @@ import {
 
 export const KeyboardShortcuts = Extension.create({
   name: "keyboardShortcuts",
+
+  dispatchTransaction({ transaction, next }) {
+    const { selection } = this.editor.state;
+    const { from, to } = selection;
+
+    const step = transaction.steps[0];
+
+    if (step) {
+      const newTr = this.editor.state.tr;
+
+      // todo: will need to improve the condition here
+      if (step instanceof ReplaceStep && from !== to) {
+        newTr.setMeta("deleteContentInRangedSelection", true);
+        next(newTr);
+
+        return;
+      }
+
+      if (step instanceof ReplaceAroundStep && from !== to) {
+        newTr.setMeta("deleteContentInRangedSelection", true);
+        next(newTr);
+
+        return;
+      }
+    }
+
+    next(transaction);
+  },
 
   addKeyboardShortcuts() {
     return {
@@ -42,10 +72,23 @@ export const KeyboardShortcuts = Extension.create({
         );
       },
 
+      ",": ({ editor }) => {
+        return (
+          editor
+            .chain()
+            .focus()
+            // 25 cols and 200 rows max
+            .insertTable({ cols: 25, rows: 200, withHeaderRow: false })
+            .run()
+        );
+      },
+
       Backspace: ({ editor }) => {
         const { selection, tr } = editor.state;
         const { dispatch } = editor.view;
-        const { from, to, $anchor, $from } = selection;
+        const { from, to, $anchor, $head } = selection;
+
+        console.log("backspace");
 
         // idea: do nothing if the editor is not focused
         if (!editor.isFocused) return true;
@@ -135,7 +178,7 @@ export const KeyboardShortcuts = Extension.create({
           if (from !== to) {
             deleteContentInRangedSelection(tr, from, to);
 
-            const pos = tr.mapping.map(from);
+            const pos = tr.mapping.map($head.pos);
 
             // if both are TextBasedNodes, then I should be able to get the both the before and after node
             // ranged deletion will always cause the caret to be at the end of first node if it's a text node
