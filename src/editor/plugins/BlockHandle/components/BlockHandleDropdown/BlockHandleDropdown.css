@@ -1,17 +1,6 @@
 .block-handle-dropdown {
+  background-color: #fff;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
-  padding: 7px;
-  width: 200px;
-  border-radius: 3px;
-  gap: 8px;
-  position: absolute;
-  top: 30px;
-}
-
-.block-handle-dropdown > button {
-  font-size: 16px;
-  font-weight: 400;
-  padding: 12px;
+  padding: 8px;
 }

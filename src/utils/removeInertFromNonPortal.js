@@ -1,4 +1,4 @@
-const removeInertFromPortalSiblings = () => {
+const removeInertFromNonPortal = () => {
   const portal = document.querySelector(".portal");
 
   const siblings = Array.from(portal.parentNode.childNodes).filter(
@@ -10,4 +10,4 @@ const removeInertFromPortalSiblings = () => {
   document.body.style.overflow = "";
 };
 
-export default removeInertFromPortalSiblings;
+export default removeInertFromNonPortal;

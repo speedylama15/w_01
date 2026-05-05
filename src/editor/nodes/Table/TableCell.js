@@ -5,7 +5,7 @@ import { DOMParser, Fragment } from "@tiptap/pm/model";
 const m_TableCell = TableCell.extend({
   marks: "bold italic underline strike textStyle highlight link",
 
-  content: "item+",
+  content: "item",
 
   selectable: false,
 

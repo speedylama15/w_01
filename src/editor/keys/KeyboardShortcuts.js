@@ -20,36 +20,10 @@ import {
 export const KeyboardShortcuts = Extension.create({
   name: "keyboardShortcuts",
 
-  dispatchTransaction({ transaction, next }) {
-    const { selection } = this.editor.state;
-    const { from, to } = selection;
-
-    const step = transaction.steps[0];
-
-    if (step) {
-      const newTr = this.editor.state.tr;
-
-      // todo: will need to improve the condition here
-      if (step instanceof ReplaceStep && from !== to) {
-        newTr.setMeta("deleteContentInRangedSelection", true);
-        next(newTr);
-
-        return;
-      }
-
-      if (step instanceof ReplaceAroundStep && from !== to) {
-        newTr.setMeta("deleteContentInRangedSelection", true);
-        next(newTr);
-
-        return;
-      }
-    }
-
-    next(transaction);
-  },
-
   addKeyboardShortcuts() {
     return {
+      // todo: I wonder if I can insert a table using tr?
+      // todo: I think it's better to use tr than to use insertTable command
       "=": ({ editor }) => {
         return (
           editor

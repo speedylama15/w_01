@@ -3,6 +3,8 @@ import { TableRow } from "@tiptap/extension-table";
 const m_TableRow = TableRow.extend({
   selectable: false,
 
+  content: "(tableCell | tableHeader)+",
+
   addAttributes() {
     return {
       nodeType: {

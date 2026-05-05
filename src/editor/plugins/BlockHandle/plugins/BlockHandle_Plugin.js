@@ -2,35 +2,62 @@ import { Plugin } from "@tiptap/pm/state";
 
 import blockHandleStore from "../stores/blockHandleStore";
 
-// review: .getState() is amazing when used in listeners or observers
-
 const BlockHandle_Plugin = new Plugin({
   props: {
     handleDOMEvents: {
       mousemove(view, e) {
-        // review: in certain operations like drag and drop, I need e.stopPropagation()
+        const { isClicked } = blockHandleStore.getState();
 
-        const { isLocked } = blockHandleStore.getState();
-        if (isLocked) return;
+        // review: lock the handle since the dropdown is rendered
+        if (isClicked) return;
 
-        // add 50 because that is the padding value
-        const elements = view.root.elementsFromPoint(e.clientX + 50, e.clientY);
+        const contenteditableDOM = view.dom;
+        const rect = contenteditableDOM.getBoundingClientRect();
+
+        let mouseX = e.clientX;
+
+        if (e.clientX >= rect.left && e.clientX <= rect.left + 50) {
+          mouseX = e.clientX + 50;
+        }
+
+        if (e.clientX >= rect.right - 50 && e.clientX <= rect.right) {
+          mouseX = e.clientX - 50;
+        }
+
+        // add padding value
+        const elements = view.root.elementsFromPoint(mouseX, e.clientY);
         const block = elements.find((el) => el.classList.contains("block"));
 
-        if (block) {
-          const { setIsRendered, setRect, setDOM } =
-            blockHandleStore.getState();
+        const { setDOM, setRect } = blockHandleStore.getState();
 
-          setIsRendered(true);
-          setRect(block.getBoundingClientRect());
+        if (block) {
           setDOM(block);
+          setRect(block.getBoundingClientRect());
+
+          return;
+        }
+
+        if (!block) {
+          setDOM(null);
+          setRect(null);
+
+          return;
         }
       },
 
       mouseleave(view, e) {
         const relatedTarget = e.relatedTarget;
 
-        if (relatedTarget && relatedTarget.closest(".portal")) return;
+        if (relatedTarget && relatedTarget.closest(".portal")) {
+          return;
+        } else {
+          const { setDOM, setRect } = blockHandleStore.getState();
+
+          setDOM(null);
+          setRect(null);
+
+          return;
+        }
       },
       //
     },

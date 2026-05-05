@@ -1,4 +1,4 @@
-const setInertToPortalSiblings = () => {
+const setInertOnNonPortal = () => {
   const portal = document.querySelector(".portal");
 
   const siblings = Array.from(portal.parentNode.childNodes).filter(
@@ -10,4 +10,4 @@ const setInertToPortalSiblings = () => {
   document.body.style.overflow = "hidden";
 };
 
-export default setInertToPortalSiblings;
+export default setInertOnNonPortal;

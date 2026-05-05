@@ -1,26 +1,12 @@
-import { useStore } from "zustand";
-
-// import slashCommandStore from "./editor/features/SlashCommand/slashCommandStore";
-
-// import AddNodeMenu from "./editor/features/SlashCommand/AddNodeMenu.jsx";
-
-// import {
-//   BlockHandle,
-//   BlockHandleDropdown,
-//   EditorBoxSelect,
-// } from "./editor/features";
+import BlockHandle from "./editor/plugins/BlockHandle/components/BlockHandle/BlockHandle.jsx";
+import BlockHandleDropdown from "./editor/plugins/BlockHandle/components/BlockHandleDropdown/BlockHandleDropdown.jsx";
 
 const Portal = () => {
-  // const { operation } = useStore(slashCommandStore);
-
   return (
     <div className="portal">
-      {/* {operation === "EDITOR_SLASH_COMMAND" && <AddNodeMenu />} */}
+      <BlockHandle />
 
-      {/* <BlockHandle />
       <BlockHandleDropdown />
-
-      <EditorBoxSelect /> */}
     </div>
   );
 };

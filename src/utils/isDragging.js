@@ -1,4 +1,4 @@
-const isClickOrDrag = (
+const isDragging = (
   startCoords,
   currentCoords,
   threshold,
@@ -13,9 +13,9 @@ const isClickOrDrag = (
     Math.pow(Math.abs(xAccessor(currentCoords) - xAccessor(startCoords)), 2) +
     Math.pow(Math.abs(yAccessor(currentCoords) - yAccessor(startCoords)), 2);
 
-  if (distance > Math.pow(threshold, 2)) return "drag";
+  if (distance > Math.pow(threshold, 2)) return true;
 
-  return "click";
+  return false;
 };
 
-export default isClickOrDrag;
+export default isDragging;

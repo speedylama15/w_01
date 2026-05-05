@@ -3,50 +3,54 @@ import { useStore } from "zustand";
 
 import blockHandleStore from "../../stores/blockHandleStore";
 
-import { removeInertFromPortalSiblings } from "../../../../../utils";
+import { removeInertFromNonPortal } from "../../../../../utils";
 
 import "./BlockHandleDropdown.css";
 
 // todo: tooltip
 // todo: floating ui
-// todo: better ui
-// todo: selected node config
-// todo: selected node turn into
+
+// fix: when a block is deleted, how do I handle the rendering of the handle?
+// if it's rendered and tr.docChanged happened in onTransaction. Then hide it until the mouse moves again?
 
 const BlockHandleDropdown = () => {
-  const {
-    isOpen,
-    rect,
-    // idea: essential -> node,
-    setIsOpen,
-    setIsLocked,
-  } = useStore(blockHandleStore);
+  const { isClicked, rect, setIsClicked, setDOM, setRect } =
+    useStore(blockHandleStore);
 
   const dropdownRef = useRef();
 
   useEffect(() => {
+    // review: event attached to window with capture to true
+    // review: set preventDefault and stopPropagation so that only this event is listened to
     const handleMouseDown = (e) => {
-      if (!dropdownRef.current) return;
+      if (dropdownRef.current) {
+        e.preventDefault();
 
-      const isOutside = !dropdownRef.current.contains(e.target);
+        const isOutside = !dropdownRef.current.contains(e.target);
 
-      if (isOutside) {
-        removeInertFromPortalSiblings();
-        setIsOpen(false);
-        setIsLocked(false);
+        if (isOutside) {
+          e.stopPropagation(); // key
+
+          removeInertFromNonPortal();
+          setIsClicked(false);
+          setDOM(null);
+          setRect(null);
+        }
       }
     };
 
-    document.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousedown", handleMouseDown, { capture: true });
 
     return () => {
-      document.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousedown", handleMouseDown, {
+        capture: true,
+      });
     };
-  }, [setIsOpen, setIsLocked]);
+  }, [setIsClicked, setDOM, setRect]);
 
   return (
     <>
-      {isOpen && (
+      {isClicked && (
         <div
           className="block-handle-dropdown"
           ref={dropdownRef}
@@ -56,10 +60,14 @@ const BlockHandleDropdown = () => {
             left: `${rect.left}px`,
           }}
         >
-          {/* node -> contextual */}
-          <button>Config</button>
+          <button
+            onMouseDown={() => {
+              console.log("config");
+            }}
+          >
+            Config
+          </button>
 
-          {/* node -> contextual */}
           <button>Turn into</button>
 
           <button>Copy</button>

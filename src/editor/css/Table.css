@@ -2,6 +2,7 @@
   max-width: fit-content;
   border: 1px solid #2264ff;
 }
+
 .block-table[data-indent-level="0"] {
   width: calc(100% - 0);
 }

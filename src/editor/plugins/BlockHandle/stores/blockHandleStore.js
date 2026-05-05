@@ -2,17 +2,13 @@ import { create } from "zustand";
 
 const blockHandleStore = create((set) => {
   return {
-    isRendered: false,
-    isOpen: false,
-    isLocked: false,
-    node: null,
+    isClicked: false,
+    isDragged: false,
     dom: null,
     rect: null,
 
-    setIsRendered: (bool) => set({ isRendered: bool }),
-    setIsOpen: (bool) => set({ isOpen: bool }),
-    setIsLocked: (bool) => set({ isLocked: bool }),
-    setNode: (node) => set({ node }),
+    setIsClicked: (bool) => set({ isClicked: bool }),
+    setIsDragged: (bool) => set({ isDragged: bool }),
     setDOM: (dom) => set({ dom }),
     setRect: (rect) => set({ rect }),
   };

@@ -42,11 +42,12 @@ import HardBreak from "@tiptap/extension-hard-break";
 // functionality
 
 // shortcuts
-import { KeyboardShortcuts } from "./shortcuts/KeyboardShortcuts";
-import ArrowUp from "./shortcuts/Arrows/ArrowUp";
-import ArrowDown from "./shortcuts/Arrows/ArrowDown";
-import ArrowRight from "./shortcuts/Arrows/ArrowRight";
-import ArrowLeft from "./shortcuts/Arrows/ArrowLeft";
+import { KeyboardShortcuts } from "./keys/KeyboardShortcuts";
+import ArrowUp from "./keys/Arrows/ArrowUp";
+import ArrowDown from "./keys/Arrows/ArrowDown";
+import ArrowRight from "./keys/Arrows/ArrowRight";
+import ArrowLeft from "./keys/Arrows/ArrowLeft";
+import { InputsExtension } from "./keys/Inputs/Inputs";
 // shortcuts
 
 import { Plugins } from "./plugins/Plugins";
@@ -106,6 +107,7 @@ const EditorProvider = ({ children }) => {
       Underline,
       Link,
 
+      InputsExtension,
       KeyboardShortcuts,
       ArrowUp,
       ArrowDown,

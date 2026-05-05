@@ -1,57 +1,98 @@
 import { useRef } from "react";
 import { useCurrentEditor } from "@tiptap/react";
 import { useStore } from "zustand";
-
 import { MultiBlockSelection } from "../../../../selections/MultiBlockSelection";
 
 import blockHandleStore from "../../stores/blockHandleStore";
 
-import { isLeftClick, setInertToPortalSiblings } from "../../../../../utils";
+import {
+  isLeftClick,
+  isDragging,
+  setInertOnNonPortal,
+  isInclusive,
+} from "../../../../../utils";
 
 import "./BlockHandle.css";
+import { TextSelection } from "@tiptap/pm/state";
+
+// todo: when block handle drag and drop is happening, hide the handle
 
 const BlockHandle = () => {
   const editor = useCurrentEditor();
 
   const handleRef = useRef();
 
-  const { isRendered, rect, setIsOpen, setIsLocked } =
-    useStore(blockHandleStore);
+  const { dom, rect, setIsClicked, setIsDragged } = useStore(blockHandleStore);
+
+  const mouseState = useRef("IDLE"); // fix: this needs to be a state
 
   const handleMouseDown = (e) => {
     e.preventDefault(); // prevent text selection
     e.stopPropagation(); // prevent mousedown from reaching document's mousedown
 
-    if (!isLeftClick(e)) return; // essential
+    if (!isLeftClick(e)) {
+      e.preventDefault();
 
-    const { view } = editor;
+      return;
+    }
 
-    const elements = view.root.elementsFromPoint(e.clientX + 50, e.clientY);
-    const block = elements.find((el) => el.classList.contains("block"));
+    mouseState.current = "DOWN";
+    const startCoords = { x: e.pageX, y: e.pageY };
 
-    if (!block) return;
+    const move = (e) => {
+      if (mouseState.current !== "DOWN" || mouseState !== "DRAG") return;
 
-    const pos = view.posAtDOM(block) - 1;
-    const node = view.state.doc.nodeAt(pos);
+      const currentCoords = { x: e.pageX, y: e.pageY };
 
-    const { tr } = editor.state;
-    const { dispatch } = editor.view;
+      if (mouseState.current === "DOWN") {
+        mouseState.current = isDragging(startCoords, currentCoords, 5)
+          ? "DRAG"
+          : "DOWN";
 
-    const selection = MultiBlockSelection.create(
-      tr.doc,
-      pos,
-      pos + node.nodeSize,
-    );
+        if (mouseState.current === "DRAG") setIsDragged(true);
+      }
 
-    dispatch(tr.setSelection(selection));
-    setInertToPortalSiblings();
-    setIsOpen(true);
-    setIsLocked(true);
+      if (mouseState.current === "DRAG") {
+        // set operation to BLOCK_HANDLE_DRAG_AND_DROP
+        // conduct drag and drop
+      }
+    };
+
+    const up = () => {
+      if (mouseState.current === "DOWN") {
+        // make the proper Multi selection
+        // open up the dropdown menu with the proper contextual data
+
+        const { tr } = editor.view.state;
+        const { dispatch } = editor.view;
+
+        setInertOnNonPortal();
+
+        const nodeBefore = editor.view.posAtDOM(dom) - 1;
+        const node = editor.view.state.tr.doc.nodeAt(nodeBefore);
+        const nodeAfter = nodeBefore + node.nodeSize;
+
+        const sel = MultiBlockSelection.create(tr.doc, nodeBefore, nodeAfter);
+        dispatch(tr.setSelection(sel));
+
+        setIsClicked(true);
+      }
+
+      if (mouseState.current === "DRAG") {
+        // insert the blocks at the right position
+      }
+
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    };
+
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
   };
 
   return (
     <>
-      {isRendered && (
+      {dom && (
         <div
           tabIndex="-1"
           className="block-handle"
@@ -60,7 +101,6 @@ const BlockHandle = () => {
             position: "absolute",
             top: `${rect.y + window.scrollY}px`,
             left: `${rect.x}px`,
-            // fix: line-height and font-size
             transform: `translate(-120%, ${(18 * 1.6 - 25).toFixed(2) / 2}px)`,
           }}
           onMouseDown={handleMouseDown}
