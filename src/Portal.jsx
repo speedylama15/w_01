@@ -6,7 +6,7 @@ const Portal = () => {
     <div className="portal">
       <BlockHandle />
 
-      <BlockHandleDropdown />
+      {/* <BlockHandleDropdown /> */}
     </div>
   );
 };

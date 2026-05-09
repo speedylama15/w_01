@@ -1,4 +1,4 @@
-const isDragging = (
+const getIsDragging = (
   startCoords,
   currentCoords,
   threshold,
@@ -18,4 +18,4 @@ const isDragging = (
   return false;
 };
 
-export default isDragging;
+export default getIsDragging;

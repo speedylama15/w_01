@@ -1,4 +1,4 @@
-export { default as isDragging } from "./isDragging";
+export { default as getIsDragging } from "./getIsDragging";
 export { default as isLeftClick } from "./isLeftClick";
 export { default as isRightClick } from "./isRightClick";
 export { default as clamp } from "./clamp";

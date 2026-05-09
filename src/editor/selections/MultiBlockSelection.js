@@ -2,21 +2,33 @@ import { Fragment, Slice } from "prosemirror-model";
 import { Selection } from "prosemirror-state";
 
 export class MultiBlockSelection extends Selection {
-  blocks = [];
+  blocks = []; // fix: remove this later
   positions = [];
+  nodes = [];
 
   constructor($anchor, $head) {
     super($anchor, $head);
 
-    $anchor.doc.nodesBetween($anchor.pos, $head.pos, (node, start) => {
-      if (node.attrs.nodeType === "block") {
-        this.blocks.push(node);
+    $anchor.doc.nodesBetween(
+      $anchor.pos,
+      $head.pos,
+      (node, pos, parent, index) => {
+        if (node.attrs.nodeType === "block") {
+          this.blocks.push(node);
 
-        this.positions.push({ before: start, after: start + node.nodeSize });
+          this.positions.push({ before: pos, after: pos + node.nodeSize });
 
-        return false;
-      }
-    });
+          this.nodes.push({
+            node,
+            before: pos,
+            after: pos + node.nodeSize,
+            index,
+          });
+
+          return false;
+        }
+      },
+    );
   }
 
   static create(doc, from, to = from) {

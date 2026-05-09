@@ -1,15 +1,41 @@
 import { Plugin } from "@tiptap/pm/state";
 
 import blockHandleStore from "../stores/blockHandleStore";
+import { DecorationSet } from "@tiptap/pm/view";
 
 const BlockHandle_Plugin = new Plugin({
+  state: {
+    init() {
+      return null;
+    },
+
+    apply(tr, value) {
+      const set = tr.getMeta("EDITOR_DRAG_AND_DROP");
+
+      if (set) return set;
+
+      return value;
+    },
+  },
+
   props: {
+    decorations(state) {
+      const set = this.getState(state);
+
+      if (set) return set;
+
+      return DecorationSet.empty;
+    },
+
     handleDOMEvents: {
       mousemove(view, e) {
-        const { isClicked } = blockHandleStore.getState();
+        const { isLocked, renderHandle, hideHandle } =
+          blockHandleStore.getState();
 
-        // review: lock the handle since the dropdown is rendered
-        if (isClicked) return;
+        if (isLocked) return;
+
+        // // do nothing when the handle has either been clicked or is getting dragged
+        // if (isClicked || isDragging) return;
 
         const contenteditableDOM = view.dom;
         const rect = contenteditableDOM.getBoundingClientRect();
@@ -28,33 +54,32 @@ const BlockHandle_Plugin = new Plugin({
         const elements = view.root.elementsFromPoint(mouseX, e.clientY);
         const block = elements.find((el) => el.classList.contains("block"));
 
-        const { setDOM, setRect } = blockHandleStore.getState();
-
         if (block) {
-          setDOM(block);
-          setRect(block.getBoundingClientRect());
+          const rect = block.getBoundingClientRect();
+
+          renderHandle(block, rect);
 
           return;
         }
 
         if (!block) {
-          setDOM(null);
-          setRect(null);
+          hideHandle();
 
           return;
         }
       },
 
       mouseleave(view, e) {
+        const { isLocked, hideHandle } = blockHandleStore.getState();
+
+        if (isLocked) return;
+
         const relatedTarget = e.relatedTarget;
 
         if (relatedTarget && relatedTarget.closest(".portal")) {
           return;
         } else {
-          const { setDOM, setRect } = blockHandleStore.getState();
-
-          setDOM(null);
-          setRect(null);
+          hideHandle();
 
           return;
         }
