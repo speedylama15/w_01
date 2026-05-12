@@ -57,136 +57,137 @@ export const KeyboardShortcuts = Extension.create({
         );
       },
 
-      Backspace: ({ editor }) => {
-        const { selection, tr } = editor.state;
-        const { dispatch } = editor.view;
-        const { from, to, $anchor, $head } = selection;
+      // fix: use delete range, but if the table is selected in a certain way, extend the range
+      // Backspace: ({ editor }) => {
+      //   const { selection, tr } = editor.state;
+      //   const { dispatch } = editor.view;
+      //   const { from, to, $anchor, $head } = selection;
 
-        console.log("backspace");
+      //   console.log("backspace");
 
-        // idea: do nothing if the editor is not focused
-        if (!editor.isFocused) return true;
+      //   // idea: do nothing if the editor is not focused
+      //   if (!editor.isFocused) return true;
 
-        if (selection instanceof TextSelection) {
-          // single
-          if (from === to) {
-            if ($anchor.parentOffset !== 0) return false;
+      //   if (selection instanceof TextSelection) {
+      //     // single
+      //     if (from === to) {
+      //       if ($anchor.parentOffset !== 0) return false;
 
-            const result = getNearestNode($anchor);
+      //       const result = getNearestNode($anchor);
 
-            // fix: throw an error here?
-            if (!result) return true;
+      //       // fix: throw an error here?
+      //       if (!result) return true;
 
-            const { node, depth } = result;
+      //       const { node, depth } = result;
 
-            // here we're working with a TextBasedNode, could be a paragraph-like or a cell
+      //       // here we're working with a TextBasedNode, could be a paragraph-like or a cell
 
-            if (isListNode(node)) {
-              const node_bef = $anchor.before(depth);
-              const node_aft = node_bef + node.nodeSize;
+      //       if (isListNode(node)) {
+      //         const node_bef = $anchor.before(depth);
+      //         const node_aft = node_bef + node.nodeSize;
 
-              const { paragraph } = editor.schema.nodes;
+      //         const { paragraph } = editor.schema.nodes;
 
-              tr.setBlockType(node_bef, node_aft, paragraph, {
-                ...node.attrs,
-                contentType: "paragraph",
-              });
+      //         tr.setBlockType(node_bef, node_aft, paragraph, {
+      //           ...node.attrs,
+      //           contentType: "paragraph",
+      //         });
 
-              dispatch(tr);
+      //         dispatch(tr);
 
-              return true;
-            }
+      //         return true;
+      //       }
 
-            // let the default behavior happen
-            if (isCellNode(node)) return false;
+      //       // let the default behavior happen
+      //       if (isCellNode(node)) return false;
 
-            // text node, parent offset is 0, and is NOT a cell node
+      //       // text node, parent offset is 0, and is NOT a cell node
 
-            if (parseInt(node.attrs.indentLevel) > 0) {
-              const node_bef = $anchor.before(depth);
-              const indentLevel = Math.max(node.attrs.indentLevel - 1, 0);
+      //       if (parseInt(node.attrs.indentLevel) > 0) {
+      //         const node_bef = $anchor.before(depth);
+      //         const indentLevel = Math.max(node.attrs.indentLevel - 1, 0);
 
-              tr.setNodeAttribute(node_bef, "indentLevel", indentLevel);
+      //         tr.setNodeAttribute(node_bef, "indentLevel", indentLevel);
 
-              dispatch(tr);
+      //         dispatch(tr);
 
-              return true;
-            }
+      //         return true;
+      //       }
 
-            const node_bef = $anchor.before(depth);
-            const node_aft = node_bef + node.nodeSize;
-            const prevBlock = tr.doc.resolve(node_bef).nodeBefore;
+      //       const node_bef = $anchor.before(depth);
+      //       const node_aft = node_bef + node.nodeSize;
+      //       const prevBlock = tr.doc.resolve(node_bef).nodeBefore;
 
-            // fix: need to be able to edit the title of the note?
-            if (!prevBlock) return true;
+      //       // fix: need to be able to edit the title of the note?
+      //       if (!prevBlock) return true;
 
-            if (prevBlock.type.name === "table") {
-              const pos = node_bef - 4;
+      //       if (prevBlock.type.name === "table") {
+      //         const pos = node_bef - 4;
 
-              tr.delete(node_bef, node_aft)
-                .insert(pos, node.content)
-                .setSelection(TextSelection.create(tr.doc, pos));
+      //         tr.delete(node_bef, node_aft)
+      //           .insert(pos, node.content)
+      //           .setSelection(TextSelection.create(tr.doc, pos));
 
-              dispatch(tr);
+      //         dispatch(tr);
 
-              return true;
-            }
+      //         return true;
+      //       }
 
-            if (!prevBlock.isTextblock) {
-              const prev_bef = node_bef - prevBlock.nodeSize;
-              const prev_aft = node_bef;
+      //       if (!prevBlock.isTextblock) {
+      //         const prev_bef = node_bef - prevBlock.nodeSize;
+      //         const prev_aft = node_bef;
 
-              tr.setSelection(
-                MultiBlockSelection.create(tr.doc, prev_bef, prev_aft),
-              );
+      //         tr.setSelection(
+      //           MultiBlockSelection.create(tr.doc, prev_bef, prev_aft),
+      //         );
 
-              dispatch(tr);
+      //         dispatch(tr);
 
-              return true;
-            }
+      //         return true;
+      //       }
 
-            return false;
-          }
+      //       return false;
+      //     }
 
-          // ranged
-          if (from !== to) {
-            deleteContentInRangedSelection(tr, from, to);
+      //     // ranged
+      //     if (from !== to) {
+      //       deleteContentInRangedSelection(tr, from, to);
 
-            const pos = tr.mapping.map($head.pos);
+      //       const pos = tr.mapping.map($head.pos);
 
-            // if both are TextBasedNodes, then I should be able to get the both the before and after node
-            // ranged deletion will always cause the caret to be at the end of first node if it's a text node
-            // I can therefore +1 to get the after of the first node and figure out the before and after nodes
-            const resolvedAfter = tr.doc.resolve(pos + 1);
-            const { nodeBefore, nodeAfter } = resolvedAfter;
+      //       // if both are TextBasedNodes, then I should be able to get the both the before and after node
+      //       // ranged deletion will always cause the caret to be at the end of first node if it's a text node
+      //       // I can therefore +1 to get the after of the first node and figure out the before and after nodes
+      //       const resolvedAfter = tr.doc.resolve(pos + 1);
+      //       const { nodeBefore, nodeAfter } = resolvedAfter;
 
-            if (nodeBefore?.isTextblock && nodeAfter?.isTextblock) {
-              const combined = nodeBefore.content.append(nodeAfter.content);
-              const combinedNode = nodeBefore.copy(combined);
+      //       if (nodeBefore?.isTextblock && nodeAfter?.isTextblock) {
+      //         const combined = nodeBefore.content.append(nodeAfter.content);
+      //         const combinedNode = nodeBefore.copy(combined);
 
-              tr.delete(
-                resolvedAfter.pos,
-                resolvedAfter.pos + nodeAfter.nodeSize,
-              ).replaceWith(
-                resolvedAfter.pos - nodeBefore.nodeSize,
-                resolvedAfter.pos,
-                combinedNode,
-              );
-            }
+      //         tr.delete(
+      //           resolvedAfter.pos,
+      //           resolvedAfter.pos + nodeAfter.nodeSize,
+      //         ).replaceWith(
+      //           resolvedAfter.pos - nodeBefore.nodeSize,
+      //           resolvedAfter.pos,
+      //           combinedNode,
+      //         );
+      //       }
 
-            const near = TextSelection.near(tr.doc.resolve(pos));
-            tr.setSelection(near);
+      //       const near = TextSelection.near(tr.doc.resolve(pos));
+      //       tr.setSelection(near);
 
-            dispatch(tr);
+      //       dispatch(tr);
 
-            return true;
-          }
-        }
+      //       return true;
+      //     }
+      //   }
 
-        // cell selection
+      //   // cell selection
 
-        // multi block selection
-      },
+      //   // multi block selection
+      // },
 
       Enter: ({ editor }) => {
         const { selection, tr } = editor.state;

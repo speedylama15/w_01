@@ -9,57 +9,23 @@ import Flatbush from "flatbush";
 
 import blockHandleStore from "../../stores/blockHandleStore";
 
+import { getBlocksData } from "../../../../utils";
 import {
-  isLeftClick,
   getIsDragging,
   setInertOnNonPortal,
   isInclusive,
+  isLeftClick,
 } from "../../../../../utils";
 
 import "./BlockHandle.css";
 
-// todo: when block handle drag and drop is happening, hide the handle
-// todo: I need raf
 // todo: Identify the container of the editor and allow auto scrolling. In this case, it's the window, but in the whiteboard, that may change
-// fix: return must be used after rafID has been assigned. That's why the loop was cutting off when result's length was 0
+// todo: I need to scale the intensity of the scrolling
 
 const IDLE = "IDLE";
 const DOWN = "DOWN";
 const DRAG = "DRAG";
 const EDITOR_DRAG_AND_DROP = "EDITOR_DRAG_AND_DROP";
-
-const getBlockData = (doc) => {
-  const blockDOMs = document.querySelectorAll(".block");
-  const tree = new Flatbush(blockDOMs.length);
-
-  const doms = [];
-  const nodes = [];
-
-  blockDOMs.forEach((blockDOM) => {
-    const rect = blockDOM.getBoundingClientRect();
-
-    const minX = rect.left;
-    const maxX = rect.right;
-    const minY = rect.top + window.scrollY;
-    const maxY = rect.bottom + window.scrollY;
-
-    doms.push({ top: minY, right: maxX, bottom: maxY, left: minX });
-
-    tree.add(minX, minY, maxX, maxY);
-  });
-
-  tree.finish();
-
-  doc.descendants((node, pos) => {
-    if (node.attrs.nodeType === "block") {
-      nodes.push({ node, before: pos, after: pos + node.nodeSize });
-
-      return false;
-    }
-  });
-
-  return { tree, doms, nodes };
-};
 
 const setSelectionWithBlockHandle = (tr, before, after, selection) => {
   const isRangedTextSelection =
@@ -115,9 +81,10 @@ const canBeTargetForDrop = (selection, resultIndex, targetIndex) => {
 const BlockHandle = memo(() => {
   const editor = useCurrentEditor();
 
-  console.log("BLOCK HANDLE"); // fix
+  // console.log("Block Handle"); // fix
 
-  const { dom, rect, setIsLocked } = useStore(blockHandleStore);
+  const { dom, rect, setIsLocked, setShowDropdown, hideHandle } =
+    useStore(blockHandleStore);
 
   const handleRef = useRef();
 
@@ -129,19 +96,29 @@ const BlockHandle = memo(() => {
   const targetPosRef = useRef(null);
   const rafIDRef = useRef();
 
+  useEffect(() => {
+    if (!editor) return;
+
+    const transaction = ({ transaction }) => {
+      if (transaction.docChanged) hideHandle();
+    };
+
+    editor.on("transaction", transaction);
+  }, [editor, hideHandle]);
+
   const loop = useCallback(() => {
-    console.log("loop");
+    // console.log("loop"); // fix
 
     const { tr } = editor.view.state;
     const { dispatch } = editor.view;
 
-    const { pageX, pageY, clientX, clientY } = mouseCoordsRef.current;
+    const { pageX, pageY, clientY } = mouseCoordsRef.current;
 
     if (clientY <= 5) window.scrollBy(0, -20);
     if (window.innerHeight - clientY <= 5) window.scrollBy(0, 20);
 
     if (!blockTreeRef.current) {
-      const { tree, doms, nodes } = getBlockData(tr.doc);
+      const { tree, doms, nodes } = getBlocksData(tr.doc);
 
       blockTreeRef.current = tree;
       blockDOMsRef.current = doms;
@@ -163,6 +140,7 @@ const BlockHandle = memo(() => {
       tr.setMeta(EDITOR_DRAG_AND_DROP, DecorationSet.empty);
       targetPosRef.current = null;
       rafIDRef.current = requestAnimationFrame(loop); // review: crucial
+      dispatch(tr);
       return;
     }
 
@@ -193,7 +171,6 @@ const BlockHandle = memo(() => {
       const dec = Decoration.node(before, after, {
         class: targetClass,
       });
-
       tr.setMeta(EDITOR_DRAG_AND_DROP, DecorationSet.create(tr.doc, [dec]));
 
       targetPosRef.current = direction === "top" ? before : after;
@@ -207,6 +184,8 @@ const BlockHandle = memo(() => {
   const handleMouseDown = (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isLeftClick(e)) return;
 
     const { tr, selection } = editor.view.state;
     const { dispatch } = editor.view;
@@ -225,8 +204,6 @@ const BlockHandle = memo(() => {
     mouseStateRef.current = DOWN;
 
     const move = (e) => {
-      // console.log("handle move"); // fix
-
       const currentCoords = { x: e.pageX, y: e.pageY };
 
       mouseCoordsRef.current = {
@@ -253,10 +230,16 @@ const BlockHandle = memo(() => {
       const { tr, selection } = editor.view.state;
       const { dispatch } = editor.view;
 
+      if (mouseStateRef.current === DOWN) {
+        // set inert
+        setInertOnNonPortal();
+
+        // render the dropdown
+        setShowDropdown(true);
+      }
+
       if (mouseStateRef.current === DRAG && targetPosRef.current !== null) {
         const { from, to } = selection;
-
-        console.log("up", targetPosRef.current);
 
         tr.insert(targetPosRef.current, Fragment.from(selection.blocks));
         const sel = MultiBlockSelection.create(
@@ -269,6 +252,8 @@ const BlockHandle = memo(() => {
         tr.setMeta(EDITOR_DRAG_AND_DROP, DecorationSet.empty);
 
         dispatch(tr);
+
+        setIsLocked(false);
       }
 
       cancelAnimationFrame(rafIDRef.current);
@@ -278,8 +263,6 @@ const BlockHandle = memo(() => {
       blockNodesRef.current = null;
       targetPosRef.current = null;
       rafIDRef.current = null;
-
-      setIsLocked(false);
 
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", up);

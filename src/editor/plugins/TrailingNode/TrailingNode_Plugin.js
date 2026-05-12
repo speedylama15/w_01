@@ -10,14 +10,13 @@ export const TrailingNode_Plugin = new Plugin({
 
     const shouldAdd = TrailingNode_Key.getState(newState);
 
-    if (!shouldAdd) {
-      return;
+    if (shouldAdd) {
+      const pos = doc.content.size - 1;
+      const contentType = schema.nodes.paragraph;
+
+      // review: I need to set this meta for FixTable_Plugin
+      return tr.setMeta("trailingNode", true).insert(pos, contentType.create());
     }
-
-    const pos = doc.content.size - 1;
-    const contentType = schema.nodes.paragraph;
-
-    return tr.insert(pos, contentType.create());
   },
 
   state: {

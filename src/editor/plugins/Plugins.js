@@ -4,18 +4,20 @@ import BlockNativeEvents_Plugin from "./BlockNativeEvents/BlockNativeEvents_Plug
 import BlockHandle_Plugin from "./BlockHandle/plugins/BlockHandle_Plugin";
 import { Placeholder_Plugin } from "./Placeholder/Placeholder_Plugin";
 import { TrailingNode_Plugin } from "./TrailingNode/TrailingNode_Plugin";
-import { InputsPlugin } from "../keys/Inputs/Inputs";
 import { RenderSelection_Plugin } from "./RenderSelection/RenderSelection_Plugin";
+import EditorMarqueeSelection_Plugin from "./EditorMarqueeSelection/plugins/EditorMarqueeSelection_Plugin";
+import { FixTable_Plugin } from "./FixTable/FixTable_Plugin";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
     return [
-      InputsPlugin,
+      FixTable_Plugin, // has appendTransaction, put it at the bottom
+      TrailingNode_Plugin, // has appendTransaction, put it at the top
       BlockNativeEvents_Plugin,
       Placeholder_Plugin,
-      TrailingNode_Plugin,
       BlockHandle_Plugin,
       RenderSelection_Plugin,
+      EditorMarqueeSelection_Plugin,
     ];
   },
 });

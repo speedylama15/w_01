@@ -1,15 +1,11 @@
 import { useStore } from "zustand";
 
-import { mainStore } from "../../../../stores";
 import editorMarqueeSelectionStore from "../stores/editorMarqueeSelectionStore";
 
-import { EDITOR_MARQUEE_SELECTION } from "../operations";
-
 const EditorMarqueeSelection = () => {
-  const { operation } = useStore(mainStore);
   const { startCoords, currentCoords } = useStore(editorMarqueeSelectionStore);
 
-  if (operation === EDITOR_MARQUEE_SELECTION) {
+  if (startCoords && currentCoords) {
     const top = Math.min(startCoords.pageY, currentCoords.pageY);
     const left = Math.min(startCoords.pageX, currentCoords.pageX);
     const width = Math.abs(currentCoords.pageX - startCoords.pageX);

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useStore } from "zustand";
+import { useCurrentEditor } from "@tiptap/react";
 
 import blockHandleStore from "../../stores/blockHandleStore";
 
@@ -11,7 +12,9 @@ import "./BlockHandleDropdown.css";
 // todo: floating ui
 
 const BlockHandleDropdown = () => {
-  const { isHandleDropdownRendered, rect, resetBlockHandle } =
+  const editor = useCurrentEditor();
+
+  const { showDropdown, rect, setShowDropdown, setIsLocked, hideHandle } =
     useStore(blockHandleStore);
 
   const dropdownRef = useRef();
@@ -30,7 +33,11 @@ const BlockHandleDropdown = () => {
 
           removeInertFromNonPortal();
 
-          resetBlockHandle();
+          setShowDropdown(false);
+          setIsLocked(false);
+          hideHandle();
+
+          editor.view.focus();
         }
       }
     };
@@ -42,9 +49,9 @@ const BlockHandleDropdown = () => {
         capture: true,
       });
     };
-  }, [resetBlockHandle]);
+  }, [editor, setShowDropdown, setIsLocked, hideHandle]);
 
-  if (isHandleDropdownRendered) {
+  if (showDropdown) {
     return (
       <div
         className="block-handle-dropdown"

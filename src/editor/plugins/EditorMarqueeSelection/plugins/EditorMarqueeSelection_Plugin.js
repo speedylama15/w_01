@@ -1,291 +1,247 @@
 import { Plugin, TextSelection } from "@tiptap/pm/state";
 
-import { mainStore } from "../../../../stores";
 import editorMarqueeSelectionStore from "../stores/editorMarqueeSelectionStore";
 
 import { MultiBlockSelection } from "../../../selections/MultiBlockSelection";
 
-import { clamp, isClickOrDrag, isLeftClick } from "../../../../utils";
-import getEditorTree from "../utils/getEditorTree";
+import { getIsDragging, isLeftClick, clamp } from "../../../../utils";
+import { getBlocksData } from "../../../utils";
 
-import {
-  IS_EDITOR_MARQUEE_SELECTION,
-  EDITOR_MARQUEE_SELECTION,
-} from "../operations";
-
-// todo: convert this to a constant
 const IDLE = "IDLE";
 const DOWN = "DOWN";
 const DRAG = "DRAG";
-// todo: convert this to a constant
 
-const EditorMarqueeSelection_Plugin = () => {
-  return new Plugin({
-    view(view) {
-      const handleMouseDown = (e) => {
-        if (!isLeftClick(e)) return; // idea: essential
+// fix: when Marquee selection is happening or any other operation is happening, I do not want Block handle to be rendered
 
-        const { tr } = view.state;
-        const { dispatch } = view;
+const EditorMarqueeSelection_Plugin = new Plugin({
+  view(view) {
+    let mouseState = IDLE;
+    let rafID = null;
+    let tree = null;
+    let doms = null;
+    let initScrollHeight = null;
 
-        const { setMouseState, setOperation } = mainStore.getState();
+    const loop = () => {
+      const { tr } = view.state;
+      const { dispatch } = view;
 
-        const { setStartCoords, setCurrentCoords } =
-          editorMarqueeSelectionStore.getState();
+      const { startCoords, currentCoords, setCurrentCoords } =
+        editorMarqueeSelectionStore.getState();
 
-        setMouseState(DOWN); // idea: essential
+      const { clientY } = currentCoords;
 
-        const contentDOM = document.querySelector(".editor-content");
-        const pageDOM = document.querySelector(".editor-page");
+      const MIN_SPEED = 3;
+      const MAX_SPEED = 50;
+      const UPPER_THRESHOLD = 30;
+      const LOWER_THRESHOLD = window.innerHeight - 30;
 
-        // clicked a specific location
-        if (!contentDOM.contains(e.target) && pageDOM.contains(e.target)) {
-          e.preventDefault();
+      if (clientY <= 30) {
+        const gap = UPPER_THRESHOLD - clientY;
+        const t = gap / MAX_SPEED;
+        const speed = Math.min(
+          MIN_SPEED + t * (MAX_SPEED - MIN_SPEED),
+          MAX_SPEED,
+        );
 
-          const selection = MultiBlockSelection.create(tr.doc, 0, 0);
-          dispatch(tr.setSelection(selection));
+        window.scrollBy(0, -speed);
+      }
+
+      if (window.innerHeight - clientY <= 30) {
+        const gap = clientY - LOWER_THRESHOLD;
+        const t = gap / MAX_SPEED;
+        const speed = Math.min(
+          MIN_SPEED + t * (MAX_SPEED - MIN_SPEED),
+          MAX_SPEED,
+        );
+
+        window.scrollBy(0, speed);
+      }
+
+      const y = clientY + window.scrollY;
+      const clampedY = clamp(y, 0, initScrollHeight);
+
+      // calc the updated scrollY here
+      setCurrentCoords({
+        ...currentCoords,
+        pageY: clampedY,
+      });
+
+      const minX = Math.min(startCoords.pageX, currentCoords.pageX);
+      const maxX = Math.max(startCoords.pageX, currentCoords.pageX);
+      const minY = Math.min(startCoords.pageY, clampedY);
+      const maxY = Math.max(startCoords.pageY, clampedY);
+
+      const indexes = tree.search(minX, minY, maxX, maxY).sort((a, b) => a - b);
+
+      console.log(indexes);
+
+      if (indexes.length === 0) {
+        const multiSelection = MultiBlockSelection.create(tr.doc, 0, 0);
+
+        dispatch(tr.setSelection(multiSelection));
+      }
+
+      if (indexes.length === 1) {
+        const anchor = indexes[0];
+
+        const before = view.posAtDOM(doms[anchor].dom) - 1;
+        const node = view.state.doc.nodeAt(before);
+
+        const selection = MultiBlockSelection.create(
+          tr.doc,
+          before,
+          before + node.nodeSize,
+        );
+
+        dispatch(tr.setSelection(selection));
+      }
+
+      if (indexes.length > 1) {
+        const from = indexes[0];
+        const to = indexes[indexes.length - 1];
+
+        const fromBefore = view.posAtDOM(doms[from].dom) - 1;
+        const toBefore = view.posAtDOM(doms[to].dom) - 1;
+        const toNode = view.state.doc.nodeAt(toBefore);
+        const toAfter = toBefore + toNode.nodeSize;
+
+        const selection = MultiBlockSelection.create(
+          tr.doc,
+          fromBefore,
+          toAfter,
+        );
+
+        dispatch(tr.setSelection(selection));
+      }
+
+      rafID = requestAnimationFrame(loop);
+    };
+
+    const handleMouseDown = (e) => {
+      // I can't add e.preventDefault here because this mousedown is added to the document
+      // and not to some local component like block handle
+      if (!isLeftClick(e)) return;
+
+      const { tr } = view.state;
+
+      mouseState = DOWN;
+      // need this to lock the y coord and to prevent the Box from stretching the page
+      initScrollHeight = document.documentElement.scrollHeight;
+
+      const data = getBlocksData(tr.doc);
+      tree = data.tree;
+      doms = data.doms;
+
+      const { setStartCoords, setCurrentCoords } =
+        editorMarqueeSelectionStore.getState();
+
+      const contentDOM = document.querySelector(".editor-content");
+      const sectionDOM = document.querySelector(".editor-section");
+
+      // todo: I need add an editor container for auto scrolling
+      if (!contentDOM?.contains(e.target) && sectionDOM?.contains(e.target)) {
+        e.preventDefault();
+
+        view.dom.blur(); // blur it out and set focus on up
+
+        const startCoords = {
+          clientX: e.clientX,
+          clientY: e.clientY,
+          pageX: e.pageX,
+          pageY: e.pageY,
+        };
+
+        setStartCoords(startCoords);
+        setCurrentCoords(startCoords);
+
+        const move = (e) => {
+          const currentCoords = {
+            clientX: e.clientX,
+            clientY: e.clientY,
+            pageX: e.pageX,
+            pageY: e.pageY,
+          };
+
+          setCurrentCoords(currentCoords);
+
+          if (mouseState === DOWN) {
+            const { startCoords, currentCoords } =
+              editorMarqueeSelectionStore.getState();
+
+            const isDragging = getIsDragging(
+              startCoords,
+              currentCoords,
+              10,
+              (obj) => obj.pageX,
+              (obj) => obj.pageY,
+            );
+
+            if (isDragging) mouseState = DRAG;
+          }
+
+          if (mouseState === DRAG) {
+            if (!rafID) rafID = requestAnimationFrame(loop);
+          }
+        };
+
+        const up = (e) => {
+          const { tr } = view.state;
+          const { dispatch } = view;
+
+          const { setStartCoords, setCurrentCoords } =
+            editorMarqueeSelectionStore.getState();
+
+          if (mouseState === DOWN) {
+            const result = tree.search(
+              e.pageX - Infinity,
+              e.pageY - 3,
+              e.pageX + Infinity,
+              e.pageY + 3,
+            );
+
+            if (result.length > 0) {
+              // set selection
+              const index = result[0];
+              const dom = doms[index].dom;
+
+              const before = view.posAtDOM(dom) - 1;
+              const $before = tr.doc.resolve(before);
+
+              tr.setSelection(TextSelection.near($before));
+
+              dispatch(tr);
+            }
+          }
+
           view.focus();
 
-          const coords = {
-            clientX: e.clientX,
-            clientY: e.clientY,
-            pageX: e.pageX,
-            pageY: e.pageY,
-          };
+          if (rafID) cancelAnimationFrame(rafID);
+          rafID = null;
+          mouseState = IDLE;
+          tree = null;
+          doms = null;
+          initScrollHeight = null;
 
-          setStartCoords(coords);
-          setCurrentCoords(coords);
-          setOperation(IS_EDITOR_MARQUEE_SELECTION);
-        }
-      };
+          setStartCoords(null);
+          setCurrentCoords(null);
 
-      const handleMouseMove = (e) => {
-        const { operation, mouseState, setOperation, setMouseState } =
-          mainStore.getState();
+          document.removeEventListener("mousemove", move);
+          document.removeEventListener("mouseup", up);
+        };
 
-        const {
-          startCoords,
-          editorTree,
-          rafID,
-          setCurrentCoords,
-          setEditorTree,
-          setEditorBlocks,
-          setRafID,
-        } = editorMarqueeSelectionStore.getState();
+        document.addEventListener("mousemove", move);
+        document.addEventListener("mouseup", up);
+      }
+    };
 
-        // idea: essential -> do nothing if the mouse is "IDLE"
-        if (mouseState === IDLE) return;
+    document.addEventListener("mousedown", handleMouseDown);
 
-        // will this become Marquee selection or end as a simple click?
-        if (operation === IS_EDITOR_MARQUEE_SELECTION) {
-          const coords = {
-            clientX: e.clientX,
-            clientY: e.clientY,
-            pageX: e.pageX,
-            pageY: e.pageY,
-          };
-
-          setCurrentCoords(coords);
-
-          // it can bounce back between click or drag depending on the the distance
-          const state = isClickOrDrag(
-            startCoords,
-            coords,
-            12,
-            (obj) => {
-              return obj.pageX;
-            },
-            (obj) => {
-              return obj.pageY;
-            },
-          );
-
-          // but once it becomes "drag" -> set operation to "EDITOR_MARQUEE_SELECTION"
-          if (state === "drag") {
-            setOperation(EDITOR_MARQUEE_SELECTION);
-            setMouseState(DRAG);
-          }
-        }
-
-        if (operation === EDITOR_MARQUEE_SELECTION) {
-          const coords = {
-            clientX: e.clientX,
-            clientY: e.clientY,
-            pageX: e.pageX,
-            pageY: e.pageY,
-          };
-
-          setCurrentCoords(coords);
-
-          // establish flatTree ONCE
-          if (editorTree === null) {
-            const { blocks, tree } = getEditorTree(view);
-
-            setEditorBlocks(blocks);
-            setEditorTree(tree);
-          }
-
-          // establish animation frame ONCE
-          if (rafID === null) {
-            const { tr } = view.state;
-            const { dispatch } = view;
-
-            const onFrameScrollY = () => {
-              const {
-                currentCoords,
-                editorTree,
-                editorBlocks,
-                setCurrentCoords,
-              } = editorMarqueeSelectionStore.getState();
-
-              // if it's NOT at the top then scroll
-              if (currentCoords?.clientY <= 20 && window.scrollY > 0) {
-                // clientX remains the same
-                // only the scrollY changes
-                const coords = {
-                  ...currentCoords,
-                  pageY: currentCoords.clientY + window.scrollY - 5,
-                };
-
-                setCurrentCoords(coords);
-
-                const base = 22;
-                const distance = 0 - currentCoords.clientY;
-
-                const value = base + distance;
-                const speed = clamp(value, 5, 50);
-
-                window.scrollBy(0, -speed);
-              }
-
-              // if it's not at the bottom then scroll
-              if (
-                window.innerHeight - currentCoords?.clientY <= 20 &&
-                window.scrollY + window.innerHeight < document.body.scrollHeight
-              ) {
-                const coords = {
-                  ...currentCoords,
-                  pageY: currentCoords.clientY + window.scrollY + 5,
-                };
-
-                setCurrentCoords(coords);
-
-                const base = 22;
-                const distance =
-                  0 - (window.innerHeight - currentCoords?.clientY);
-
-                const value = base + distance;
-                const speed = clamp(value, 5, 50);
-
-                window.scrollBy(0, speed);
-              }
-
-              // obtain fresh data
-              // each frame, query overlapping nodes
-              const s = editorMarqueeSelectionStore.getState().startCoords;
-              const c = editorMarqueeSelectionStore.getState().currentCoords;
-
-              const minX = Math.min(s.pageX, c.pageX);
-              const maxX = Math.max(s.pageX, c.pageX);
-              const minY = Math.min(s.pageY, c.pageY);
-              const maxY = Math.max(s.pageY, c.pageY);
-
-              const indexes = editorTree
-                .search(minX, minY, maxX, maxY)
-                .sort((a, b) => a - b);
-
-              if (indexes.length === 0) {
-                const multiSelection = MultiBlockSelection.create(tr.doc, 0, 0);
-
-                dispatch(tr.setSelection(multiSelection));
-              }
-
-              if (indexes.length === 1) {
-                const anchor = indexes[0];
-
-                const anchorBefore = view.posAtDOM(editorBlocks[anchor]) - 1;
-                const anchorNode = view.state.doc.nodeAt(anchorBefore);
-
-                const selection = MultiBlockSelection.create(
-                  tr.doc,
-                  anchorBefore,
-                  anchorBefore + anchorNode.nodeSize,
-                );
-
-                dispatch(tr.setSelection(selection));
-              }
-
-              if (indexes.length > 1) {
-                const anchor = indexes[0];
-                const head = indexes[indexes.length - 1];
-
-                const anchorBefore = view.posAtDOM(editorBlocks[anchor]) - 1;
-                const headBefore = view.posAtDOM(editorBlocks[head]) - 1;
-                const headNode = view.state.doc.nodeAt(headBefore);
-                const headAfter = headBefore + headNode.nodeSize;
-
-                const selection = MultiBlockSelection.create(
-                  tr.doc,
-                  anchorBefore,
-                  headAfter,
-                );
-
-                dispatch(tr.setSelection(selection));
-              }
-
-              setRafID(requestAnimationFrame(onFrameScrollY));
-            };
-
-            setRafID(requestAnimationFrame(onFrameScrollY));
-          }
-        }
-      };
-
-      const handleMouseUp = () => {
-        const { tr } = view.state;
-        const { dispatch } = view;
-
-        const { mouseState, operation, setOperation, setMouseState } =
-          mainStore.getState();
-
-        const { rafID, reset } = editorMarqueeSelectionStore.getState();
-
-        // do nothing if the mouse is "IDLE"
-        if (mouseState === IDLE) return;
-
-        if (operation === IS_EDITOR_MARQUEE_SELECTION) {
-          const selection = TextSelection.create(tr.doc, 1);
-          dispatch(tr.setSelection(selection));
-          view.dom.blur(); // lose focus
-
-          setOperation(null); // idea: essential
-          setMouseState(IDLE); // idea: essential
-          reset();
-        }
-
-        if (operation === EDITOR_MARQUEE_SELECTION) {
-          view.focus();
-
-          cancelAnimationFrame(rafID); // need this
-          setOperation(null); // idea: essential
-          setMouseState(IDLE); // idea: essential
-          reset();
-        }
-      };
-
-      document.addEventListener("mousedown", handleMouseDown);
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-
-      return {
-        destroy() {
-          document.removeEventListener("mousedown", handleMouseDown);
-          document.removeEventListener("mousemove", handleMouseMove);
-          document.removeEventListener("mouseup", handleMouseUp);
-        },
-      };
-    },
-  });
-};
+    return {
+      destroy() {
+        document.removeEventListener("mousedown", handleMouseDown);
+      },
+    };
+  },
+});
 
 export default EditorMarqueeSelection_Plugin;

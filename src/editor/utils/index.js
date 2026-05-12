@@ -10,3 +10,5 @@ export { default as getPrevNode } from "./getPrevNode";
 export { default as getNextNode } from "./getNextNode";
 export { default as getFirstNodeInRangedSelection } from "./getFirstNodeInRangedSelection";
 export { default as getLastNodeInRangedSelection } from "./getLastNodeInRangedSelection";
+export { default as getBlocksData } from "./getBlocksData";
+export { default as fixTable } from "./fixTable";

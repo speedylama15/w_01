@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useEditor, EditorContext } from "@tiptap/react";
 
 import Text from "@tiptap/extension-text";
@@ -52,6 +52,9 @@ import { InputsExtension } from "./keys/Inputs/Inputs";
 
 import { Plugins } from "./plugins/Plugins";
 
+import { historyManager } from "../history/HistoryManager";
+import { keyManager } from "../key/KeyManager";
+
 import "./css/Editor.css";
 import "./css/Block.css";
 import "./css/Content.css";
@@ -72,7 +75,73 @@ import "./plugins/Placeholder/Placeholder_Plugin.css";
 import "./selections/MultiBlockSelection.css";
 
 const EditorProvider = ({ children }) => {
+  const prevTransaction = useRef(null);
+  const prevBookmark = useRef(null);
+
   const editor = useEditor({
+    // here is where the user is actively doing something
+    onTransaction(props) {
+      const { transaction, appendedTransactions } = props;
+
+      const time = transaction.time;
+      const docChanged = transaction.docChanged;
+
+      const addToHistory = transaction.getMeta("addToHistory");
+
+      const steps = transaction.steps;
+
+      if (docChanged && addToHistory !== false && steps.length > 0) {
+        steps.forEach((step, i) => {
+          const invertStep = step.invert(transaction.docs[i]);
+
+          const data = {
+            time, // idea: this can serve as an id of a transaction
+            step: invertStep,
+            bookmark: prevBookmark.current,
+            map: step.getMap(), // kind of useless
+          };
+
+          historyManager.addToUndoStack(data);
+        });
+
+        historyManager.clearRedoStack();
+      }
+
+      if (appendedTransactions.length > 0) {
+        appendedTransactions.forEach((tr) => {
+          const steps = tr.steps;
+
+          steps.forEach((step, i) => {
+            const invertStep = step.invert(tr.docs[i]);
+
+            const data = {
+              time,
+              step: invertStep,
+              bookmark: prevBookmark.current,
+              map: step.getMap(),
+            };
+
+            historyManager.addToUndoStack(data);
+          });
+        });
+
+        historyManager.clearRedoStack();
+      }
+
+      // todo
+      prevTransaction.current = transaction;
+      prevBookmark.current = transaction.selection.getBookmark();
+    },
+
+    onCreate({ editor }) {
+      editor.view.dom.classList.remove("tiptap");
+      editor.view.dom.classList.add("editor-contenteditable");
+    },
+
+    onUpdate({ editor }) {
+      localStorage.setItem("editor", JSON.stringify(editor.getJSON()));
+    },
+
     content: JSON.parse(localStorage.getItem("editor")) || "",
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
@@ -146,19 +215,23 @@ const EditorProvider = ({ children }) => {
         style: "overflow-wrap: anywhere;",
       },
     },
-
-    onCreate({ editor }) {
-      editor.view.dom.classList.remove("tiptap");
-      editor.view.dom.classList.add("editor-contenteditable");
-    },
-
-    onUpdate({ editor }) {
-      localStorage.setItem("editor", JSON.stringify(editor.getJSON()));
-    },
   });
 
   const memoizedEditor = useMemo(() => {
     return editor;
+  }, [editor]);
+
+  console.log("EditorProvider"); // fix
+
+  useEffect(() => {
+    if (editor) {
+      historyManager.setEditor(editor);
+      keyManager.setEditor(editor);
+    }
+
+    return () => {
+      keyManager.destroy();
+    };
   }, [editor]);
 
   return (

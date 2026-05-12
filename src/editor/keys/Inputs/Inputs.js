@@ -7,7 +7,7 @@ import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { CellSelection } from "prosemirror-tables";
 
-import { deleteContentInRangedSelection } from "../../utils";
+import { fixTable } from "../../utils";
 
 const getTextContent = (step) => {
   let textContent = "";
@@ -26,77 +26,70 @@ const getTextContent = (step) => {
 export const InputsExtension = Extension.create({
   name: "inputsExtension",
 
-  dispatchTransaction({ transaction, next }) {
-    const step = transaction.steps[0];
+  // dispatchTransaction({ transaction, next }) {
+  //   const step = transaction.steps[0];
 
-    if (step) {
-      const newTr = this.editor.state.tr;
-      const head = this.editor.state.selection.head;
+  //   // console.log("dispatchTransaction", step); // fix
 
-      const { from: stepFrom, to: stepTo } = step;
+  //   if (step) {
+  //     const newTr = this.editor.state.tr;
+  //     const head = this.editor.state.selection.head;
 
-      const textContent = getTextContent(step);
+  //     const { from: stepFrom, to: stepTo } = step;
 
-      if (
-        textContent &&
-        stepFrom !== stepTo &&
-        (step instanceof ReplaceStep || step instanceof ReplaceAroundStep)
-      ) {
-        // fix: I could add textContent.length === 1, but I'm not sure
-        // fix: it fails to catch insertion of emoji...
-        console.log("Ranged selection and insert char", {
-          textContent,
-        });
+  //     const textContent = getTextContent(step);
 
-        const inspectFrom = Math.max(0, stepFrom);
-        const inspectTo = Math.min(transaction.doc.content.size, step.to);
+  //     if (
+  //       textContent &&
+  //       stepFrom !== stepTo &&
+  //       (step instanceof ReplaceStep || step instanceof ReplaceAroundStep)
+  //     ) {
+  //       // fix: I could add textContent.length === 1, but I'm not sure
+  //       // fix: it fails to catch insertion of emoji...
+  //       console.log("Ranged selection and insert char", {
+  //         textContent,
+  //       });
 
-        newTr.setMeta("customDelete", {
-          isCustomDelete: true,
-          from: inspectFrom,
-          to: inspectTo,
-          head,
-          char: textContent,
-        });
+  //       const inspectFrom = Math.max(0, stepFrom);
+  //       const inspectTo = Math.min(transaction.doc.content.size, step.to);
 
-        next(newTr);
+  //       newTr.setMeta("customDelete", {
+  //         isCustomDelete: true,
+  //         from: inspectFrom,
+  //         to: inspectTo,
+  //         head,
+  //         char: textContent,
+  //       });
 
-        return;
-      }
-    }
+  //       next(newTr);
 
-    next(transaction);
-  },
+  //       return;
+  //     }
+  //   }
+
+  //   next(transaction);
+  // },
 });
 
-export const InputsPlugin = new Plugin({
-  appendTransaction(transactions, oldState, newState) {
-    let isCustomDelete = null;
-    // let customStep = null;
-
-    const { from, to, head } = newState.selection;
-
-    const tr = newState.tr;
-
-    transactions.forEach((transaction) => {
-      isCustomDelete = transaction.getMeta("customDelete");
-    });
-
-    if (isCustomDelete) {
-      const { char } = isCustomDelete;
-
-      deleteContentInRangedSelection(tr, from, to);
-
-      const pos = tr.mapping.map(head);
-      const near = TextSelection.near(tr.doc.resolve(pos));
-
-      const insertPos = near.$anchor.pos;
-      tr.insertText(char, insertPos);
-
-      const $insertPos = tr.doc.resolve(insertPos + 1);
-      tr.setSelection(TextSelection.near($insertPos));
-
-      return tr;
-    }
-  },
+export const Input_Plugin = new Plugin({
+  // appendTransaction(transactions, oldState, newState) {
+  //   let isCustomDelete = null;
+  //   // let customStep = null;
+  //   const { from, to, head } = newState.selection;
+  //   const tr = newState.tr;
+  //   transactions.forEach((transaction) => {
+  //     isCustomDelete = transaction.getMeta("customDelete");
+  //   });
+  //   if (isCustomDelete) {
+  //     const { char } = isCustomDelete;
+  //     deleteContentInRangedSelection(tr, from, to);
+  //     const pos = tr.mapping.map(head);
+  //     const near = TextSelection.near(tr.doc.resolve(pos));
+  //     const insertPos = near.$anchor.pos;
+  //     tr.insertText(char, insertPos);
+  //     const $insertPos = tr.doc.resolve(insertPos + 1);
+  //     tr.setSelection(TextSelection.near($insertPos));
+  //     return tr;
+  //   }
+  // },
 });

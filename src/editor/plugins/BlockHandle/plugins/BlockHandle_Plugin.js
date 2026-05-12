@@ -34,9 +34,6 @@ const BlockHandle_Plugin = new Plugin({
 
         if (isLocked) return;
 
-        // // do nothing when the handle has either been clicked or is getting dragged
-        // if (isClicked || isDragging) return;
-
         const contenteditableDOM = view.dom;
         const rect = contenteditableDOM.getBoundingClientRect();
 
