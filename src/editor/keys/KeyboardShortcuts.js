@@ -35,7 +35,7 @@ export const KeyboardShortcuts = Extension.create({
         );
       },
 
-      "/": ({ editor }) => {
+      "'": ({ editor }) => {
         return (
           editor
             .chain()

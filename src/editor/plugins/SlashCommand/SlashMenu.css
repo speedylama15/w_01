@@ -1,0 +1,20 @@
+.slash-menu {
+  position: absolute;
+  border: 1px solid #000;
+  padding: 12px;
+  background-color: #fff;
+}
+
+.empty-slash {
+  background-color: #00d0ff;
+}
+
+.empty-slash::after {
+  content: "Search for Nodes!!!";
+  color: rgba(0, 0, 255, 0.391);
+  font-weight: 700;
+}
+
+.non-empty-slash {
+  background-color: #ff6421;
+}

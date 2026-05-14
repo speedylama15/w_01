@@ -7,6 +7,7 @@ import { TrailingNode_Plugin } from "./TrailingNode/TrailingNode_Plugin";
 import { RenderSelection_Plugin } from "./RenderSelection/RenderSelection_Plugin";
 import EditorMarqueeSelection_Plugin from "./EditorMarqueeSelection/plugins/EditorMarqueeSelection_Plugin";
 import { FixTable_Plugin } from "./FixTable/FixTable_Plugin";
+import SlashCommand_Plugin from "./SlashCommand/SlashCommand_Plugin";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
@@ -18,6 +19,7 @@ export const Plugins = Extension.create({
       BlockHandle_Plugin,
       RenderSelection_Plugin,
       EditorMarqueeSelection_Plugin,
+      SlashCommand_Plugin(this.editor),
     ];
   },
 });

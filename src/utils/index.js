@@ -5,3 +5,4 @@ export { default as clamp } from "./clamp";
 export { default as removeInertFromNonPortal } from "./removeInertFromNonPortal";
 export { default as setInertOnNonPortal } from "./setInertOnNonPortal";
 export { default as isInclusive } from "./isInclusive";
+export { default as isPureKey } from "./isPureKey";

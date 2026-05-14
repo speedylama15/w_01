@@ -47,13 +47,12 @@ import ArrowUp from "./keys/Arrows/ArrowUp";
 import ArrowDown from "./keys/Arrows/ArrowDown";
 import ArrowRight from "./keys/Arrows/ArrowRight";
 import ArrowLeft from "./keys/Arrows/ArrowLeft";
-import { InputsExtension } from "./keys/Inputs/Inputs";
 // shortcuts
 
 import { Plugins } from "./plugins/Plugins";
 
-import { historyManager } from "../history/HistoryManager";
-import { keyManager } from "../key/KeyManager";
+import { historyManager } from "../managers/HistoryManager";
+import { keyManager } from "../managers/KeyManager";
 
 import "./css/Editor.css";
 import "./css/Block.css";
@@ -70,67 +69,181 @@ import "./css/Table.css";
 import "./css/CellSelecting.css";
 import "./plugins/TableResizing/TableResize.css";
 import "./plugins/TableReordering/TableReordering.css";
+import "./plugins/SlashCommand/SlashMenu.css";
 
 import "./plugins/Placeholder/Placeholder_Plugin.css";
 import "./selections/MultiBlockSelection.css";
 
 const EditorProvider = ({ children }) => {
-  const prevTransaction = useRef(null);
-  const prevBookmark = useRef(null);
+  const prevSelection = useRef(null);
 
   const editor = useEditor({
     // here is where the user is actively doing something
+    // fix: I need to tell when I need to clear out the redo stack
+    // fix: redo is still broken
+    // fix: setting of selection after redo is odd
+    // onTransaction(props) {
+    //   const { editor, transaction, appendedTransactions } = props;
+
+    //   const time = transaction.time;
+    //   const docChanged = transaction.docChanged;
+
+    //   const addToHistory = transaction.getMeta("addToHistory");
+    //   const redo = transaction.getMeta("redo");
+
+    //   const steps = transaction.steps;
+
+    //   if (docChanged && addToHistory !== false && steps.length > 0) {
+    //     steps.forEach((step, i) => {
+    //       const invertStep = step.invert(transaction.docs[i]);
+
+    //       const data = {
+    //         time, // serve as an id
+    //         step: invertStep,
+    //         bookmark: prevBookmark.current,
+    //         map: step.getMap(), // kind of useless
+    //       };
+
+    //       historyManager.addToUndoStack(data);
+    //     });
+
+    //     if (!redo) historyManager.clearRedoStack();
+    //   }
+
+    //   if (appendedTransactions.length > 0) {
+    //     appendedTransactions.forEach((tr) => {
+    //       const steps = tr.steps;
+
+    //       steps.forEach((step, i) => {
+    //         const invertStep = step.invert(tr.docs[i]);
+
+    //         const data = {
+    //           time,
+    //           step: invertStep,
+    //           bookmark: prevBookmark.current,
+    //           map: step.getMap(),
+    //         };
+
+    //         historyManager.addToUndoStack(data);
+    //       });
+    //     });
+
+    //     if (!redo) historyManager.clearRedoStack();
+    //   }
+
+    //   // todo
+    //   prevTransaction.current = transaction;
+    //   prevBookmark.current = editor.state.selection.getBookmark();
+    // },
+
     onTransaction(props) {
-      const { transaction, appendedTransactions } = props;
+      const { editor, transaction, appendedTransactions } = props;
+      const { selection } = editor.state;
 
       const time = transaction.time;
       const docChanged = transaction.docChanged;
 
-      const addToHistory = transaction.getMeta("addToHistory");
+      const undo = transaction.getMeta("undo");
+      const redo = transaction.getMeta("redo");
 
       const steps = transaction.steps;
 
-      if (docChanged && addToHistory !== false && steps.length > 0) {
+      // user is taking action
+      if (!undo && !redo && docChanged && steps.length > 0) {
+        const bookmark = prevSelection.current.getBookmark();
+
         steps.forEach((step, i) => {
-          const invertStep = step.invert(transaction.docs[i]);
+          const iStep = step.invert(transaction.docs[i]);
 
-          const data = {
-            time, // idea: this can serve as an id of a transaction
-            step: invertStep,
-            bookmark: prevBookmark.current,
-            map: step.getMap(), // kind of useless
-          };
-
-          historyManager.addToUndoStack(data);
-        });
-
-        historyManager.clearRedoStack();
-      }
-
-      if (appendedTransactions.length > 0) {
-        appendedTransactions.forEach((tr) => {
-          const steps = tr.steps;
-
-          steps.forEach((step, i) => {
-            const invertStep = step.invert(tr.docs[i]);
-
-            const data = {
-              time,
-              step: invertStep,
-              bookmark: prevBookmark.current,
-              map: step.getMap(),
-            };
-
-            historyManager.addToUndoStack(data);
+          historyManager.addToUndoStack({
+            time,
+            step: iStep,
+            bookmark,
           });
         });
 
+        if (appendedTransactions.length > 0) {
+          appendedTransactions.forEach((tr) => {
+            const steps = tr.steps;
+
+            steps.forEach((step, i) => {
+              const iStep = step.invert(tr.docs[i]);
+
+              historyManager.addToUndoStack({
+                time,
+                step: iStep,
+                bookmark,
+              });
+            });
+          });
+        }
+
+        // clear the redo stack here
         historyManager.clearRedoStack();
       }
 
+      if (undo && docChanged && steps.length > 0) {
+        const bookmark = prevSelection.current.getBookmark();
+
+        steps.forEach((step, i) => {
+          const iStep = step.invert(transaction.docs[i]);
+
+          historyManager.addToRedoStack({
+            time,
+            step: iStep,
+            bookmark,
+          });
+        });
+
+        if (appendedTransactions.length > 0) {
+          appendedTransactions.forEach((tr) => {
+            const steps = tr.steps;
+
+            steps.forEach((step, i) => {
+              const iStep = step.invert(tr.docs[i]);
+
+              historyManager.addToRedoStack({
+                time,
+                step: iStep,
+                bookmark,
+              });
+            });
+          });
+        }
+      }
+
+      if (redo && docChanged && steps.length > 0) {
+        const bookmark = prevSelection.current.getBookmark();
+
+        steps.forEach((step, i) => {
+          const iStep = step.invert(transaction.docs[i]);
+
+          historyManager.addToUndoStack({
+            time,
+            step: iStep,
+            bookmark,
+          });
+        });
+
+        if (appendedTransactions.length > 0) {
+          appendedTransactions.forEach((tr) => {
+            const steps = tr.steps;
+
+            steps.forEach((step, i) => {
+              const iStep = step.invert(tr.docs[i]);
+
+              historyManager.addToUndoStack({
+                time,
+                step: iStep,
+                bookmark,
+              });
+            });
+          });
+        }
+      }
+
       // todo
-      prevTransaction.current = transaction;
-      prevBookmark.current = transaction.selection.getBookmark();
+      prevSelection.current = selection;
     },
 
     onCreate({ editor }) {
@@ -176,7 +289,6 @@ const EditorProvider = ({ children }) => {
       Underline,
       Link,
 
-      InputsExtension,
       KeyboardShortcuts,
       ArrowUp,
       ArrowDown,

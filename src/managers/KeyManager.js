@@ -1,5 +1,5 @@
 import { TextSelection } from "@tiptap/pm/state";
-import { historyManager } from "../history/HistoryManager";
+import { historyManager } from "./HistoryManager";
 import { isInclusive } from "../utils";
 
 class KeyManager {
@@ -14,6 +14,7 @@ class KeyManager {
     const { tr } = this.editor.view.state;
     const { dispatch } = this.editor.view;
 
+    // undo
     if (e.metaKey && e.key === "z" && !e.shiftKey) {
       e.preventDefault();
       e.stopPropagation();
@@ -22,15 +23,14 @@ class KeyManager {
 
       if (stack.length === 0) return;
 
-      let undoStack = [];
       let timeStart = null;
       let timeEnd = null;
       let lastBookmark = null;
 
       // reverse the array
-      for (let i = stack.length - 1; i >= 0; i--) {
-        const data = stack[i];
-        const { step, time, bookmark, map } = data;
+      for (let j = stack.length - 1; j >= 0; j--) {
+        const data = stack[j];
+        const { step, time, bookmark } = data;
 
         if (timeEnd === null) {
           timeStart = time - 500;
@@ -40,41 +40,28 @@ class KeyManager {
         const isInWindow = isInclusive(time, timeStart, timeEnd);
 
         if (isInWindow) {
-          tr.step(step);
+          tr.step(step); // let undo step occur
 
-          const j = stack.length - 1 - i;
-          // need to inverse the index here
-          const reinvertedStep = tr.steps[j].invert(tr.docs[j]);
+          historyManager.popUndoStack();
 
           lastBookmark = bookmark;
-
-          historyManager.addToRedoStack({
-            step: reinvertedStep,
-            time,
-            bookmark,
-            map,
-          });
-        }
-
-        if (!isInWindow) {
-          undoStack[i] = { step, time, bookmark, map };
         }
       }
 
-      console.log("undo bookmark", lastBookmark); // fix
+      // fix: also the type of selection is necessary
+      // todo: maybe I should store the type of selection in data when adding to stack
+      // review: this works all of a sudden???
       const restoredSelection = lastBookmark.resolve(tr.doc);
-
-      historyManager.setUndoStack(undoStack);
-
       tr.setSelection(restoredSelection);
-      tr.setMeta("addToHistory", false);
+
+      tr.setMeta("undo", true);
 
       dispatch(tr);
 
       this.editor.view.focus();
     }
 
-    // review: redo
+    // redo
     if (e.metaKey && e.shiftKey && e.key === "z") {
       e.preventDefault();
       e.stopPropagation();
@@ -88,13 +75,13 @@ class KeyManager {
       let lastBookmark = null;
 
       // reverse the array
-      for (let i = stack.length - 1; i >= 0; i--) {
-        const { step, time, bookmark } = stack[i];
+      for (let j = stack.length - 1; j >= 0; j--) {
+        const data = stack[j];
+        const { step, time, bookmark } = data;
 
         if (timeEnd === null) {
-          // review: this had to change
-          timeStart = time;
-          timeEnd = time + 500;
+          timeStart = time - 500;
+          timeEnd = time;
         }
 
         const isInWindow = isInclusive(time, timeStart, timeEnd);
@@ -102,22 +89,19 @@ class KeyManager {
         if (isInWindow) {
           tr.step(step);
 
-          lastBookmark = bookmark;
-
           historyManager.popRedoStack();
+
+          lastBookmark = bookmark;
         }
       }
 
-      // fix
-      // const restoredSelection = lastBookmark.resolve(tr.doc);
-      // tr.setSelection(restoredSelection);
-      const mappedSelection = TextSelection.create(
-        tr.doc,
-        tr.mapping.map(lastBookmark.anchor),
-        tr.mapping.map(lastBookmark.head),
-      );
-      tr.setSelection(mappedSelection);
-      // fix
+      // fix: also the type of selection is necessary
+      // todo: maybe I should store the type of selection in data when adding to stack
+      // review: this works all of a sudden???
+      const restoredSelection = lastBookmark.resolve(tr.doc);
+      tr.setSelection(restoredSelection);
+
+      tr.setMeta("redo", true);
 
       dispatch(tr);
 
