@@ -54,6 +54,8 @@ import { Plugins } from "./plugins/Plugins";
 import { historyManager } from "../managers/HistoryManager";
 import { keyManager } from "../managers/KeyManager";
 
+import { tr_extension } from "./plugins/transactions_FILE";
+
 import "./css/Editor.css";
 import "./css/Block.css";
 import "./css/Content.css";
@@ -67,9 +69,10 @@ import "./css/Audio.css";
 import "./css/Video.css";
 import "./css/Table.css";
 import "./css/CellSelecting.css";
-import "./plugins/TableResizing/TableResize.css";
+import "./plugins/TableResizing/TableResizing.css";
 import "./plugins/TableReordering/TableReordering.css";
 import "./plugins/SlashCommand/SlashMenu.css";
+import "./plugins/ToolbarMenu/ToolbarMenu.css";
 
 import "./plugins/Placeholder/Placeholder_Plugin.css";
 import "./selections/MultiBlockSelection.css";
@@ -78,64 +81,6 @@ const EditorProvider = ({ children }) => {
   const prevSelection = useRef(null);
 
   const editor = useEditor({
-    // here is where the user is actively doing something
-    // fix: I need to tell when I need to clear out the redo stack
-    // fix: redo is still broken
-    // fix: setting of selection after redo is odd
-    // onTransaction(props) {
-    //   const { editor, transaction, appendedTransactions } = props;
-
-    //   const time = transaction.time;
-    //   const docChanged = transaction.docChanged;
-
-    //   const addToHistory = transaction.getMeta("addToHistory");
-    //   const redo = transaction.getMeta("redo");
-
-    //   const steps = transaction.steps;
-
-    //   if (docChanged && addToHistory !== false && steps.length > 0) {
-    //     steps.forEach((step, i) => {
-    //       const invertStep = step.invert(transaction.docs[i]);
-
-    //       const data = {
-    //         time, // serve as an id
-    //         step: invertStep,
-    //         bookmark: prevBookmark.current,
-    //         map: step.getMap(), // kind of useless
-    //       };
-
-    //       historyManager.addToUndoStack(data);
-    //     });
-
-    //     if (!redo) historyManager.clearRedoStack();
-    //   }
-
-    //   if (appendedTransactions.length > 0) {
-    //     appendedTransactions.forEach((tr) => {
-    //       const steps = tr.steps;
-
-    //       steps.forEach((step, i) => {
-    //         const invertStep = step.invert(tr.docs[i]);
-
-    //         const data = {
-    //           time,
-    //           step: invertStep,
-    //           bookmark: prevBookmark.current,
-    //           map: step.getMap(),
-    //         };
-
-    //         historyManager.addToUndoStack(data);
-    //       });
-    //     });
-
-    //     if (!redo) historyManager.clearRedoStack();
-    //   }
-
-    //   // todo
-    //   prevTransaction.current = transaction;
-    //   prevBookmark.current = editor.state.selection.getBookmark();
-    // },
-
     onTransaction(props) {
       const { editor, transaction, appendedTransactions } = props;
       const { selection } = editor.state;
@@ -316,6 +261,8 @@ const EditorProvider = ({ children }) => {
           Table.name,
         ],
       }),
+
+      tr_extension,
 
       // review: plugin
       Plugins,

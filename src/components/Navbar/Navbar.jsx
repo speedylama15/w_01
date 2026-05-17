@@ -112,6 +112,10 @@ const Navbar = () => {
         <button onClick={handleToggleColumnClick}>Toggle Column</button>
 
         <button onClick={handleToggleRowClick}>Toggle Row</button>
+
+        <p style={{ userSelect: "none" }}>
+          This is a paragraph and I am testing if user select works or not
+        </p>
       </div>
     </nav>
   );

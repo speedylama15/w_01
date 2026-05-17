@@ -4,7 +4,7 @@
 }
 
 .block-table[data-indent-level="0"] {
-  width: calc(100% - 0);
+  width: calc(100% - 0px);
 }
 .block-table[data-indent-level="1"] {
   width: calc(100% - 30px);

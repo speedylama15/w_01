@@ -5,7 +5,7 @@
 
 .table-resizer {
   display: none;
-  /* background-color: rgba(238, 130, 238, 0.606); */
+  background-color: #ff713969;
   position: absolute;
   top: 0;
   width: 10px;
@@ -13,7 +13,7 @@
 }
 
 .table-resizer > div {
-  background-color: #144bffbd;
+  background-color: #144bff25;
   width: 4px;
   height: 100%;
 }

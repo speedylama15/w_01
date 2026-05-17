@@ -43,6 +43,7 @@ class m_TableView extends TableView {
   createTableResizer() {
     const resizer = document.createElement("div");
     resizer.className = "table-resizer";
+    resizer.contentEditable = false;
 
     const line = document.createElement("div");
 
@@ -54,6 +55,7 @@ class m_TableView extends TableView {
   createSelectionBox() {
     const box = document.createElement("div");
     box.className = "selection-box";
+    box.contentEditable = false;
 
     return box;
   }
@@ -62,6 +64,7 @@ class m_TableView extends TableView {
     const button = document.createElement("button");
     button.className = "table-button column-button";
     button.setAttribute("data-button-type", "column");
+    button.contentEditable = false;
 
     return button;
   }
@@ -70,6 +73,7 @@ class m_TableView extends TableView {
     const button = document.createElement("button");
     button.className = "table-button row-button";
     button.setAttribute("data-button-type", "row");
+    button.contentEditable = false;
 
     return button;
   }
@@ -190,7 +194,7 @@ class m_TableView extends TableView {
   }
 
   ignoreMutation(mutation) {
-    // console.log("TableView ignoreMutation"); // fix
+    // console.log("TableView ignoreMutation", mutation); // fix
 
     if (
       mutation.type == "attributes" &&

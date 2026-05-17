@@ -2,10 +2,23 @@
   background-color: transparent;
 }
 
+.hide-native-selection * {
+  caret-color: transparent;
+}
+
 .active-table .selection-box,
 .active-table .column-button,
 .active-table .row-button {
   display: flex;
+}
+
+.active-cell::after {
+  content: "";
+  position: absolute;
+  background-color: #0033ff7d;
+  pointer-events: none;
+  inset: 0;
+  z-index: 2;
 }
 
 .selection-box {

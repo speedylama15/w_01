@@ -2,10 +2,8 @@ import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { CellSelection } from "prosemirror-tables";
 import { DecorationSet, Decoration } from "@tiptap/pm/view";
 
-import { mainStore } from "../../../stores";
-
 import { isInclusive, isLeftClick } from "../../../utils";
-import { getNearestNode, getNodeByContentType, isCellNode } from "../../utils";
+import { getNearestNode, isCellNode } from "../../utils";
 
 // todo: left click, disallow scrolling, only 1 operation, chain the events
 // todo: add an raf that allows scrolling to occur in the table
@@ -54,25 +52,114 @@ const setTableControls = (container, anchorCell, headCell) => {
   rowButton.style.left = -1 + "px";
 };
 
-const mousedownOnCell = (e, view, tr, dispatch, start, end) => {
+const mouseDownOnCell = (e, view, tr, start, end) => {
   const clickedPos = view.posAtCoords({ left: e.clientX, top: e.clientY });
 
   if (!clickedPos || !isInclusive(clickedPos.pos, start, end)) {
     const textSelection = TextSelection.create(tr.doc, start);
 
     tr.setSelection(textSelection);
-
-    dispatch(tr);
   } else {
     const textSelection = TextSelection.create(tr.doc, clickedPos.pos);
 
     tr.setSelection(textSelection);
-
-    dispatch(tr);
   }
 };
 
-const CellSelecting_Key = new PluginKey("CellSelecting_Key");
+const traverseToADOM = (e, view, nodeName) => {
+  let foundDOM = false;
+  let target = e.target;
+
+  while (target !== view.dom && target?.parentNode) {
+    if (target.nodeName === nodeName) {
+      foundDOM = true;
+      break;
+    }
+
+    target = target.parentNode;
+  }
+
+  if (!foundDOM) return null;
+
+  return target;
+};
+
+const traverseToCellDOM = (e, view) => {
+  let foundCell = false;
+  let target = e.target;
+
+  while (target !== view.dom && target?.parentNode) {
+    if (target.nodeName === "TD" || target.nodeName === "TH") {
+      foundCell = true;
+      break;
+    }
+
+    target = target.parentNode;
+  }
+
+  if (!foundCell) return null;
+
+  return target;
+};
+
+const traverseToContentDOM = (e, view) => {
+  let foundContent = false;
+  let target = e.target;
+
+  while (target !== view.dom && target?.parentNode) {
+    if (target.dataset.nodeType === "content") {
+      foundContent = true;
+      break;
+    }
+
+    target = target.parentNode;
+  }
+
+  if (!foundContent) return null;
+
+  return target;
+};
+
+const traverseToBlockDOM = (e, view) => {
+  let foundContent = false;
+  let target = e.target;
+
+  while (target !== view.dom && target?.parentNode) {
+    if (target.classList.contains("block")) {
+      foundContent = true;
+      break;
+    }
+
+    target = target.parentNode;
+  }
+
+  if (!foundContent) return null;
+
+  return target;
+};
+
+const traverseToNearestNodeDOM = (e, view) => {
+  let foundNode = false;
+  let target = e.target;
+
+  while (target !== view.dom && target?.parentNode) {
+    if (
+      target.classList.contains("block") ||
+      target.dataset.nodeType === "content"
+    ) {
+      foundNode = true;
+      break;
+    }
+
+    target = target.parentNode;
+  }
+
+  if (!foundNode) return null;
+
+  return target;
+};
+
+export const CellSelecting_Key = new PluginKey("CellSelecting_Key");
 
 const CellSelecting_Plugin = new Plugin({
   key: CellSelecting_Key,
@@ -82,7 +169,6 @@ const CellSelecting_Plugin = new Plugin({
       return {
         isCellSelecting: false,
         tableID: null,
-        anchorPos: null,
       };
     },
 
@@ -96,228 +182,225 @@ const CellSelecting_Plugin = new Plugin({
   },
 
   props: {
-    createSelectionBetween(view) {
-      const cellSelecting = CellSelecting_Key.getState(view.state);
+    attributes(state) {
+      const pluginState = CellSelecting_Key.getState(state);
+      const { isCellSelecting } = pluginState;
 
-      if (
-        cellSelecting?.isCellSelecting &&
-        view.state.selection instanceof CellSelection
-      ) {
-        // disable this and performance drops
-        return view.state.selection;
-      }
+      if (isCellSelecting) return { class: "hide-native-selection" };
+    },
+
+    createSelectionBetween(view) {
+      const pluginState = CellSelecting_Key.getState(view.state);
+      const { isCellSelecting } = pluginState;
+
+      if (isCellSelecting) return view.state.selection;
 
       return null;
     },
 
     decorations(state) {
       const { selection } = state;
-      const { $anchor } = selection;
+      const { $from } = selection;
 
+      // todo: should I limit this to single selection or also allow this in ranged selection
+      // todo: ranged -> blue highlight ranges somewhere inside of a table all the way to another table <- 애매한데...
       if (selection instanceof TextSelection) {
-        // get the table
-        const result = getNodeByContentType($anchor, "table");
+        const result = getNearestNode($from);
         if (!result) return DecorationSet.empty;
 
         const { node, depth } = result;
 
-        const before = $anchor.before(depth);
-        const after = before + node.nodeSize;
+        if (isCellNode(node)) {
+          const tableBefore = $from.before(depth - 2);
+          const tableAfter = $from.after(depth - 2);
 
-        const dec = Decoration.node(before, after, { class: "active-table" });
+          const dec = Decoration.node(tableBefore, tableAfter, {
+            class: "active-table",
+          });
 
-        return DecorationSet.create(state.tr.doc, [dec]);
+          const set = DecorationSet.create(state.tr.doc, [dec]);
+
+          return set;
+        }
       }
 
       if (selection instanceof CellSelection) {
-        const before = selection.$anchorCell.before(-1);
-        const after = selection.$anchorCell.after(-1);
+        const tableBefore = selection.$anchorCell.before(-1);
+        const tableAfter = selection.$anchorCell.after(-1);
 
-        const dec = Decoration.node(before, after, { class: "active-table" });
+        const decs = [];
 
-        return DecorationSet.create(state.tr.doc, [dec]);
+        const dec = Decoration.node(tableBefore, tableAfter, {
+          class: "active-table",
+        });
+
+        decs.push(dec);
+
+        selection.forEachCell((node, pos) => {
+          const cellBefore = pos;
+          const cellAfter = pos + node.nodeSize;
+
+          const dec = Decoration.node(cellBefore, cellAfter, {
+            class: "active-cell",
+          });
+
+          decs.push(dec);
+        });
+
+        return DecorationSet.create(state.tr.doc, decs);
       }
     },
   },
 
   view(view) {
+    let anchorTableID = null;
+    let anchorTableDOM = null;
+
+    let anchorCellDOM = null;
+
+    let anchorPos = null;
+
     const down = (e) => {
       const { tr } = view.state;
       const { dispatch } = view;
 
-      // idea: essential
-      if (!isLeftClick(e)) {
-        e.preventDefault();
+      // handle pure left click only
+      // todo: therefore, because of this, I cannot handle the SHIFT logic here
+      if (!isLeftClick(e)) return;
 
-        return;
-      }
-
-      // get the cell DOM
-      const cellDOM = e.target.closest("td, th");
+      const cellDOM = traverseToCellDOM(e, view);
       if (!cellDOM) return;
 
-      const cellBefore = view.posAtDOM(cellDOM) - 1;
-      const cellNode = view.state.doc.nodeAt(cellBefore);
-      const cellAfter = cellBefore + cellNode.nodeSize;
-      const cellStart = cellBefore + 2; // add and subtract by 2
-      const cellEnd = cellAfter - 2;
+      anchorTableDOM = cellDOM.closest(".block-table");
+      anchorTableID = anchorTableDOM.dataset.id;
 
-      const tableDOM = cellDOM.closest(".block-table");
-      if (!tableDOM) return;
+      anchorCellDOM = cellDOM;
 
-      const tableID = tableDOM.getAttribute("data-id");
+      const nodeBefore = view.posAtDOM(cellDOM) - 1;
+      const node = tr.doc.nodeAt(nodeBefore);
+      const nodeAfter = nodeBefore + node.nodeSize;
+      anchorPos = nodeBefore;
 
-      mainStore.getState().setMouseState(DOWN);
+      mouseDownOnCell(e, view, tr, nodeBefore + 2, nodeAfter - 2);
 
-      // when mouse is down on a cell, I MUST make a selection
-      mousedownOnCell(e, view, tr, dispatch, cellStart, cellEnd);
+      tr.setMeta(CELL_SELECTING, {
+        isCellSelecting: false,
+      });
 
-      const handleMouseLeave = () => {
-        const { mouseState, setMouseState, setOperation } =
-          mainStore.getState();
+      dispatch(tr);
 
+      const move = (e) => {
         const { tr } = view.state;
         const { dispatch } = view;
 
-        if (mouseState === DOWN) {
-          setMouseState(DRAG);
-          setOperation(CELL_SELECTING);
+        const cellDOM = traverseToCellDOM(e, view);
+        if (!cellDOM) return;
 
-          tr.setMeta(CELL_SELECTING, {
-            isCellSelecting: true,
-            tableID,
-            anchorPos: cellBefore,
-          }).setSelection(CellSelection.create(tr.doc, cellBefore));
+        const headCellTableID = cellDOM.closest(".block-table").dataset.id;
 
-          dispatch(tr);
-        }
+        const pluginState = CellSelecting_Key.getState(view.state);
+        const { isCellSelecting } = pluginState;
 
-        if (mouseState !== DOWN) {
-          setMouseState(IDLE);
-          setOperation(null);
+        // same cell but not cell selecting
+        if (anchorCellDOM === cellDOM && !isCellSelecting) return;
+        // found cell but at a different table
+        if (anchorTableID !== headCellTableID) return;
 
-          tr.setMeta(CELL_SELECTING, {
-            isCellSelecting: false,
-            tableID: null,
-            anchorPos: null,
-          });
+        if (!isCellSelecting) {
+          console.log("INIT SELECT!!!!!!!!!!"); // fix
+
+          const headPos = view.posAtDOM(cellDOM) - 1;
+
+          tr.setMeta(CELL_SELECTING, { isCellSelecting: true });
+          tr.setSelection(CellSelection.create(tr.doc, anchorPos, headPos));
 
           dispatch(tr);
+
+          return;
         }
 
-        cellDOM.removeEventListener("mouseleave", handleMouseLeave);
+        if (isCellSelecting) {
+          console.log("SELECTING!!!!!!!!!!"); // fix
+
+          const headPos = view.posAtDOM(cellDOM) - 1;
+
+          const sel = CellSelection.create(tr.doc, anchorPos, headPos);
+          tr.setSelection(sel);
+
+          dispatch(tr);
+
+          return;
+        }
       };
 
-      cellDOM.addEventListener("mouseleave", handleMouseLeave);
-    };
+      const up = () => {
+        const { tr } = view.state;
+        const { dispatch } = view;
 
-    const move = (e) => {
-      const { tr } = view.state;
-      const { dispatch } = view;
+        const pluginState = CellSelecting_Key.getState(view.state);
+        const { isCellSelecting } = pluginState;
 
-      const { operation } = mainStore.getState();
+        if (isCellSelecting) {
+          tr.setMeta(CELL_SELECTING, { isCellSelecting: false });
 
-      if (operation === CELL_SELECTING) {
-        const cell = e.target.closest("td, th");
+          dispatch(tr);
+        }
 
-        // I am looking for a viable cell. That is all I need to do
-        if (!cell) return;
+        document.removeEventListener("mousemove", move);
+        document.removeEventListener("mouseup", up);
+      };
 
-        const currTableDOM = cell.closest(".block-table");
-        if (!currTableDOM) return;
-
-        const { tableID, anchorPos } = CellSelecting_Key.getState(view.state);
-
-        const currTableID = currTableDOM.getAttribute("data-id");
-        if (tableID !== currTableID) return;
-
-        const headBefore = view.posAtDOM(cell) - 1;
-
-        // console.log("What is going on here?", cell); // fix
-
-        tr.setSelection(CellSelection.create(tr.doc, anchorPos, headBefore));
-
-        dispatch(tr);
-      }
-    };
-
-    const up = () => {
-      const { tr } = view.state;
-      const { dispatch } = view;
-
-      const { setMouseState, setOperation } = mainStore.getState();
-
-      setMouseState(IDLE);
-      setOperation(null);
-
-      const pluginState = CellSelecting_Key.getState(view.state);
-
-      if (pluginState.isCellSelecting) {
-        tr.setMeta(CELL_SELECTING, {
-          isCellSelecting: false,
-          tableID: null,
-          anchorPos: null,
-        });
-
-        dispatch(tr);
-      }
+      document.addEventListener("mousemove", move);
+      document.addEventListener("mouseup", up);
     };
 
     document.addEventListener("mousedown", down);
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", up);
 
     return {
       update(view) {
         const { selection } = view.state;
+        const { $from } = selection;
 
         if (selection instanceof TextSelection) {
-          const { $anchor } = selection;
+          // fix: this is an issue, ranged selection could have 2 cells from different tables
+          // imagine the end of a table to the start of another table
+          // idea: Notion approach -> mouse needs to hover the entire table for ranged text selection to apply to the entire table (mouse drag selection)
+          // idea: or when the selection was TextSelection and it meets a table cell -> change to Multi (SHIFT + Arrow && SHIFT + Click)
+          // todo: but here I am assuming that I incorporated the above tactics
+          // selection is single and stays in a single cell or ranged but is in a single cell
 
-          const result = getNearestNode($anchor);
+          const result = getNearestNode($from);
           if (!result) return;
 
           const { node, depth } = result;
 
           if (isCellNode(node)) {
-            const cellBefore = $anchor.before(depth);
-            const cellDOM = view.domAtPos(cellBefore + 1);
-
+            const cellBefore = $from.before(depth) + 1;
+            const cellDOM = view.domAtPos(cellBefore)?.node;
             if (!cellDOM) return;
 
-            const containerDOM = cellDOM.node.closest(".tableWrapper");
+            const tableDOM = cellDOM.closest(".block-table");
+            if (!tableDOM) return; // need this when the first node of the editor is a table
+            const tableWrapper = tableDOM.querySelector(".tableWrapper");
 
-            // review: for some reason, the .block-table disappears in the init stage
-            // review: therefore, I need this guard
-            if (!containerDOM) return;
-
-            setTableControls(containerDOM, cellDOM.node, cellDOM.node);
+            setTableControls(tableWrapper, cellDOM, cellDOM);
           }
         }
 
         if (selection instanceof CellSelection) {
-          const anchorPos = selection.$anchorCell.pos + 1;
-          const headPos = selection.$headCell.pos + 1;
+          const { $anchorCell, $headCell } = selection;
 
-          const anchorCellDOM = view.domAtPos(anchorPos);
-          const headCellDOM = view.domAtPos(headPos);
+          const anchorDOM = view.nodeDOM($anchorCell.pos);
+          const headDOM = view.nodeDOM($headCell.pos);
 
-          if (anchorCellDOM.node && headCellDOM.node) {
-            const containerDOM = headCellDOM.node.closest(".tableWrapper");
+          const tableWrapper = anchorDOM.closest(".tableWrapper");
 
-            setTableControls(
-              containerDOM,
-              anchorCellDOM.node,
-              headCellDOM.node,
-            );
-          }
+          setTableControls(tableWrapper, anchorDOM, headDOM);
         }
       },
 
       destroy() {
         document.removeEventListener("mousedown", down);
-        document.removeEventListener("mousemove", move);
-        document.removeEventListener("mouseup", up);
       },
     };
   },

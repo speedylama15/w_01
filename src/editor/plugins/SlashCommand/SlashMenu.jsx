@@ -1,5 +1,5 @@
 import { DecorationSet } from "@tiptap/pm/view";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from "react";
 
 // todo: I forgot what the library is, but there is one that allows me find entries with similarities as an option?
 // todo: sharpen this...
@@ -14,7 +14,9 @@ const arr = [
   { text: "checklist", content: "Checklist" },
 ];
 
-const SlashMenu = ({ editor, text, to }) => {
+// todo: add arrow navigation...
+// todo: add button functionality
+const SlashMenu = memo(({ editor, text, to }) => {
   const noResultPosRef = useRef(null);
 
   const filtered = arr.filter((data) => {
@@ -55,6 +57,6 @@ const SlashMenu = ({ editor, text, to }) => {
       })}
     </>
   );
-};
+});
 
 export default SlashMenu;

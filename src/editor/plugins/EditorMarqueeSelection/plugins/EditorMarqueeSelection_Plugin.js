@@ -73,8 +73,6 @@ const EditorMarqueeSelection_Plugin = new Plugin({
 
       const indexes = tree.search(minX, minY, maxX, maxY).sort((a, b) => a - b);
 
-      console.log(indexes);
-
       if (indexes.length === 0) {
         const multiSelection = MultiBlockSelection.create(tr.doc, 0, 0);
 
