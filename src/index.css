@@ -56,19 +56,3 @@ body[data-cursor="drag-and-drop"] {
 .portal > * {
   pointer-events: auto; /* Re-enable clicks for the actual menu items */
 }
-
-.dnd-up-right {
-  border-top: 2px solid blue;
-}
-
-.dnd-up-left {
-  border-top: 2px solid red;
-}
-
-.dnd-down-right {
-  border-bottom: 2px solid blue;
-}
-
-.dnd-down-left {
-  border-bottom: 2px solid red;
-}

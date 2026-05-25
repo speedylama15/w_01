@@ -12,6 +12,9 @@ const DOWN = "DOWN";
 const DRAG = "DRAG";
 
 // fix: when Marquee selection is happening or any other operation is happening, I do not want Block handle to be rendered
+// fix: when it reaches a non-text node like divider, there's an error
+// fix: the blue highlight needs to be removed when this starts
+// fix: i feel like the ::after of Multi selection should have pointer events none
 
 const EditorMarqueeSelection_Plugin = new Plugin({
   view(view) {

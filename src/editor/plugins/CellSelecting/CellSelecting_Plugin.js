@@ -320,7 +320,7 @@ const CellSelecting_Plugin = new Plugin({
         }
 
         if (isCellSelecting) {
-          console.log("SELECTING!!!!!!!!!!"); // fix
+          // console.log("SELECTING!!!!!!!!!!"); // fix
 
           const headPos = view.posAtDOM(cellDOM) - 1;
 

@@ -10,14 +10,18 @@ import { FixTable_Plugin } from "./FixTable/FixTable_Plugin";
 import SlashCommand_Plugin from "./SlashCommand/SlashCommand_Plugin";
 import ToolbarMenu_Plugin from "./ToolbarMenu/ToolbarMenu_Plugin";
 import CellSelecting_Plugin from "./CellSelecting/CellSelecting_Plugin";
-import { tr_plugin } from "./transactions_FILE";
 import TableResizing_Plugin from "./TableResizing/TableResizing_Plugin";
 import TableReordering_Plugin from "./TableReordering/TableReordering_Plugin";
+
+import trackMouseStatePlugin from "./trackMouseState/trackMouseStatePlugin";
+import handleSelectionPlugin from "./handleSelection/handleSelectionPlugin";
 
 export const Plugins = Extension.create({
   addProseMirrorPlugins() {
     return [
-      tr_plugin,
+      trackMouseStatePlugin(this.editor),
+      handleSelectionPlugin(this.editor),
+
       FixTable_Plugin, // has appendTransaction, put it at the bottom
       TrailingNode_Plugin, // has appendTransaction, put it at the top
       BlockNativeEvents_Plugin,

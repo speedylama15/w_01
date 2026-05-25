@@ -152,7 +152,7 @@ export const TableReordering_Plugin = new Plugin({
     },
 
     apply(tr, value) {
-      console.log("apply"); // fix
+      // console.log("apply"); // fix
 
       const hollowDecs = tr.getMeta(HOLLOW_CELLS);
       const targetDecs = tr.getMeta(TARGET_CELLS);

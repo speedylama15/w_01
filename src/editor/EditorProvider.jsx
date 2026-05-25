@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useEditor, EditorContext } from "@tiptap/react";
+import { TextSelection } from "@tiptap/pm/state";
 
 import Text from "@tiptap/extension-text";
 import Document from "./nodes/Document/Document";
@@ -39,6 +40,7 @@ import Link from "@tiptap/extension-link";
 // functionality
 import UniqueID from "@tiptap/extension-unique-id";
 import HardBreak from "@tiptap/extension-hard-break";
+import handleTransactionExtension from "./plugins/handleTransaction/handleTransactionExtension";
 // functionality
 
 // shortcuts
@@ -53,8 +55,6 @@ import { Plugins } from "./plugins/Plugins";
 
 import { historyManager } from "../managers/HistoryManager";
 import { keyManager } from "../managers/KeyManager";
-
-import { tr_extension } from "./plugins/transactions_FILE";
 
 import "./css/Editor.css";
 import "./css/Block.css";
@@ -81,6 +81,10 @@ const EditorProvider = ({ children }) => {
   const prevSelection = useRef(null);
 
   const editor = useEditor({
+    // fix: after deleting the data in local storage, I got an error...
+    // fix: may have to map the selection
+    // fix: history needs to ignore certain doc changing tr especially ones with composition that is greater than 0
+    // todo: make a list of conditions that History should ignore
     onTransaction(props) {
       const { editor, transaction, appendedTransactions } = props;
       const { selection } = editor.state;
@@ -257,12 +261,11 @@ const EditorProvider = ({ children }) => {
           Audio.name,
           Video.name,
           Divider.name,
-
           Table.name,
         ],
       }),
 
-      tr_extension,
+      handleTransactionExtension,
 
       // review: plugin
       Plugins,
