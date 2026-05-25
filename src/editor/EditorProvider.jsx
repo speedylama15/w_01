@@ -40,7 +40,7 @@ import Link from "@tiptap/extension-link";
 // functionality
 import UniqueID from "@tiptap/extension-unique-id";
 import HardBreak from "@tiptap/extension-hard-break";
-import handleTransactionExtension from "./plugins/handleTransaction/handleTransactionExtension";
+import { HandleTransaction, MyPlugins } from "./extension";
 // functionality
 
 // shortcuts
@@ -50,8 +50,6 @@ import ArrowDown from "./keys/Arrows/ArrowDown";
 import ArrowRight from "./keys/Arrows/ArrowRight";
 import ArrowLeft from "./keys/Arrows/ArrowLeft";
 // shortcuts
-
-import { Plugins } from "./plugins/Plugins";
 
 import { historyManager } from "../managers/HistoryManager";
 import { keyManager } from "../managers/KeyManager";
@@ -69,13 +67,13 @@ import "./css/Audio.css";
 import "./css/Video.css";
 import "./css/Table.css";
 import "./css/CellSelecting.css";
-import "./plugins/TableResizing/TableResizing.css";
-import "./plugins/TableReordering/TableReordering.css";
-import "./plugins/SlashCommand/SlashMenu.css";
-import "./plugins/ToolbarMenu/ToolbarMenu.css";
+import "./plugin/placeholder/placeholder.css";
+import "./plugin/TableResizing/TableResizing.css";
+import "./plugin/TableReordering/TableReordering.css";
+import "./plugin/SlashCommand/SlashMenu.css";
+import "./plugin/ToolbarMenu/ToolbarMenu.css";
 
-import "./plugins/Placeholder/Placeholder_Plugin.css";
-import "./selections/MultiBlockSelection.css";
+import "./selection/MultiSelection.css";
 
 const EditorProvider = ({ children }) => {
   const prevSelection = useRef(null);
@@ -265,10 +263,8 @@ const EditorProvider = ({ children }) => {
         ],
       }),
 
-      handleTransactionExtension,
-
-      // review: plugin
-      Plugins,
+      HandleTransaction,
+      MyPlugins,
     ],
 
     editorProps: {

@@ -1,7 +1,7 @@
 import { Extension } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 import { CellSelection } from "prosemirror-tables";
-import { MultiBlockSelection } from "../../selections/MultiBlockSelection";
+import MultiSelection from "../../selection/MultiSelection";
 
 import {
   getNodeByContentType,
@@ -108,7 +108,7 @@ const ArrowDown = Extension.create({
               }
 
               if (!nextBlock.isTextblock) {
-                const sel = MultiBlockSelection.create(
+                const sel = MultiSelection.create(
                   tr.doc,
                   nextBlockBefore,
                   nextBlockAfter,
@@ -155,7 +155,7 @@ const ArrowDown = Extension.create({
             }
 
             if (!nextNode.isTextblock) {
-              const sel = MultiBlockSelection.create(
+              const sel = MultiSelection.create(
                 tr.doc,
                 nextNodeBefore,
                 nextNodeAfter,
@@ -176,7 +176,7 @@ const ArrowDown = Extension.create({
           //
         }
 
-        if (selection instanceof MultiBlockSelection) {
+        if (selection instanceof MultiSelection) {
           //
         }
 

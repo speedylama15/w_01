@@ -1,0 +1,49 @@
+.content-paragraph > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.content-bulletList > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.content-numberedList > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.content-checklist > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.content-heading1 > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.content-heading2 > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.content-heading3 > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.content-blockquote > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.empty-node-message p:before {
+  position: absolute;
+  color: #9ea0a8;
+  font-weight: 400;
+  width: max-content;
+  pointer-events: none;
+}
+
+.content-paragraph > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Paragraph";
+}
+
+.empty-node-message p:before {
+  content: "Empty node message here" !important;
+}
+
+.content-bulletList > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.content-numberedList > *:has(.ProseMirror-trailingBreak:only-child)::before,
+.content-checklist > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "List";
+}
+
+.content-blockquote > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Quote";
+}
+
+.content-heading1 > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Heading 1";
+  /* fix: need to use the corresponding font weight */
+  font-weight: 900;
+}
+
+.content-heading2 > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Heading 2";
+  font-weight: 900;
+}
+
+.content-heading3 > *:has(.ProseMirror-trailingBreak:only-child)::before {
+  content: "Heading 3";
+  font-weight: 900;
+}

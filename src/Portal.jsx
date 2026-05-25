@@ -1,15 +1,15 @@
-import BlockHandle from "./editor/plugins/BlockHandle/components/BlockHandle/BlockHandle.jsx";
-import BlockHandleDropdown from "./editor/plugins/BlockHandle/components/BlockHandleDropdown/BlockHandleDropdown.jsx";
-import EditorMarqueeSelection from "./editor/plugins/EditorMarqueeSelection/components/EditorMarqueeSelection.jsx";
+import BlockHandle from "./editor/plugin/BlockHandle/components/BlockHandle/BlockHandle.jsx";
+import BlockHandleDropdown from "./editor/plugin/BlockHandle/components/BlockHandleDropdown/BlockHandleDropdown.jsx";
+import EditorMarqueeSelection from "./editor/plugin/EditorMarqueeSelection/components/EditorMarqueeSelection.jsx";
 
 const Portal = () => {
   return (
     <div className="portal">
-      <BlockHandle />
+      {/* <BlockHandle />
 
       <BlockHandleDropdown />
 
-      <EditorMarqueeSelection />
+      <EditorMarqueeSelection /> */}
     </div>
   );
 };

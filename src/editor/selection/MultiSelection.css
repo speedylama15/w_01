@@ -1,0 +1,22 @@
+.multi-selection {
+  position: relative;
+}
+
+.multi-selection::after {
+  /* fix: render differently based on the nodes */
+  /* for example, on a table, I want it to appear like a border */
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  background-color: #9bbbffa2 !important;
+  width: 100%;
+  height: 100%;
+  border-radius: 7px;
+  pointer-events: none;
+}
+
+.multi-selection *::selection {
+  background-color: transparent;
+}

@@ -3,7 +3,7 @@ import { Slice, Fragment } from "prosemirror-model";
 import { ReplaceAroundStep, ReplaceStep } from "@tiptap/pm/transform";
 import { Table } from "@tiptap/extension-table";
 import { TextSelection } from "@tiptap/pm/state";
-import { MultiBlockSelection } from "../selections/MultiBlockSelection";
+import MultiSelection from "../selection/MultiSelection";
 
 import {
   getNearestNode,
@@ -65,13 +65,10 @@ export const KeyboardShortcuts = Extension.create({
 
         console.log("backspace");
 
-        tr.setMeta("pressedKey", "backspace"); // fix
-
         if (selection instanceof TextSelection) {
           // single
           if (from === to) {
             if ($anchor.parentOffset !== 0) {
-              dispatch(tr); // fix
               return false;
             }
 
@@ -102,7 +99,6 @@ export const KeyboardShortcuts = Extension.create({
 
             // let the default behavior happen
             if (isCellNode(node)) {
-              dispatch(tr); // fix
               return false;
             }
 
@@ -143,7 +139,7 @@ export const KeyboardShortcuts = Extension.create({
               const prev_aft = node_bef;
 
               tr.setSelection(
-                MultiBlockSelection.create(tr.doc, prev_bef, prev_aft),
+                MultiSelection.create(tr.doc, prev_bef, prev_aft),
               );
 
               dispatch(tr);
@@ -151,7 +147,6 @@ export const KeyboardShortcuts = Extension.create({
               return true;
             }
 
-            dispatch(tr); // fix
             return false;
           }
 
@@ -275,7 +270,7 @@ export const KeyboardShortcuts = Extension.create({
                   return true;
                 } else {
                   tr.setSelection(
-                    MultiBlockSelection.create(
+                    MultiSelection.create(
                       tr.doc,
                       tableAfter,
                       tableAfter + nodeAfter.nodeSize,
@@ -342,7 +337,7 @@ export const KeyboardShortcuts = Extension.create({
           }
         }
 
-        if (selection instanceof MultiBlockSelection) return true;
+        if (selection instanceof MultiSelection) return true;
 
         return false;
       },
@@ -440,7 +435,7 @@ export const KeyboardShortcuts = Extension.create({
           }
         }
 
-        if (selection instanceof MultiBlockSelection) {
+        if (selection instanceof MultiSelection) {
           selection.positions((position, i) => {
             const node = selection.blocks[i];
             const { before } = position;
@@ -547,7 +542,7 @@ export const KeyboardShortcuts = Extension.create({
           }
         }
 
-        if (selection instanceof MultiBlockSelection) {
+        if (selection instanceof MultiSelection) {
           selection.positions((position, i) => {
             const node = selection.blocks[i];
             const { before } = position;
@@ -568,7 +563,7 @@ export const KeyboardShortcuts = Extension.create({
         const { tr } = editor.state;
         const { dispatch } = editor.view;
 
-        const sel = MultiBlockSelection.create(tr.doc, 0, tr.doc.content.size);
+        const sel = MultiSelection.create(tr.doc, 0, tr.doc.content.size);
 
         tr.setSelection(sel);
         dispatch(tr);
