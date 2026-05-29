@@ -22,8 +22,8 @@ const trackActivity = () => {
 
         const newValue = value;
 
-        if (mouseState) newValue.mouseState = mouseState;
-        if (operation) newValue.operation = operation;
+        if (mouseState) newValue.mouseState = mouseState.mouseState;
+        if (operation) newValue.operation = operation.operation;
 
         return newValue;
       },
@@ -46,7 +46,7 @@ const trackActivity = () => {
         const { tr } = view.state;
         const { dispatch } = view;
 
-        tr.setMeta("trackMouseState", DOWN);
+        tr.setMeta("trackMouseState", { mouseState: DOWN });
 
         dispatch(tr);
       };
@@ -55,7 +55,7 @@ const trackActivity = () => {
         const { tr } = view.state;
         const { dispatch } = view;
 
-        tr.setMeta("trackMouseState", IDLE);
+        tr.setMeta("trackMouseState", { mouseState: IDLE });
 
         dispatch(tr);
       };

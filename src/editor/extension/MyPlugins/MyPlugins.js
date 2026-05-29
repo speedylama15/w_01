@@ -4,9 +4,11 @@ import {
   disableNativeEvents,
   trackActivity,
   handleSelection,
-  renderMultiSelection,
   placeholder,
   trailingNode,
+  marqueeSelection,
+  blockHandle,
+  slashCommand,
 } from "../../plugin";
 
 const MyPlugins = Extension.create({
@@ -17,9 +19,11 @@ const MyPlugins = Extension.create({
       disableNativeEvents,
       trackActivity(),
       handleSelection(),
-      renderMultiSelection,
       placeholder,
       trailingNode,
+      marqueeSelection,
+      blockHandle(),
+      slashCommand(this.editor),
     ];
   },
 });

@@ -6,7 +6,7 @@ import MultiSelection from "../../selection/MultiSelection";
 
 import dragAndDropStore from "./dragAndDropStore";
 
-import { isLeftClick } from "../../../utils";
+import { isPureLeftClick } from "../../../utils";
 import { Fragment } from "@tiptap/pm/model";
 
 // todo: need a util method for indentLevel (clamping from 0 to 12)
@@ -71,7 +71,7 @@ const DragAndDrop_Plugin = (editor) => {
       let insertPos = null; // idea: maybe I should change this to a state?
 
       const handleMouseDown = (e) => {
-        if (!isLeftClick(e)) return;
+        if (!isPureLeftClick(e)) return;
 
         // distance estimation is not needed
         // radial menu -> drag and drop

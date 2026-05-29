@@ -2,7 +2,7 @@ import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { CellSelection } from "prosemirror-tables";
 import { DecorationSet, Decoration } from "@tiptap/pm/view";
 
-import { isInclusive, isLeftClick } from "../../../utils";
+import { isInclusive, isPureLeftClick } from "../../../utils";
 import { getNearestNode, isCellNode } from "../../utils";
 
 // todo: left click, disallow scrolling, only 1 operation, chain the events
@@ -266,7 +266,7 @@ const CellSelecting_Plugin = new Plugin({
 
       // handle pure left click only
       // todo: therefore, because of this, I cannot handle the SHIFT logic here
-      if (!isLeftClick(e)) return;
+      if (!isPureLeftClick(e)) return;
 
       const cellDOM = traverseToCellDOM(e, view);
       if (!cellDOM) return;

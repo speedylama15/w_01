@@ -6,15 +6,18 @@
 }
 
 .empty-slash {
-  background-color: #00d0ff;
+  background-color: #a9afc7;
 }
 
 .empty-slash::after {
-  content: "Search for Nodes!!!";
-  color: rgba(0, 0, 255, 0.391);
-  font-weight: 700;
+  content: "Search for nodes";
+  color: #878794;
 }
 
 .non-empty-slash {
+  background-color: #ff6421;
+}
+
+.active {
   background-color: #ff6421;
 }

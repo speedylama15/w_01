@@ -1,9 +1,9 @@
 import { useStore } from "zustand";
 
-import editorMarqueeSelectionStore from "../stores/editorMarqueeSelectionStore";
+import marqueeSelectionStore from "./marqueeSelectionStore";
 
-const EditorMarqueeSelection = () => {
-  const { startCoords, currentCoords } = useStore(editorMarqueeSelectionStore);
+const MarqueeSelection = () => {
+  const { startCoords, currentCoords } = useStore(marqueeSelectionStore);
 
   if (startCoords && currentCoords) {
     const top = Math.min(startCoords.pageY, currentCoords.pageY);
@@ -29,4 +29,4 @@ const EditorMarqueeSelection = () => {
   }
 };
 
-export default EditorMarqueeSelection;
+export default MarqueeSelection;

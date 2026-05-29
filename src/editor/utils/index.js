@@ -12,3 +12,5 @@ export { default as getFirstNodeInRangedSelection } from "./getFirstNodeInRanged
 export { default as getLastNodeInRangedSelection } from "./getLastNodeInRangedSelection";
 export { default as getBlocksData } from "./getBlocksData";
 export { default as fixTable } from "./fixTable";
+export { default as verticalAutoScroll } from "./verticalAutoScroll";
+export { default as getPosAtDOM } from "./getPosAtDOM";

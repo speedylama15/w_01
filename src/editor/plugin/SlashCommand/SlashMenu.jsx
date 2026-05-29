@@ -1,61 +1,84 @@
 import { DecorationSet } from "@tiptap/pm/view";
 import { useEffect, useRef, memo } from "react";
 
-// todo: I forgot what the library is, but there is one that allows me find entries with similarities as an option?
-// todo: sharpen this...
-const arr = [
-  { text: "paragraph", content: "Paragraph" },
-  { text: "heading1", content: "Heading 1" },
-  { text: "heading2", content: "Heading 2" },
-  { text: "heading3", content: "Heading 3" },
-  // idea: I can make text aka the search text, an array like ["bulletList", "todoList"]
-  { text: "bulletList", content: "Bullet List" },
-  { text: "numberedList", content: "Numbered List" },
-  { text: "checklist", content: "Checklist" },
-];
+// todo: inside here, set up a window level pointerdown for closing the window
+// todo: add pointerdown for each button -> add e.stopPropagation
 
-// todo: add arrow navigation...
-// todo: add button functionality
-const SlashMenu = memo(({ editor, text, to }) => {
-  const noResultPosRef = useRef(null);
+const SlashMenu = memo(({ editor, arr, text, index, to }) => {
+  const nullPosRef = useRef(null);
+  const menuRef = useRef(null);
 
-  const filtered = arr.filter((data) => {
+  const result = arr.filter((data) => {
     return data.text.toLowerCase().includes(text.toLowerCase());
   });
 
   useEffect(() => {
-    if (filtered.length === 0) {
-      if (noResultPosRef.current === null) {
-        noResultPosRef.current = to;
+    if (!editor) return;
+
+    const down = (e) => {
+      const { tr } = editor.view.state;
+      const { dispatch } = editor.view;
+
+      if (!menuRef.current) return;
+
+      if (!menuRef.current.contains(e.target)) {
+        dispatch(
+          tr.setMeta("slashCommand", {
+            isSlashActive: false,
+            from: null,
+            to: null,
+            set: DecorationSet.empty,
+          }),
+        );
       }
+    };
 
-      // fix: +2 or +3?
-      if (to === noResultPosRef.current + 3) {
-        noResultPosRef.current = null;
+    // fix: need to think if I should add this to the window or document
+    // events like this where it does one thing -> should it be at the window or document?
+    document.addEventListener("pointerdown", down);
 
-        const { tr } = editor.view.state;
-        const { dispatch } = editor.view;
+    return () => {
+      document.removeEventListener("pointerdown", down);
+    };
+  }, [editor]);
 
+  useEffect(() => {
+    if (result.length === 0 && nullPosRef.current === null) {
+      nullPosRef.current = to;
+    }
+
+    if (result.length > 0) {
+      nullPosRef.current = null;
+    }
+
+    if (nullPosRef.current + 2 === to) {
+      const { tr } = editor.view.state;
+      const { dispatch } = editor.view;
+
+      dispatch(
         tr.setMeta("slashCommand", {
           isSlashActive: false,
           from: null,
           to: null,
           set: DecorationSet.empty,
-        });
-
-        dispatch(tr);
-
-        return;
-      }
+        }),
+      );
     }
-  }, [editor, to, filtered.length]);
+  }, [editor, to, result.length]);
 
   return (
-    <>
-      {filtered.map((data, i) => {
-        return <button key={`data-${i}`}>{data.content}</button>;
+    <div ref={menuRef}>
+      {result.map((data, i) => {
+        return (
+          <button
+            className={index === i ? "active" : "inactive"}
+            key={`data-${i}`}
+          >
+            {data.content}
+          </button>
+        );
       })}
-    </>
+    </div>
   );
 });
 

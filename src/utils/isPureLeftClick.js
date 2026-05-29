@@ -1,4 +1,4 @@
-const isLeftClick = (e) => {
+const isPureLeftClick = (e) => {
   return (
     e.button === 0 &&
     e.buttons === 1 &&
@@ -9,4 +9,4 @@ const isLeftClick = (e) => {
   );
 };
 
-export default isLeftClick;
+export default isPureLeftClick;

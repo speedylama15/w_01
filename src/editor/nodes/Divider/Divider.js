@@ -23,6 +23,7 @@ const Divider = Node.create({
       {
         find: /^(?:---|—-|___\s|\*\*\*\s)$/,
         handler: ({ state }) => {
+          // fix: at least allow the user to type 3 -s
           const { selection, tr } = state;
           const { $from } = selection;
 

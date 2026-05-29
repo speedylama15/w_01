@@ -1,15 +1,21 @@
-import BlockHandle from "./editor/plugin/BlockHandle/components/BlockHandle/BlockHandle.jsx";
-import BlockHandleDropdown from "./editor/plugin/BlockHandle/components/BlockHandleDropdown/BlockHandleDropdown.jsx";
-import EditorMarqueeSelection from "./editor/plugin/EditorMarqueeSelection/components/EditorMarqueeSelection.jsx";
+import { useStore } from "zustand";
+
+import blockHandleStore from "./editor/plugin/blockHandle/blockHandleStore.js";
+
+import BlockHandle from "./editor/plugin/blockHandle/components/BlockHandle/BlockHandle.jsx";
+import BlockHandleDropdown from "./editor/plugin/blockHandle/components/BlockHandleDropdown/BlockHandleDropdown.jsx";
+import MarqueeSelection from "./editor/plugin/marqueeSelection/MarqueeSelection.jsx";
 
 const Portal = () => {
+  const { showDropdown } = useStore(blockHandleStore);
+
   return (
     <div className="portal">
-      {/* <BlockHandle />
+      <BlockHandle />
 
-      <BlockHandleDropdown />
+      {showDropdown && <BlockHandleDropdown />}
 
-      <EditorMarqueeSelection /> */}
+      <MarqueeSelection />
     </div>
   );
 };

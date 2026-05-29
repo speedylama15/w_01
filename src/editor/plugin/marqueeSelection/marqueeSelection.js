@@ -1,27 +1,24 @@
 import { Plugin, TextSelection } from "@tiptap/pm/state";
+import MultiSelection from "../../selection/MultiSelection";
 
-import editorMarqueeSelectionStore from "../stores/editorMarqueeSelectionStore";
+import { trackActivityKey } from "../trackActivity/trackActivity";
 
-import MultiSelection from "../../../selection/MultiSelection";
+import marqueeSelectionStore from "./marqueeSelectionStore";
 
-import { getIsDragging, isLeftClick, clamp } from "../../../../utils";
-import { getBlocksData } from "../../../utils";
+import { getIsDragging, isPureLeftClick, clamp } from "../../../utils";
+import { getBlocksData, verticalAutoScroll } from "../../utils";
 
 const IDLE = "IDLE";
 const DOWN = "DOWN";
 const DRAG = "DRAG";
+const MARQUEE_SELECTION_CLICK = "MARQUEE_SELECTION_CLICK";
+const MARQUEE_SELECTION_DRAG = "MARQUEE_SELECTION_DRAG";
 
-// fix: when Marquee selection is happening or any other operation is happening, I do not want Block handle to be rendered
-// fix: when it reaches a non-text node like divider, there's an error
-// fix: the blue highlight needs to be removed when this starts
-// fix: i feel like the ::after of Multi selection should have pointer events none
-
-const EditorMarqueeSelection_Plugin = new Plugin({
+const marqueeSelection = new Plugin({
   view(view) {
-    let mouseState = IDLE;
     let rafID = null;
     let tree = null;
-    let doms = null;
+    let nodes = null;
     let initScrollHeight = null;
 
     const loop = () => {
@@ -29,41 +26,13 @@ const EditorMarqueeSelection_Plugin = new Plugin({
       const { dispatch } = view;
 
       const { startCoords, currentCoords, setCurrentCoords } =
-        editorMarqueeSelectionStore.getState();
-
+        marqueeSelectionStore.getState();
       const { clientY } = currentCoords;
 
-      const MIN_SPEED = 3;
-      const MAX_SPEED = 50;
-      const UPPER_THRESHOLD = 30;
-      const LOWER_THRESHOLD = window.innerHeight - 30;
+      verticalAutoScroll(clientY);
 
-      if (clientY <= 30) {
-        const gap = UPPER_THRESHOLD - clientY;
-        const t = gap / MAX_SPEED;
-        const speed = Math.min(
-          MIN_SPEED + t * (MAX_SPEED - MIN_SPEED),
-          MAX_SPEED,
-        );
-
-        window.scrollBy(0, -speed);
-      }
-
-      if (window.innerHeight - clientY <= 30) {
-        const gap = clientY - LOWER_THRESHOLD;
-        const t = gap / MAX_SPEED;
-        const speed = Math.min(
-          MIN_SPEED + t * (MAX_SPEED - MIN_SPEED),
-          MAX_SPEED,
-        );
-
-        window.scrollBy(0, speed);
-      }
-
-      const y = clientY + window.scrollY;
-      const clampedY = clamp(y, 0, initScrollHeight);
-
-      // calc the updated scrollY here
+      // 0 to the full height of an element (the window)
+      const clampedY = clamp(clientY + window.scrollY, 0, initScrollHeight);
       setCurrentCoords({
         ...currentCoords,
         pageY: clampedY,
@@ -83,30 +52,18 @@ const EditorMarqueeSelection_Plugin = new Plugin({
       }
 
       if (indexes.length === 1) {
-        const anchor = indexes[0];
+        const { before, after } = nodes[indexes[0]];
 
-        const before = view.posAtDOM(doms[anchor].dom) - 1;
-        const node = view.state.doc.nodeAt(before);
-
-        const selection = MultiSelection.create(
-          tr.doc,
-          before,
-          before + node.nodeSize,
-        );
+        const selection = MultiSelection.create(tr.doc, before, after);
 
         dispatch(tr.setSelection(selection));
       }
 
       if (indexes.length > 1) {
-        const from = indexes[0];
-        const to = indexes[indexes.length - 1];
+        const { before: from } = nodes[indexes[0]];
+        const { after: to } = nodes[indexes[indexes.length - 1]];
 
-        const fromBefore = view.posAtDOM(doms[from].dom) - 1;
-        const toBefore = view.posAtDOM(doms[to].dom) - 1;
-        const toNode = view.state.doc.nodeAt(toBefore);
-        const toAfter = toBefore + toNode.nodeSize;
-
-        const selection = MultiSelection.create(tr.doc, fromBefore, toAfter);
+        const selection = MultiSelection.create(tr.doc, from, to);
 
         dispatch(tr.setSelection(selection));
       }
@@ -115,31 +72,39 @@ const EditorMarqueeSelection_Plugin = new Plugin({
     };
 
     const handleMouseDown = (e) => {
-      // I can't add e.preventDefault here because this mousedown is added to the document
-      // and not to some local component like block handle
-      if (!isLeftClick(e)) return;
+      // idea
+      if (!isPureLeftClick(e)) return;
+      // idea
+      const { operation } = trackActivityKey.getState(view.state);
+      if (operation) return;
 
       const { tr } = view.state;
-
-      mouseState = DOWN;
-      // need this to lock the y coord and to prevent the Box from stretching the page
-      initScrollHeight = document.documentElement.scrollHeight;
+      const { dispatch } = view;
 
       const data = getBlocksData(tr.doc);
       tree = data.tree;
-      doms = data.doms;
+      nodes = data.nodes;
+      // scrollHeight gives me full height of an element including the non-visible area
+      initScrollHeight = document.documentElement.scrollHeight;
 
       const { setStartCoords, setCurrentCoords } =
-        editorMarqueeSelectionStore.getState();
+        marqueeSelectionStore.getState();
 
+      // review: identify the container of the editor, that's where the scrolling will occur. Right now it's the window
       const contentDOM = document.querySelector(".editor-content");
       const sectionDOM = document.querySelector(".editor-section");
 
-      // todo: I need add an editor container for auto scrolling
       if (!contentDOM?.contains(e.target) && sectionDOM?.contains(e.target)) {
+        // met the condition to start marquee selection
         e.preventDefault();
 
-        view.dom.blur(); // blur it out and set focus on up
+        // idea: set the operation
+        dispatch(
+          tr.setMeta("trackOperation", { operation: MARQUEE_SELECTION_CLICK }),
+        );
+
+        // blur the editor
+        view.dom.blur();
 
         const startCoords = {
           clientX: e.clientX,
@@ -151,7 +116,17 @@ const EditorMarqueeSelection_Plugin = new Plugin({
         setStartCoords(startCoords);
         setCurrentCoords(startCoords);
 
+        // review: suprisingly I can get the updated state immediately
+        // console.log("DOWN", trackActivityKey.getState(view.state)); // fix
+
         const move = (e) => {
+          const { tr } = view.state;
+          const { dispatch } = view;
+
+          // console.log("MOVE", trackActivityKey.getState(view.state)); // fix
+
+          const { operation } = trackActivityKey.getState(view.state);
+
           const currentCoords = {
             clientX: e.clientX,
             clientY: e.clientY,
@@ -161,10 +136,7 @@ const EditorMarqueeSelection_Plugin = new Plugin({
 
           setCurrentCoords(currentCoords);
 
-          if (mouseState === DOWN) {
-            const { startCoords, currentCoords } =
-              editorMarqueeSelectionStore.getState();
-
+          if (operation === MARQUEE_SELECTION_CLICK) {
             const isDragging = getIsDragging(
               startCoords,
               currentCoords,
@@ -173,11 +145,17 @@ const EditorMarqueeSelection_Plugin = new Plugin({
               (obj) => obj.pageY,
             );
 
-            if (isDragging) mouseState = DRAG;
+            if (isDragging) {
+              dispatch(
+                tr.setMeta("trackOperation", {
+                  operation: MARQUEE_SELECTION_DRAG,
+                }),
+              );
+            }
           }
 
-          if (mouseState === DRAG) {
-            if (!rafID) rafID = requestAnimationFrame(loop);
+          if (operation === MARQUEE_SELECTION_DRAG && !rafID) {
+            rafID = requestAnimationFrame(loop);
           }
         };
 
@@ -185,10 +163,12 @@ const EditorMarqueeSelection_Plugin = new Plugin({
           const { tr } = view.state;
           const { dispatch } = view;
 
-          const { setStartCoords, setCurrentCoords } =
-            editorMarqueeSelectionStore.getState();
+          const { operation } = trackActivityKey.getState(view.state);
 
-          if (mouseState === DOWN) {
+          const { setStartCoords, setCurrentCoords } =
+            marqueeSelectionStore.getState();
+
+          if (operation === MARQUEE_SELECTION_CLICK) {
             const result = tree.search(
               e.pageX - Infinity,
               e.pageY - 3,
@@ -199,14 +179,10 @@ const EditorMarqueeSelection_Plugin = new Plugin({
             if (result.length > 0) {
               // set selection
               const index = result[0];
-              const dom = doms[index].dom;
-
-              const before = view.posAtDOM(dom) - 1;
+              const { before } = nodes[index];
               const $before = tr.doc.resolve(before);
 
-              tr.setSelection(TextSelection.near($before));
-
-              dispatch(tr);
+              dispatch(tr.setSelection(TextSelection.near($before)));
             }
           }
 
@@ -214,13 +190,12 @@ const EditorMarqueeSelection_Plugin = new Plugin({
 
           if (rafID) cancelAnimationFrame(rafID);
           rafID = null;
-          mouseState = IDLE;
           tree = null;
-          doms = null;
+          nodes = null;
           initScrollHeight = null;
-
           setStartCoords(null);
           setCurrentCoords(null);
+          dispatch(tr.setMeta("trackOperation", { operation: null }));
 
           document.removeEventListener("mousemove", move);
           document.removeEventListener("mouseup", up);
@@ -241,4 +216,4 @@ const EditorMarqueeSelection_Plugin = new Plugin({
   },
 });
 
-export default EditorMarqueeSelection_Plugin;
+export default marqueeSelection;

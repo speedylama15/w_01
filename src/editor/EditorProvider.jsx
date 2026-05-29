@@ -70,10 +70,10 @@ import "./css/CellSelecting.css";
 import "./plugin/placeholder/placeholder.css";
 import "./plugin/TableResizing/TableResizing.css";
 import "./plugin/TableReordering/TableReordering.css";
-import "./plugin/SlashCommand/SlashMenu.css";
+import "./plugin/slashCommand/SlashMenu.css";
 import "./plugin/ToolbarMenu/ToolbarMenu.css";
 
-import "./selection/MultiSelection.css";
+import "./css/selection/selection.css";
 
 const EditorProvider = ({ children }) => {
   const prevSelection = useRef(null);
@@ -263,13 +263,15 @@ const EditorProvider = ({ children }) => {
         ],
       }),
 
-      HandleTransaction,
+      // fix: enable this later
+      // HandleTransaction,
       MyPlugins,
     ],
 
     editorProps: {
       attributes: {
         /* review: solution */
+        // I forgot what this was for...
         style: "overflow-wrap: anywhere;",
       },
     },
@@ -279,7 +281,7 @@ const EditorProvider = ({ children }) => {
     return editor;
   }, [editor]);
 
-  console.log("EditorProvider"); // fix
+  console.log("EditorProvider"); // fix: checking how often EditorProvider gets re-rendered
 
   useEffect(() => {
     if (editor) {
