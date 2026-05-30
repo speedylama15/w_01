@@ -99,6 +99,14 @@ const Navbar = () => {
     });
   };
 
+  const setOperationToDragAndDrop = () => {
+    const { tr } = editor.view.state;
+    const { dispatch } = editor.view;
+
+    tr.setMeta("trackOperation", { operation: "DRAG_AND_DROP" });
+    dispatch(tr);
+  };
+
   return (
     <nav className="navbar">
       <h1>w_01</h1>
@@ -112,6 +120,8 @@ const Navbar = () => {
         <button onClick={handleToggleColumnClick}>Toggle Column</button>
 
         <button onClick={handleToggleRowClick}>Toggle Row</button>
+
+        <button onClick={setOperationToDragAndDrop}>Drag and Drop</button>
 
         <p style={{ userSelect: "none" }}>
           This is a paragraph and I am testing if user select works or not

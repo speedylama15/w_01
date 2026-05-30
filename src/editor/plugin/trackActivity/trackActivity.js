@@ -41,10 +41,26 @@ const trackActivity = () => {
       return true;
     },
 
+    props: {
+      attributes(state) {
+        const { mouseState, operation } = trackActivityKey.getState(state);
+
+        if (mouseState === "IDLE" && operation === "DRAG_AND_DROP") {
+          return { class: "drag-and-drop-hand" };
+        }
+
+        if (mouseState === "DOWN" && operation === "DRAG_AND_DROP") {
+          return { class: "drag-and-drop-grab" };
+        }
+      },
+    },
+
     view(view) {
       const down = () => {
         const { tr } = view.state;
         const { dispatch } = view;
+
+        console.log("trackMouseState DOWN");
 
         tr.setMeta("trackMouseState", { mouseState: DOWN });
 
@@ -55,18 +71,20 @@ const trackActivity = () => {
         const { tr } = view.state;
         const { dispatch } = view;
 
+        console.log("trackMouseState UP");
+
         tr.setMeta("trackMouseState", { mouseState: IDLE });
 
         dispatch(tr);
       };
 
-      document.addEventListener("pointerdown", down);
-      document.addEventListener("pointerup", up);
+      window.addEventListener("pointerdown", down, { capture: true });
+      window.addEventListener("pointerup", up, { capture: true });
 
       return {
         destroy() {
-          document.removeEventListener("pointerdown", down);
-          document.removeEventListener("pointerup", up);
+          window.removeEventListener("pointerdown", down, { capture: true });
+          window.removeEventListener("pointerup", up, { capture: true });
         },
       };
     },

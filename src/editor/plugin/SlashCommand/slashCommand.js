@@ -38,7 +38,7 @@ const initState = {
   set: DecorationSet.empty,
 };
 
-export const slashCommandKey = new PluginKey("SlashCommand_Key");
+export const slashCommandKey = new PluginKey("slashCommandKey");
 
 const slashCommand = (editor) => {
   return new Plugin({

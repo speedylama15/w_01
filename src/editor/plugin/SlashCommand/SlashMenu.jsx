@@ -16,6 +16,9 @@ const SlashMenu = memo(({ editor, arr, text, index, to }) => {
     if (!editor) return;
 
     const down = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
       const { tr } = editor.view.state;
       const { dispatch } = editor.view;
 
@@ -33,12 +36,10 @@ const SlashMenu = memo(({ editor, arr, text, index, to }) => {
       }
     };
 
-    // fix: need to think if I should add this to the window or document
-    // events like this where it does one thing -> should it be at the window or document?
-    document.addEventListener("pointerdown", down);
+    document.addEventListener("pointerdown", down, { capture: true });
 
     return () => {
-      document.removeEventListener("pointerdown", down);
+      document.removeEventListener("pointerdown", down, { capture: true });
     };
   }, [editor]);
 

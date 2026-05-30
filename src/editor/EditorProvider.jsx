@@ -71,7 +71,7 @@ import "./plugin/placeholder/placeholder.css";
 import "./plugin/TableResizing/TableResizing.css";
 import "./plugin/TableReordering/TableReordering.css";
 import "./plugin/slashCommand/SlashMenu.css";
-import "./plugin/ToolbarMenu/ToolbarMenu.css";
+import "./plugin/toolbarMenu/ToolbarMenu.css";
 
 import "./css/selection/selection.css";
 

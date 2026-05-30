@@ -7,13 +7,13 @@ import blockHandleStore from "../../blockHandleStore";
 import { removeInertFromNonPortal } from "../../../../../utils";
 import { DOWN } from "../../../../../constants";
 
-import "./BlockHandleDropdown.css";
+import "./BlockHandleMenu.css";
 
 // todo: tooltip
 // todo: floating ui
 // todo: contextual menu
 
-const BlockHandleDropdown = () => {
+const BlockHandleMenu = () => {
   const editor = useCurrentEditor();
   const { rect, setIsLocked, setShowDropdown, hideHandle } =
     useStore(blockHandleStore);
@@ -22,9 +22,9 @@ const BlockHandleDropdown = () => {
 
   useEffect(() => {
     const down = (e) => {
-      console.log("WHY?");
       if (dropdownRef.current) {
         e.preventDefault();
+        e.stopPropagation();
 
         const { tr } = editor.view.state;
         const { dispatch } = editor.view;
@@ -50,13 +50,11 @@ const BlockHandleDropdown = () => {
       }
     };
 
-    // set capture to be true so that this pointerdown has the highest priority
-    // and this pointerdown is the only one that is listened to
     // fix: maybe I need to ensure that adding of an event occurs only once?
-    window.addEventListener("pointerdown", down, { capture: true });
+    document.addEventListener("pointerdown", down, { capture: true });
 
     return () => {
-      window.removeEventListener("pointerdown", down, {
+      document.removeEventListener("pointerdown", down, {
         capture: true,
       });
     };
@@ -64,7 +62,7 @@ const BlockHandleDropdown = () => {
 
   return (
     <div
-      className="block-handle-dropdown"
+      className="block-handle-menu"
       ref={dropdownRef}
       style={{
         position: "absolute",
@@ -91,4 +89,4 @@ const BlockHandleDropdown = () => {
   );
 };
 
-export default BlockHandleDropdown;
+export default BlockHandleMenu;

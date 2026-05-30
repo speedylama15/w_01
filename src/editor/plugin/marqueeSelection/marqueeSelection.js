@@ -71,10 +71,11 @@ const marqueeSelection = new Plugin({
       rafID = requestAnimationFrame(loop);
     };
 
-    const handleMouseDown = (e) => {
+    const down = (e) => {
       // idea
       if (!isPureLeftClick(e)) return;
       // idea
+
       const { operation } = trackActivityKey.getState(view.state);
       if (operation) return;
 
@@ -197,20 +198,20 @@ const marqueeSelection = new Plugin({
           setCurrentCoords(null);
           dispatch(tr.setMeta("trackOperation", { operation: null }));
 
-          document.removeEventListener("mousemove", move);
-          document.removeEventListener("mouseup", up);
+          document.removeEventListener("pointermove", move);
+          document.removeEventListener("pointerup", up);
         };
 
-        document.addEventListener("mousemove", move);
-        document.addEventListener("mouseup", up);
+        document.addEventListener("pointermove", move);
+        document.addEventListener("pointerup", up);
       }
     };
 
-    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("pointerdown", down);
 
     return {
       destroy() {
-        document.removeEventListener("mousedown", handleMouseDown);
+        document.removeEventListener("pointerdown", down);
       },
     };
   },

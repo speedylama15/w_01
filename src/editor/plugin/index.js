@@ -6,3 +6,4 @@ export { default as trailingNode } from "./trailingNode/trailingNode";
 export { default as marqueeSelection } from "./marqueeSelection/marqueeSelection";
 export { default as blockHandle } from "./blockHandle/blockHandle";
 export { default as slashCommand } from "./slashCommand/slashCommand";
+export { default as toolbarMenu } from "./toolbarMenu/toolbarMenu";

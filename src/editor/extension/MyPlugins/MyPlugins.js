@@ -9,6 +9,7 @@ import {
   marqueeSelection,
   blockHandle,
   slashCommand,
+  toolbarMenu,
 } from "../../plugin";
 
 const MyPlugins = Extension.create({
@@ -24,6 +25,7 @@ const MyPlugins = Extension.create({
       marqueeSelection,
       blockHandle(),
       slashCommand(this.editor),
+      toolbarMenu(this.editor),
     ];
   },
 });

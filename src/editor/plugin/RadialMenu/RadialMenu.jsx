@@ -40,7 +40,6 @@ const buttons = [
 
 // fix: rendering the menu can sometimes cause an overflow
 // fix: make it look better
-// idea: should I have the user hold the button down or should a simple click have the menu remain open?
 
 const RadialMenu = () => {
   const { isRadialMenuOpen, setIsRadialMenuOpen, radialMenuCoords } =

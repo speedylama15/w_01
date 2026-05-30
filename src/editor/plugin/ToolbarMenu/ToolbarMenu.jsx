@@ -1,11 +1,16 @@
-import React from "react";
+import { useEffect } from "react";
 
-// idea: I could just bring in editor and inspect the selection to either render this or not
+const ToolbarMenu = ({ editor }) => {
+  const down = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-const ToolbarMenu = () => {
+    console.log("BOLD");
+  };
+
   return (
     <>
-      <button>Bold</button>
+      <button onPointerDown={(e) => down(e)}>Bold</button>
 
       <button>Italic</button>
 
