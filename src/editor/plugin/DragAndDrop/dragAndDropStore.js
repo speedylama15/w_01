@@ -2,15 +2,27 @@ import { create } from "zustand";
 
 const dragAndDropStore = create((set) => {
   return {
-    operation: null, // fix
-    editorTree: null,
-    editorBlocks: null,
-    selectedChunkMap: null,
+    rafID: null,
+    tree: null,
+    nodes: null,
+    doms: null,
+    targetPos: null,
+    currentCoords: null,
 
-    setOperation: (operation) => set({ operation }), // fix
-    setEditorTree: (tree) => set({ editorTree: tree }),
-    setEditorBlocks: (blocks) => set({ editorBlocks: blocks }),
-    setSelectedChunkMap: (map) => set({ selectedChunkMap: map }),
+    setRafID: (id) => set({ rafID: id }),
+    setData: (data) => set(data),
+    setTargetPos: (pos) => set({ targetPos: pos }),
+    setCurrentCoords: (coords) => set({ currentCoords: coords }),
+
+    reset: () =>
+      set({
+        rafID: null,
+        tree: null,
+        nodes: null,
+        doms: null,
+        targetPos: null,
+        currentCoords: null,
+      }),
   };
 });
 

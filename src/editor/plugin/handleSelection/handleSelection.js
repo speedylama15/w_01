@@ -5,31 +5,31 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 const handleSelection = () => {
   return new Plugin({
     props: {
-      createSelectionBetween(view, $anchor, $head) {
-        if ($anchor.pos === $head.pos) return null;
+      // createSelectionBetween(view, $anchor, $head) {
+      //   if ($anchor.pos === $head.pos) return null;
 
-        // idea: isSelectingInCell, isCellSelecting
+      //   // idea: isSelectingInCell, isCellSelecting
 
-        const from = Math.min($anchor.pos, $head.pos);
-        const to = Math.max($anchor.pos, $head.pos);
+      //   const from = Math.min($anchor.pos, $head.pos);
+      //   const to = Math.max($anchor.pos, $head.pos);
 
-        let setMulti = false;
+      //   let setMulti = false;
 
-        // view.state.tr.doc? or view.state.doc?
-        view.state.doc.nodesBetween(from, to, (node) => {
-          if (node.attrs.nodeType === "block") {
-            if (!node.isTextblock) setMulti = true;
+      //   // view.state.tr.doc? or view.state.doc?
+      //   view.state.doc.nodesBetween(from, to, (node) => {
+      //     if (node.attrs.nodeType === "block") {
+      //       if (!node.isTextblock) setMulti = true;
 
-            return false;
-          }
-        });
+      //       return false;
+      //     }
+      //   });
 
-        if (setMulti) {
-          const multi = MultiSelection.create(view.state.doc, from, to);
+      //   if (setMulti) {
+      //     const multi = MultiSelection.create(view.state.doc, from, to);
 
-          return multi;
-        }
-      },
+      //     return multi;
+      //   }
+      // },
 
       decorations(state) {
         const { selection } = state;

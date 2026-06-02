@@ -264,7 +264,7 @@ const EditorProvider = ({ children }) => {
       }),
 
       // fix: enable this later
-      // HandleTransaction,
+      HandleTransaction,
       MyPlugins,
     ],
 

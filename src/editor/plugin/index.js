@@ -7,3 +7,5 @@ export { default as marqueeSelection } from "./marqueeSelection/marqueeSelection
 export { default as blockHandle } from "./blockHandle/blockHandle";
 export { default as slashCommand } from "./slashCommand/slashCommand";
 export { default as toolbarMenu } from "./toolbarMenu/toolbarMenu";
+export { default as dragAndDrop } from "./dragAndDrop/dragAndDrop";
+export { default as cellSelecting } from "./cellSelecting/cellSelecting";

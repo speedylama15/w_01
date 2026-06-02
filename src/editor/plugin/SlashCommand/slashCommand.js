@@ -280,7 +280,7 @@ const slashCommand = (editor) => {
       };
 
       window.addEventListener("scroll", scroll);
-      window.addEventListener("keydown", keydown, { capture: true });
+      window.addEventListener("keydown", keydown, { capture: true }); // do I have to place it on the window and set the capture?
 
       return {
         update(view, prevState) {

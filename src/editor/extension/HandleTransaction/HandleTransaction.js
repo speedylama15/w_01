@@ -4,6 +4,9 @@ const HandleTransaction = Extension.create({
   name: "handleTransaction",
 
   dispatchTransaction({ transaction, next }) {
+    if (transaction.docChanged)
+      console.log("dispatchTransaction", this.editor.$doc.size, transaction);
+
     try {
       transaction.steps.forEach((step, i) => {
         // review: each step has its corresponding doc

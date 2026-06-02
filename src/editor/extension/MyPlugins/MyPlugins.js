@@ -10,6 +10,8 @@ import {
   blockHandle,
   slashCommand,
   toolbarMenu,
+  dragAndDrop,
+  cellSelecting,
 } from "../../plugin";
 
 const MyPlugins = Extension.create({
@@ -26,6 +28,8 @@ const MyPlugins = Extension.create({
       blockHandle(),
       slashCommand(this.editor),
       toolbarMenu(this.editor),
+      dragAndDrop(this.editor),
+      cellSelecting,
     ];
   },
 });
