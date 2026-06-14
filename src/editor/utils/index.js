@@ -1,4 +1,4 @@
-export { default as deleteContentInRangedSelection } from "./deleteContentInRangedSelection";
+export { default as handleBadSelection } from "./handleBadSelection";
 export { default as isCellNode } from "./isCellNode";
 export { default as isListNode } from "./isListNode";
 export { default as getNearestNode } from "./getNearestNode";

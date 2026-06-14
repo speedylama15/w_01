@@ -9,6 +9,8 @@ import ToolbarMenu from "./ToolbarMenu.jsx";
 // todo: use react renderer because focus needs to remain on the editor
 // todo: needs to react to the marks
 
+// todo: need to check if the range has been deleted or the anchorPos has been deleted
+
 export const toolbarMenuKey = new PluginKey("toolbarMenuKey");
 
 const getStyle = (coords) => {

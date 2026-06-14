@@ -1,4 +1,4 @@
-const deleteContentInRangedSelection = (tr, from, to) => {
+const handleBadSelection = (tr, from, to) => {
   tr.doc.nodesBetween(from, to, (node, pos) => {
     // delete block
     if (node.attrs.nodeType === "block") {
@@ -79,4 +79,4 @@ const deleteContentInRangedSelection = (tr, from, to) => {
   });
 };
 
-export default deleteContentInRangedSelection;
+export default handleBadSelection;

@@ -9,3 +9,5 @@ export { default as slashCommand } from "./slashCommand/slashCommand";
 export { default as toolbarMenu } from "./toolbarMenu/toolbarMenu";
 export { default as dragAndDrop } from "./dragAndDrop/dragAndDrop";
 export { default as cellSelecting } from "./cellSelecting/cellSelecting";
+export { default as tableResizing } from "./tableResizing/tableResizing";
+export { default as tableReordering } from "./tableReordering/tableReordering";

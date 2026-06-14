@@ -1,19 +1,22 @@
-.show-table-resizer .table-resizer {
+.show-resizer .table-resizer {
   display: flex !important;
   justify-content: center;
 }
 
 .table-resizer {
   display: none;
-  background-color: #ff713969;
+  background-color: #fff;
   position: absolute;
   top: 0;
-  width: 10px;
+  width: 5px;
   height: 100%;
+  cursor: col-resize;
+  /* fix: this needs to be higher than selection box */
+  z-index: 999;
 }
 
 .table-resizer > div {
-  background-color: #144bff25;
-  width: 4px;
+  background-color: #144bff;
+  width: 5px;
   height: 100%;
 }

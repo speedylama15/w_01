@@ -12,17 +12,17 @@ const trackActivity = () => {
 
     state: {
       init() {
-        return { mouseState: IDLE, operation: null };
+        return { mousestate: IDLE, operation: null };
       },
 
       apply(tr, value) {
         // IDLE, DOWN
-        const mouseState = tr.getMeta("trackMouseState");
+        const mousestate = tr.getMeta("trackMousestate");
         const operation = tr.getMeta("trackOperation");
 
         const newValue = value;
 
-        if (mouseState) newValue.mouseState = mouseState.mouseState;
+        if (mousestate) newValue.mousestate = mousestate.mousestate;
         if (operation) newValue.operation = operation.operation;
 
         return newValue;
@@ -32,24 +32,26 @@ const trackActivity = () => {
     filterTransaction(tr, state) {
       const pluginState = trackActivityKey.getState(state);
 
-      // if the mouse is down and the transaction causes a change, block it
-      // fix: this needs a better condition
-      // if the mouse is down but there is an ongoing operation, then let the tr docChange happen
-      // or allow doc changing tr with the appropriate meta
-      if (pluginState.mouseState === DOWN && tr.docChanged) return false;
+      // all doc changing operations trigger a change in the mouse up
+      // so this condition is fine
+      if (pluginState.mousestate === DOWN && tr.docChanged) {
+        console.log("FILTERED"); // fix
+
+        return false;
+      }
 
       return true;
     },
 
     props: {
       attributes(state) {
-        const { mouseState, operation } = trackActivityKey.getState(state);
+        const { mousestate, operation } = trackActivityKey.getState(state);
 
-        if (mouseState === "IDLE" && operation === "DRAG_AND_DROP") {
+        if (mousestate === "IDLE" && operation === "DRAG_AND_DROP") {
           return { class: "drag-and-drop-hand" };
         }
 
-        if (mouseState === "DOWN" && operation === "DRAG_AND_DROP") {
+        if (mousestate === "DOWN" && operation === "DRAG_AND_DROP") {
           return { class: "drag-and-drop-grab" };
         }
       },
@@ -60,9 +62,9 @@ const trackActivity = () => {
         const { tr } = view.state;
         const { dispatch } = view;
 
-        console.log("trackMouseState DOWN");
+        console.log("TRACKACTIVITY_DOWN");
 
-        tr.setMeta("trackMouseState", { mouseState: DOWN });
+        tr.setMeta("trackMousestate", { mousestate: DOWN });
 
         dispatch(tr);
       };
@@ -71,9 +73,9 @@ const trackActivity = () => {
         const { tr } = view.state;
         const { dispatch } = view;
 
-        console.log("trackMouseState UP");
+        console.log("TRACKACTIVITY_UP");
 
-        tr.setMeta("trackMouseState", { mouseState: IDLE });
+        tr.setMeta("trackMousestate", { mousestate: IDLE });
 
         dispatch(tr);
       };

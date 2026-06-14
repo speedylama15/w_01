@@ -68,8 +68,8 @@ import "./css/Video.css";
 import "./css/Table.css";
 import "./css/CellSelecting.css";
 import "./plugin/placeholder/placeholder.css";
-import "./plugin/TableResizing/TableResizing.css";
-import "./plugin/TableReordering/TableReordering.css";
+import "./plugin/tableResizing/tableResizing.css";
+import "./plugin/tableReordering/tableReordering.css";
 import "./plugin/slashCommand/SlashMenu.css";
 import "./plugin/toolbarMenu/ToolbarMenu.css";
 

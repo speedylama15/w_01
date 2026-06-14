@@ -1,10 +1,12 @@
 const getTableMap = (tableNode, tableBefore) => {
   const rows = [];
   const grid = [];
+  const identifiers = {};
 
   let rowIndex = null;
 
   tableNode.descendants((node, pos, parent, index) => {
+    // this is correct. Checked via tr.doc.descendants
     const nodePos = tableBefore + pos + 1;
 
     const type = node.firstChild.type.name || "tableCell";
@@ -28,6 +30,13 @@ const getTableMap = (tableNode, tableBefore) => {
         node,
       };
 
+      identifiers[nodePos] = {
+        pos: nodePos,
+        cellIndex: index,
+        rowIndex,
+        node,
+      };
+
       const row = grid[rowIndex];
 
       if (!row) {
@@ -40,7 +49,7 @@ const getTableMap = (tableNode, tableBefore) => {
     }
   });
 
-  return { rows, grid };
+  return { rows, grid, identifiers };
 };
 
 export default getTableMap;

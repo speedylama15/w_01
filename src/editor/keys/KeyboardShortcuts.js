@@ -8,7 +8,7 @@ import MultiSelection from "../selection/MultiSelection";
 import {
   getNearestNode,
   getNodeByContentType,
-  deleteContentInRangedSelection,
+  handleBadSelection,
   isListNode,
   isCellNode,
   getTableMap,
@@ -152,7 +152,7 @@ export const KeyboardShortcuts = Extension.create({
 
           // ranged
           if (from !== to) {
-            deleteContentInRangedSelection(tr, from, to);
+            handleBadSelection(tr, from, to);
 
             const pos = tr.mapping.map($head.pos);
 
@@ -324,7 +324,7 @@ export const KeyboardShortcuts = Extension.create({
           }
 
           if (from !== to) {
-            deleteContentInRangedSelection(tr, from, to);
+            handleBadSelection(tr, from, to);
 
             const pos = tr.mapping.map(from);
             const near = TextSelection.near(tr.doc.resolve(pos));

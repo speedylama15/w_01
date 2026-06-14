@@ -1,1 +1,1 @@
-export { IDLE, DOWN, DRAG } from "./mouseStates";
+export { IDLE, DOWN, DRAG } from "./mousestates";

@@ -132,15 +132,15 @@ const dragAndDrop = () => {
 
       // fix: how do I handle when there is no selection or when the editor is blurred?
       const down = (e) => {
-        const { mouseState, operation } = trackActivityKey.getState(view.state);
-        if (operation !== "DRAG_AND_DROP" || mouseState !== "DOWN") return;
+        const { mousestate, operation } = trackActivityKey.getState(view.state);
+        if (operation !== "DRAG_AND_DROP" || mousestate !== "DOWN") return;
 
         e.preventDefault();
       };
 
       const move = (e) => {
-        const { mouseState, operation } = trackActivityKey.getState(view.state);
-        if (operation !== "DRAG_AND_DROP" || mouseState !== "DOWN") return;
+        const { mousestate, operation } = trackActivityKey.getState(view.state);
+        if (operation !== "DRAG_AND_DROP" || mousestate !== "DOWN") return;
 
         const { rafID, setCurrentCoords } = dragAndDropStore.getState();
 

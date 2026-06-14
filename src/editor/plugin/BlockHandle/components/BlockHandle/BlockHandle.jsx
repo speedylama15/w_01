@@ -52,7 +52,7 @@ const BlockHandle = memo(() => {
 
       tr.setSelection(MultiSelection.create(tr.doc, before, after));
       tr.setMeta("trackOperation", { operation: "BLOCK_HANDLE_CLICK" });
-      tr.setMeta("trackMouseState", { mouseState: DOWN });
+      tr.setMeta("trackMousestate", { mousestate: DOWN });
 
       dispatch(tr);
 

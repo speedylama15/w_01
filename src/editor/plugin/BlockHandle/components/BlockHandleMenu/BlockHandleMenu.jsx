@@ -43,7 +43,7 @@ const BlockHandleMenu = () => {
           editor.view.focus();
 
           tr.setMeta("trackOperation", { operation: null });
-          tr.setMeta("trackMouseState", { mouseState: DOWN });
+          tr.setMeta("trackMousestate", { mousestate: DOWN });
 
           dispatch(tr);
         }
