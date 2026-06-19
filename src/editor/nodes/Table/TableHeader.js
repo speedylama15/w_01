@@ -5,7 +5,7 @@ import { DOMParser, Fragment } from "@tiptap/pm/model";
 const m_TableHeader = TableHeader.extend({
   marks: "bold italic underline strike textStyle highlight link",
 
-  content: "item",
+  content: "inline*",
 
   selectable: false,
 

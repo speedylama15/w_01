@@ -5,12 +5,23 @@ import { DOMParser, Fragment } from "@tiptap/pm/model";
 const m_TableCell = TableCell.extend({
   marks: "bold italic underline strike textStyle highlight link",
 
-  content: "item",
+  content: "inline*",
 
   selectable: false,
 
   addAttributes() {
     return {
+      contenteditable: {
+        default: false,
+        parseHTML: (element) => {
+          return element.getAttribute("contenteditable");
+        },
+        renderHTML: (attributes) => {
+          return {
+            contenteditable: attributes.contenteditable,
+          };
+        },
+      },
       colspan: { default: 1 },
       rowspan: { default: 1 },
       colwidth: {

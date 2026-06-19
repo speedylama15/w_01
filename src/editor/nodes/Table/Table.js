@@ -17,6 +17,17 @@ const m_Table = Table.extend({
 
   addAttributes() {
     return {
+      contenteditable: {
+        default: false,
+        parseHTML: (element) => {
+          return element.getAttribute("contenteditable");
+        },
+        renderHTML: (attributes) => {
+          return {
+            contenteditable: attributes.contenteditable,
+          };
+        },
+      },
       nodeType: {
         default: "block",
         parseHTML: (element) => {

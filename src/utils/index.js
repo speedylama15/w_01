@@ -6,3 +6,4 @@ export { default as removeInertFromNonPortal } from "./removeInertFromNonPortal"
 export { default as setInertOnNonPortal } from "./setInertOnNonPortal";
 export { default as isInclusive } from "./isInclusive";
 export { default as isPureKey } from "./isPureKey";
+export { default as autoScroll } from "./autoScroll";

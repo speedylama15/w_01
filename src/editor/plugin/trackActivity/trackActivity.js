@@ -1,6 +1,8 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import MultiSelection from "../../selection/MultiSelection";
+import { getPosAtDOM } from "../../utils";
 
+// todo: separately store all the plugin's keys for easier access
 export const trackActivityKey = new PluginKey("trackActivityKey");
 
 const IDLE = "IDLE";
@@ -16,32 +18,34 @@ const trackActivity = () => {
       },
 
       apply(tr, value) {
-        // IDLE, DOWN
-        const mousestate = tr.getMeta("trackMousestate");
-        const operation = tr.getMeta("trackOperation");
+        const trackActivityState = tr.getMeta(trackActivityKey);
 
         const newValue = value;
 
-        if (mousestate) newValue.mousestate = mousestate.mousestate;
-        if (operation) newValue.operation = operation.operation;
+        if (trackActivityState) {
+          return {
+            ...newValue,
+            ...trackActivityState,
+          };
+        }
 
         return newValue;
       },
     },
 
-    filterTransaction(tr, state) {
-      const pluginState = trackActivityKey.getState(state);
+    // filterTransaction(tr, state) {
+    //   const trackActivityState = trackActivityKey.getState(state);
 
-      // all doc changing operations trigger a change in the mouse up
-      // so this condition is fine
-      if (pluginState.mousestate === DOWN && tr.docChanged) {
-        console.log("FILTERED"); // fix
+    //   // all doc changing operations trigger a change in the mouse up
+    //   // so this condition is fine
+    //   if (trackActivityState.mousestate === DOWN && tr.docChanged) {
+    //     console.log("FILTERED", { tr }); // fix
 
-        return false;
-      }
+    //     return false;
+    //   }
 
-      return true;
-    },
+    //   return true;
+    // },
 
     props: {
       attributes(state) {
@@ -58,13 +62,18 @@ const trackActivity = () => {
     },
 
     view(view) {
-      const down = () => {
+      const down = (e) => {
         const { tr } = view.state;
         const { dispatch } = view;
 
-        console.log("TRACKACTIVITY_DOWN");
+        tr.setMeta(trackActivityKey, { mousestate: DOWN });
 
-        tr.setMeta("trackMousestate", { mousestate: DOWN });
+        const cellDOM = e.target.closest("td, th");
+        if (cellDOM) {
+          // e.preventDefault();
+          // const coords = view.posAtCoords({ left: e.clientX, top: e.clientY });
+          // console.log(coords);
+        }
 
         dispatch(tr);
       };
@@ -73,9 +82,7 @@ const trackActivity = () => {
         const { tr } = view.state;
         const { dispatch } = view;
 
-        console.log("TRACKACTIVITY_UP");
-
-        tr.setMeta("trackMousestate", { mousestate: IDLE });
+        tr.setMeta(trackActivityKey, { mousestate: IDLE });
 
         dispatch(tr);
       };

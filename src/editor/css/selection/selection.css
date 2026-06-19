@@ -1,29 +1,28 @@
-::selection {
-  /* background-color: transparent; */
-}
+/* .block *::selection {
+  background-color: transparent;
+} */
 
-.text-selection {
-  background-color: #ffe100;
-  /* padding: 1px 0px 1px 0; */
-  /* border-radius: 3px; */
-}
+/* .active-node *::selection {
+  background-color: rgba(128, 128, 128, 0.249) !important;
+} */
 
-.multi-selection {
-  position: relative;
-}
-
-.multi-selection::after {
-  /* fix: render differently based on the nodes */
-  /* for example, on a table, I want it to appear like a border */
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 3;
-  background-color: #cfd4e49e !important;
-  width: 100%;
-  height: 100%;
-  border: 1px solid #9497a0;
+.block-paragraph.multi-selection {
+  background-color: #00ff8484;
   border-radius: 5px;
-  /* pointer-events: none; */
+}
+
+.block-table.multi-selection {
+  outline: 2px solid #000;
+}
+
+/* .multi-selection *::selection {
+  background-color: transparent !important;
+} */
+
+/* .active-node::selection {
+  background-color: Highlight !important;
+} */
+
+td[contenteditable="false"] {
+  user-select: none;
 }

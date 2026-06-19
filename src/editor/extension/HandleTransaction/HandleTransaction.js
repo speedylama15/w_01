@@ -2,104 +2,95 @@ import { Extension } from "@tiptap/core";
 import { CellSelection } from "prosemirror-tables";
 import { TextSelection } from "@tiptap/pm/state";
 import { ReplaceStep, ReplaceAroundStep } from "@tiptap/pm/transform";
-import { handleBadSelection } from "../../utils";
 
-const getIsWithinRange = (innerFrom, innerTo, outerFrom, outerTo) => {
-  return innerFrom >= outerFrom && innerTo <= outerTo;
-};
+const getProperty = (name) => {
+  if (name === "table") return "table";
+  if (name === "tableCell" || name === "tableHeader") return "cell";
 
-const getTextContentFromSlice = (slice) => {
-  let contents = slice;
-
-  while (!Array.isArray(contents)) {
-    contents = contents.content;
-  }
-
-  let textContent = "";
-
-  contents.forEach((node) => (textContent += node.textContent));
-
-  return textContent;
-};
-
-const isEmptyObject = (obj) => {
-  return Object.keys(obj).length === 0;
+  return "other";
 };
 
 const HandleTransaction = Extension.create({
   name: "handleTransaction",
-  priority: 10000000,
 
   dispatchTransaction({ transaction, next }) {
     try {
       const { selection } = this.editor.state;
-      const { from, to, anchor, head } = selection;
-      const { docChanged, meta } = transaction;
+      const { docChanged } = transaction;
 
-      // review: doc changed, there is no meta, and selection is ranged
-      if (
-        docChanged &&
-        isEmptyObject(meta) &&
-        selection instanceof TextSelection &&
-        anchor !== head
-      ) {
-        const steps = transaction.steps;
+      const undo = transaction.getMeta("undo");
+      const redo = transaction.getMeta("redo");
 
-        let isBadSelection = false;
-        let textContent = null;
+      if (undo || redo) {
+        next(transaction);
 
-        for (const step of steps) {
-          const { from, to } = step;
-
-          if (
-            step instanceof ReplaceStep ||
-            step instanceof ReplaceAroundStep
-          ) {
-            const slice = step.slice;
-            // review: text content must not be empty
-            textContent = getTextContentFromSlice(slice);
-
-            // break if there is no text
-            if (textContent.length === 0) {
-              break;
-            }
-
-            transaction.before.nodesBetween(step.from, step.to, (node, pos) => {
-              if (node.attrs.nodeType === "block") {
-                if (node.type.name === "table") {
-                  const isWithinRange = getIsWithinRange(
-                    pos + 4,
-                    pos + node.nodeSize - 4,
-                    from,
-                    to,
-                  );
-
-                  if (!isWithinRange) isBadSelection = true;
-                }
-
-                return false;
-              }
-            });
-          }
-        }
-
-        if (isBadSelection) {
-          const tr = this.editor.state.tr;
-
-          handleBadSelection(tr, from, to);
-
-          const mappedPos = tr.mapping.map(head);
-          const resolvedPos = tr.doc.resolve(mappedPos);
-          const validSelection = TextSelection.near(resolvedPos);
-
-          tr.setSelection(validSelection);
-          tr.insertText(textContent, validSelection.from);
-
-          next(tr);
-
-          return;
-        }
+        return;
       }
+
+      // // if bad selection is encountered, ALL transaction will collapse the selection
+      // // bad selection should not have been set to begin with
+      // if (
+      //   docChanged &&
+      //   // I thought editor.state.selection would give me an accurate previous selection
+      //   // but that is not the case when the selection mixes table cells with other nodes
+      //   // aka the step is a ReplaceAroundStep
+      //   // However, this.editor.state.selection does still give an accurate instance of the previous selection
+      //   selection instanceof TextSelection
+      // ) {
+      //   const obj = {};
+      //   const steps = transaction.steps;
+
+      //   steps.forEach((step) => {
+      //     const stepFrom = step.from;
+      //     const stepTo = step.to;
+
+      //     transaction.before.nodesBetween(stepFrom, stepTo, (node) => {
+      //       const name = node.type.name;
+      //       const property = getProperty(name);
+
+      //       if (node.attrs.nodeType === "block") {
+      //         if (obj[property]) {
+      //           obj[property] += 1;
+      //         } else {
+      //           obj[property] = 1;
+      //         }
+      //       }
+
+      //       // ignore tableRow and allow the loop to reach tableCell/Header
+      //       if (
+      //         node.type.name === "tableCell" ||
+      //         node.type.name === "tableHeader"
+      //       ) {
+      //         if (obj[property]) {
+      //           obj[property] += 1;
+      //         } else {
+      //           obj[property] = 1;
+      //         }
+
+      //         return false;
+      //       }
+      //     });
+      //   });
+
+      //   if (obj.cell > 1 || (obj.table && obj.other)) {
+      //     console.log("BAD SELECTION!!!"); // fix
+
+      //     const tr = this.editor.state.tr;
+
+      //     const resolvedPos = tr.doc.resolve(transaction.selection.head);
+      //     const validSelection = TextSelection.near(resolvedPos);
+
+      //     tr.setSelection(validSelection);
+
+      //     next(tr);
+
+      //     return;
+      //   } else {
+      //     next(transaction);
+
+      //     return;
+      //   }
+      // }
 
       // fix: this does not catch all errors unfortunately...
       for (let i = 0; i < transaction.steps.length; i++) {
@@ -115,6 +106,7 @@ const HandleTransaction = Extension.create({
     } catch (e) {
       // fix
       console.log("ERROR!", e);
+
       return;
     }
   },

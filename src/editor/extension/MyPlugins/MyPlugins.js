@@ -14,6 +14,7 @@ import {
   cellSelecting,
   tableResizing,
   tableReordering,
+  handlePointerDown,
 } from "../../plugin";
 
 const MyPlugins = Extension.create({
@@ -32,8 +33,9 @@ const MyPlugins = Extension.create({
       toolbarMenu(this.editor),
       dragAndDrop(this.editor),
       cellSelecting,
-      tableResizing,
-      tableReordering,
+      // tableResizing,
+      // tableReordering,
+      // handlePointerDown,
     ];
   },
 });

@@ -26,6 +26,7 @@ import TableRow from "./nodes/Table/TableRow";
 import TableHeader from "./nodes/Table/TableHeader";
 import TableCell from "./nodes/Table/TableCell";
 import TableItem from "./nodes/Table/TableItem";
+// import { Table, TableRow, TableHeader, TableCell } from "./nodes/MyTable/Table";
 
 // mark
 import { TextStyle, Color } from "@tiptap/extension-text-style";
@@ -223,7 +224,6 @@ const EditorProvider = ({ children }) => {
       TableRow,
       TableHeader,
       TableCell,
-      TableItem,
       Text,
 
       // REVIEW: mark

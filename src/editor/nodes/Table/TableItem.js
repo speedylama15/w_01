@@ -18,7 +18,14 @@ const TableItem = Node.create({
   },
 
   renderHTML() {
-    return ["table-item", {}, 0];
+    return [
+      "table-item",
+      {
+        contenteditable: true,
+        // fix
+      },
+      0,
+    ];
   },
 });
 

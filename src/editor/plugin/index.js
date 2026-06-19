@@ -11,3 +11,4 @@ export { default as dragAndDrop } from "./dragAndDrop/dragAndDrop";
 export { default as cellSelecting } from "./cellSelecting/cellSelecting";
 export { default as tableResizing } from "./tableResizing/tableResizing";
 export { default as tableReordering } from "./tableReordering/tableReordering";
+export { default as handlePointerDown } from "./handlePointerDown";
