@@ -67,47 +67,6 @@ export const KeyboardShortcuts = Extension.create({
         return true;
       },
 
-      ",": ({ editor }) => {
-        const { schema } = editor;
-        const { selection } = editor.state;
-        const { head } = selection;
-        const { tr } = editor.view.state;
-        const { dispatch } = editor.view;
-        const { table, tableRow, tableCell, text } = schema.nodes;
-
-        const newCell = tableCell.create(
-          null,
-          schema.text(`Placeholder-${Math.random()}`),
-        );
-
-        let bef = null;
-        let aft = null;
-
-        editor.view.state.doc.descendants((node, pos) => {
-          if (node.type.name === "tableCell") {
-            if (bef === null) {
-              bef = pos;
-              aft = pos + node.nodeSize;
-            }
-          }
-        });
-
-        console.log({ bef, aft, newCell });
-        tr.replaceWith(bef, aft, newCell);
-        dispatch(tr);
-
-        return true;
-
-        // return (
-        //   editor
-        //     .chain()
-        //     .focus()
-        //     // 25 cols and 200 rows max
-        //     .insertTable({ cols: 25, rows: 200, withHeaderRow: false })
-        //     .run()
-        // );
-      },
-
       // fix: use delete range, but if the table is selected in a certain way, extend the range
       // Backspace: ({ editor }) => {
       //   const { selection, tr } = editor.state;

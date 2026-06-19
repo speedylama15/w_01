@@ -47,7 +47,7 @@ const toolbarMenu = (editor) => {
         const { selection } = view.state;
         const { anchor, head } = selection;
 
-        console.log("TOOLBAR", { anchor, head });
+        // console.log("TOOLBAR", { anchor, head });
 
         if (anchor !== head && selection instanceof TextSelection && !menu) {
           const coords = view.coordsAtPos(head);

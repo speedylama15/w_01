@@ -51,10 +51,6 @@ const cellSelecting = new Plugin({
 
       const { activeCellDOM } = cellSelectingKey.getState(view.state);
 
-      if (cellDOM) {
-        e.preventDefault();
-      }
-
       // if (cellDOM) {
       //   if (cellDOM !== cachedCell && cachedCell) {
       //     tr.setNodeAttribute(cachedPos, "contenteditable", false);

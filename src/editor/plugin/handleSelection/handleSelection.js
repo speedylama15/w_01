@@ -1,9 +1,11 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { Mapping } from "@tiptap/pm/transform";
 import MultiSelection from "../../selection/MultiSelection";
 
 import { trackActivityKey } from "../trackActivity/trackActivity";
-// import { cellSelectingKey } from "../cellSelecting/cellSelecting";
+
+import { fixTable } from "../../utils";
 
 const getProperty = (name) => {
   if (name === "table") return "table";
@@ -12,88 +14,64 @@ const getProperty = (name) => {
   return "other";
 };
 
+const isRangeInRange = (inner, outer) => {
+  return inner.start >= outer.start && inner.end <= outer.end;
+};
+
 const handleSelection = () => {
   return new Plugin({
-    props: {
-      createSelectionBetween(view, $anchor, $head) {
-        if ($anchor.pos === $head.pos) return null;
+    appendTransaction(transactions, oldState, newState) {
+      const docChanged = transactions.find((tr) => tr.docChanged);
 
-        const { operation } = trackActivityKey.getState(view.state);
+      if (docChanged) {
+        const { doc, selection } = oldState;
+        const { from, to } = selection;
 
-        console.log({ anchor: $anchor.pos, head: $head.pos });
+        const mapping = new Mapping();
+        transactions.forEach((tr) => mapping.appendMapping(tr.mapping));
 
-        // const { pos, node } = cellSelectingKey.getState(view.state);
-        // if (node) {
-        //   const from = Math.min($anchor.pos, $head.pos);
-        //   const to = Math.max($anchor.pos, $head.pos);
+        const positions = [];
 
-        //   const start = Math.max(pos, from);
-        //   const end = Math.min(pos + node.nodeSize, to);
-
-        //   return TextSelection.create(view.state.doc, start, end);
-        // }
-
-        if (operation === "CELL_SELECTING") return view.state.selection;
-
-        const from = Math.min($anchor.pos, $head.pos);
-        const to = Math.max($anchor.pos, $head.pos);
-        const obj = {};
-
-        view.state.doc.nodesBetween(from, to, (node) => {
-          const name = node.type.name;
-          const property = getProperty(name);
-
+        doc.nodesBetween(from, to, (node, pos) => {
           if (node.attrs.nodeType === "block") {
-            if (obj[property]) {
-              obj[property] += 1;
-            } else {
-              obj[property] = 1;
-            }
-          }
+            const before = pos;
+            const after = pos + node.nodeSize;
 
-          // ignore tableRow and allow the loop to reach tableCell/Header
-          if (
-            node.type.name === "tableCell" ||
-            node.type.name === "tableHeader"
-          ) {
-            if (obj[property]) {
-              obj[property] += 1;
-            } else {
-              obj[property] = 1;
+            const isInRange = isRangeInRange(
+              { start: before, end: after },
+              { start: from, end: to },
+            );
+
+            if (!isInRange && node.type.name === "table") {
+              positions.push(pos);
             }
 
             return false;
           }
         });
 
-        // this is bad selection, therefore convert the selection to MultiSelection
-        if (
-          // obj.cell > 1 ||
-          obj.table &&
-          obj.other
-        ) {
-          const multi = MultiSelection.create(view.state.doc, from, to);
+        if (positions.length > 0) {
+          const existingPositions = positions.filter((pos) => {
+            if (!mapping.mapResult(pos).deleted) return pos;
+          });
 
-          return multi;
-        } else {
-          return null;
+          console.log(existingPositions);
         }
+      }
+    },
+
+    props: {
+      createSelectionBetween(view, $anchor, $head) {
+        const from = Math.min($anchor.pos, $head.pos);
+        const to = Math.max($anchor.pos, $head.pos);
+
+        console.log("selection", { from, to });
+        return null;
       },
 
       decorations(state) {
         const { selection } = state;
         const { from, to } = selection;
-
-        // const { node, pos } = cellSelectingKey.getState(state);
-        // if (node && selection instanceof TextSelection) {
-        //   const dec = Decoration.node(pos, pos + node.nodeSize, {
-        //     class: "active-node",
-        //   });
-
-        //   const set = DecorationSet.create(state.doc, [dec]);
-
-        //   return set;
-        // }
 
         if (from === to) return DecorationSet.empty;
 
@@ -127,37 +105,6 @@ const handleSelection = () => {
           return DecorationSet.create(state.tr.doc, decs);
         }
       },
-
-      // createSelectionBetween(view, $anchor, $head) {
-      //   const from = Math.min($anchor.pos, $head.pos);
-      //   const to = Math.max($anchor.pos, $head.pos);
-      //   const obj = {};
-
-      //   view.state.doc.nodesBetween(from, to, (node, pos) => {
-      //     if (node.attrs.nodeType === "block") {
-      //       const { name } = node.type;
-
-      //       console.log(name);
-
-      //       obj[pos] = name;
-
-      //       return false;
-      //     }
-      //   });
-
-      //   console.log("CREATESELECTIONBETWEEN", obj);
-
-      //   // const range = new Range();
-      //   // const fromData = view.domAtPos(from);
-      //   // const toData = view.domAtPos(to);
-      //   // range.setStart(fromData.node, fromData.offset);
-      //   // range.setEnd(toData.node, toData.offset);
-
-      //   // const highlight = new Highlight(range);
-      //   // CSS.highlights.set("my-highlight", highlight);
-
-      //   return null;
-      // },
     },
   });
 };

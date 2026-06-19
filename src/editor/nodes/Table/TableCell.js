@@ -11,17 +11,6 @@ const m_TableCell = TableCell.extend({
 
   addAttributes() {
     return {
-      contenteditable: {
-        default: false,
-        parseHTML: (element) => {
-          return element.getAttribute("contenteditable");
-        },
-        renderHTML: (attributes) => {
-          return {
-            contenteditable: attributes.contenteditable,
-          };
-        },
-      },
       colspan: { default: 1 },
       rowspan: { default: 1 },
       colwidth: {
