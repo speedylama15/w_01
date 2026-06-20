@@ -27,70 +27,70 @@ const HandleTransaction = Extension.create({
         return;
       }
 
-      // // if bad selection is encountered, ALL transaction will collapse the selection
-      // // bad selection should not have been set to begin with
-      // if (
-      //   docChanged &&
-      //   // I thought editor.state.selection would give me an accurate previous selection
-      //   // but that is not the case when the selection mixes table cells with other nodes
-      //   // aka the step is a ReplaceAroundStep
-      //   // However, this.editor.state.selection does still give an accurate instance of the previous selection
-      //   selection instanceof TextSelection
-      // ) {
-      //   const obj = {};
-      //   const steps = transaction.steps;
+      // if bad selection is encountered, ALL transaction will collapse the selection
+      // bad selection should not have been set to begin with
+      if (
+        docChanged &&
+        // I thought editor.state.selection would give me an accurate previous selection
+        // but that is not the case when the selection mixes table cells with other nodes
+        // aka the step is a ReplaceAroundStep
+        // However, this.editor.state.selection does still give an accurate instance of the previous selection
+        selection instanceof TextSelection
+      ) {
+        const obj = {};
+        const steps = transaction.steps;
 
-      //   steps.forEach((step) => {
-      //     const stepFrom = step.from;
-      //     const stepTo = step.to;
+        steps.forEach((step) => {
+          const stepFrom = step.from;
+          const stepTo = step.to;
 
-      //     transaction.before.nodesBetween(stepFrom, stepTo, (node) => {
-      //       const name = node.type.name;
-      //       const property = getProperty(name);
+          transaction.before.nodesBetween(stepFrom, stepTo, (node) => {
+            const name = node.type.name;
+            const property = getProperty(name);
 
-      //       if (node.attrs.nodeType === "block") {
-      //         if (obj[property]) {
-      //           obj[property] += 1;
-      //         } else {
-      //           obj[property] = 1;
-      //         }
-      //       }
+            if (node.attrs.nodeType === "block") {
+              if (obj[property]) {
+                obj[property] += 1;
+              } else {
+                obj[property] = 1;
+              }
+            }
 
-      //       // ignore tableRow and allow the loop to reach tableCell/Header
-      //       if (
-      //         node.type.name === "tableCell" ||
-      //         node.type.name === "tableHeader"
-      //       ) {
-      //         if (obj[property]) {
-      //           obj[property] += 1;
-      //         } else {
-      //           obj[property] = 1;
-      //         }
+            // ignore tableRow and allow the loop to reach tableCell/Header
+            if (
+              node.type.name === "tableCell" ||
+              node.type.name === "tableHeader"
+            ) {
+              if (obj[property]) {
+                obj[property] += 1;
+              } else {
+                obj[property] = 1;
+              }
 
-      //         return false;
-      //       }
-      //     });
-      //   });
+              return false;
+            }
+          });
+        });
 
-      //   if (obj.cell > 1 || (obj.table && obj.other)) {
-      //     console.log("BAD SELECTION!!!"); // fix
+        if (obj.cell > 1 || (obj.table && obj.other)) {
+          console.log("BAD SELECTION!!!"); // fix
 
-      //     const tr = this.editor.state.tr;
+          const tr = this.editor.state.tr;
 
-      //     const resolvedPos = tr.doc.resolve(transaction.selection.head);
-      //     const validSelection = TextSelection.near(resolvedPos);
+          const resolvedPos = tr.doc.resolve(transaction.selection.head);
+          const validSelection = TextSelection.near(resolvedPos);
 
-      //     tr.setSelection(validSelection);
+          tr.setSelection(validSelection);
 
-      //     next(tr);
+          next(tr);
 
-      //     return;
-      //   } else {
-      //     next(transaction);
+          return;
+        } else {
+          next(transaction);
 
-      //     return;
-      //   }
-      // }
+          return;
+        }
+      }
 
       // fix: this does not catch all errors unfortunately...
       for (let i = 0; i < transaction.steps.length; i++) {

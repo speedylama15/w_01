@@ -58,6 +58,14 @@
   width: inherit;
   border-radius: inherit;
   overflow-x: scroll;
+
+  /* Hides the scrollbar for Chromium-based browsers (Chrome, Edge, Electron) */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Optional: Hides it for Firefox if your app runs outside of Electron too */
+  scrollbar-width: none;
 }
 
 table {

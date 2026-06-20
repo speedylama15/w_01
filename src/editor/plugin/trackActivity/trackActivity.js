@@ -1,6 +1,5 @@
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import MultiSelection from "../../selection/MultiSelection";
-import { getPosAtDOM } from "../../utils";
 
 // todo: separately store all the plugin's keys for easier access
 export const trackActivityKey = new PluginKey("trackActivityKey");
@@ -20,32 +19,28 @@ const trackActivity = () => {
       apply(tr, value) {
         const trackActivityState = tr.getMeta(trackActivityKey);
 
-        const newValue = value;
-
         if (trackActivityState) {
           return {
-            ...newValue,
+            ...value,
             ...trackActivityState,
           };
         }
 
-        return newValue;
+        return value;
       },
     },
 
-    // filterTransaction(tr, state) {
-    //   const trackActivityState = trackActivityKey.getState(state);
+    filterTransaction(tr, state) {
+      const trackActivityState = trackActivityKey.getState(state);
 
-    //   // all doc changing operations trigger a change in the mouse up
-    //   // so this condition is fine
-    //   if (trackActivityState.mousestate === DOWN && tr.docChanged) {
-    //     console.log("FILTERED", { tr }); // fix
+      // all doc changing operations trigger a change in the mouse up
+      // so this condition is fine
+      if (trackActivityState.mousestate === DOWN && tr.docChanged) {
+        return false;
+      }
 
-    //     return false;
-    //   }
-
-    //   return true;
-    // },
+      return true;
+    },
 
     props: {
       attributes(state) {
@@ -62,18 +57,11 @@ const trackActivity = () => {
     },
 
     view(view) {
-      const down = (e) => {
+      const down = () => {
         const { tr } = view.state;
         const { dispatch } = view;
 
         tr.setMeta(trackActivityKey, { mousestate: DOWN });
-
-        const cellDOM = e.target.closest("td, th");
-        if (cellDOM) {
-          // e.preventDefault();
-          // const coords = view.posAtCoords({ left: e.clientX, top: e.clientY });
-          // console.log(coords);
-        }
 
         dispatch(tr);
       };

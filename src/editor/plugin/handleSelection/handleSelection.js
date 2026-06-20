@@ -5,67 +5,39 @@ import MultiSelection from "../../selection/MultiSelection";
 
 import { trackActivityKey } from "../trackActivity/trackActivity";
 
-import { fixTable } from "../../utils";
-
-const getProperty = (name) => {
-  if (name === "table") return "table";
-  if (name === "tableCell" || name === "tableHeader") return "cell";
-
-  return "other";
-};
-
-const isRangeInRange = (inner, outer) => {
-  return inner.start >= outer.start && inner.end <= outer.end;
-};
-
 const handleSelection = () => {
   return new Plugin({
-    appendTransaction(transactions, oldState, newState) {
-      const docChanged = transactions.find((tr) => tr.docChanged);
+    props: {
+      createSelectionBetween(view, $anchor, $head) {
+        const { operation } = trackActivityKey.getState(view.state);
 
-      if (docChanged) {
-        const { doc, selection } = oldState;
-        const { from, to } = selection;
+        if (operation === "CELL_SELECTING") {
+          return view.state.selection;
+        }
 
-        const mapping = new Mapping();
-        transactions.forEach((tr) => mapping.appendMapping(tr.mapping));
+        const from = Math.min($anchor.pos, $head.pos);
+        const to = Math.max($anchor.pos, $head.pos);
 
-        const positions = [];
+        const map = {};
 
-        doc.nodesBetween(from, to, (node, pos) => {
+        view.state.doc.nodesBetween(from, to, (node) => {
           if (node.attrs.nodeType === "block") {
-            const before = pos;
-            const after = pos + node.nodeSize;
+            const property = node.isTextblock ? "text" : "nonText";
 
-            const isInRange = isRangeInRange(
-              { start: before, end: after },
-              { start: from, end: to },
-            );
-
-            if (!isInRange && node.type.name === "table") {
-              positions.push(pos);
+            if (map[property]) {
+              map[property] += 1;
+            } else {
+              map[property] = 1;
             }
 
             return false;
           }
         });
 
-        if (positions.length > 0) {
-          const existingPositions = positions.filter((pos) => {
-            if (!mapping.mapResult(pos).deleted) return pos;
-          });
-
-          console.log(existingPositions);
+        if (map.text && map.nonText) {
+          return MultiSelection.create(view.state.doc, from, to);
         }
-      }
-    },
 
-    props: {
-      createSelectionBetween(view, $anchor, $head) {
-        const from = Math.min($anchor.pos, $head.pos);
-        const to = Math.max($anchor.pos, $head.pos);
-
-        console.log("selection", { from, to });
         return null;
       },
 
@@ -79,7 +51,12 @@ const handleSelection = () => {
           const arr = [];
 
           state.doc.nodesBetween(from, to, (node, pos) => {
-            if (node.attrs.nodeType === "block") {
+            if (
+              // if it's a block and is a text block
+              (node.attrs.nodeType === "block" && node.isTextblock) ||
+              // or it's not a text block but the node is a table
+              node.type.name === "table"
+            ) {
               const dec = Decoration.node(pos, pos + node.nodeSize, {
                 class: "active-node",
               });
@@ -104,6 +81,17 @@ const handleSelection = () => {
 
           return DecorationSet.create(state.tr.doc, decs);
         }
+      },
+
+      handleTextInput(view, from, to, text) {
+        console.log("handleTextInput", text);
+      },
+
+      handleDOMEvents: {
+        beforeinput(view, e) {
+          // e.preventDefault();
+          console.log("beforeinput", view.state.selection, e);
+        },
       },
     },
   });

@@ -1,28 +1,24 @@
-/* .block *::selection {
+/* todo: maybe I can do something with marks? */
+
+.block {
+  padding: 4px;
+  margin-bottom: 3px;
+}
+
+::selection {
   background-color: transparent;
-} */
+}
 
-/* .active-node *::selection {
-  background-color: rgba(128, 128, 128, 0.249) !important;
-} */
+.active-node *::selection {
+  background-color: Highlight;
+}
 
-.block-paragraph.multi-selection {
-  background-color: #00ff8484;
+.multi-selection,
+.multi-selection td {
+  background-color: rgb(191, 205, 219);
+  outline: 1px solid rgb(134, 152, 172);
+}
+
+.multi-selection {
   border-radius: 5px;
-}
-
-.block-table.multi-selection {
-  outline: 2px solid #000;
-}
-
-/* .multi-selection *::selection {
-  background-color: transparent !important;
-} */
-
-/* .active-node::selection {
-  background-color: Highlight !important;
-} */
-
-td[contenteditable="false"] {
-  user-select: none;
 }
