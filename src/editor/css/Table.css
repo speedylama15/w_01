@@ -59,12 +59,10 @@
   border-radius: inherit;
   overflow-x: scroll;
 
-  /* Hides the scrollbar for Chromium-based browsers (Chrome, Edge, Electron) */
   &::-webkit-scrollbar {
     display: none;
   }
 
-  /* Optional: Hides it for Firefox if your app runs outside of Electron too */
   scrollbar-width: none;
 }
 
@@ -89,7 +87,7 @@ td {
 td,
 th {
   position: relative;
-  padding: 12px;
+  padding: 5px;
   border: 1px solid #000;
   vertical-align: top;
   font-size: var(--font-size);
@@ -117,4 +115,8 @@ tbody > tr td:last-child {
 
 table-item {
   display: block;
+  /* fix */
+  /* background-color: #e9edf3; */
+  height: 100%;
+  padding: 7px;
 }

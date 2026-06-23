@@ -7,9 +7,10 @@
 .selection-box {
   display: none;
   position: absolute;
+  inset: 0;
   top: 0;
   left: 0;
-  border: 3px solid #ff5100;
+  border: 3px solid #00aaff;
   transform: translate(-1px, -1px);
   z-index: 1;
   pointer-events: none;

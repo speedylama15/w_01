@@ -5,7 +5,7 @@ import { DOMParser, Fragment } from "@tiptap/pm/model";
 const m_TableCell = TableCell.extend({
   marks: "bold italic underline strike textStyle highlight link",
 
-  content: "inline*",
+  content: "item",
 
   selectable: false,
 
@@ -55,14 +55,12 @@ const m_TableCell = TableCell.extend({
           const parser = DOMParser.fromSchema(schema);
           const parsedDOM = parser.parse(dom);
 
-          const arr = [];
+          let text = "";
 
           parsedDOM.content.descendants((node) => {
             // fetches TextNode guaranteed
             if (node.isText) {
-              const text = schema.text(node.textContent);
-
-              arr.push(text);
+              text += node.textContent;
 
               return false;
             }
@@ -70,7 +68,9 @@ const m_TableCell = TableCell.extend({
             return undefined;
           });
 
-          return Fragment.fromArray(arr);
+          const cell = schema.nodes.tableCell.create(null, schema.text(text));
+
+          return cell;
         },
       },
     ];

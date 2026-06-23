@@ -30,6 +30,7 @@ const trackActivity = () => {
       },
     },
 
+    // idea: perhaps here I can filter out bad selection transactions?
     filterTransaction(tr, state) {
       const trackActivityState = trackActivityKey.getState(state);
 

@@ -83,15 +83,15 @@ const handleSelection = () => {
         }
       },
 
-      handleTextInput(view, from, to, text) {
-        console.log("handleTextInput", text);
-      },
+      // handleTextInput(view, from, to, text) {
+      //   console.log("handleTextInput", text);
+      // },
 
       handleDOMEvents: {
-        beforeinput(view, e) {
-          // e.preventDefault();
-          console.log("beforeinput", view.state.selection, e);
-        },
+        // beforeinput(view, e) {
+        //   // e.preventDefault();
+        //   console.log("beforeinput", view.state.selection, e);
+        // },
       },
     },
   });

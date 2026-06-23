@@ -3,12 +3,13 @@ import { TableRow } from "@tiptap/extension-table";
 const m_TableRow = TableRow.extend({
   selectable: false,
 
+  // ensure that a row has at least 1 cell or header
   content: "(tableCell | tableHeader)+",
 
   addAttributes() {
     return {
       nodeType: {
-        default: "content",
+        default: "composite",
         parseHTML: (element) => {
           return element.getAttribute("data-node-type");
         },

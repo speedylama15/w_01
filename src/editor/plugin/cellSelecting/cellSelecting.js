@@ -115,8 +115,21 @@ const cellSelecting = new Plugin({
         const before = selection.$anchorCell.before(-1);
         const after = selection.$anchorCell.after(-1);
 
+        const decs = [];
+
         const dec = Decoration.node(before, after, { class: "active-table" });
-        const set = DecorationSet.create(state.doc, [dec]);
+
+        decs.push(dec);
+
+        selection.forEachCell((node, pos) => {
+          const dec = Decoration.node(pos, pos + node.nodeSize, {
+            class: "active-cell",
+          });
+
+          decs.push(dec);
+        });
+
+        const set = DecorationSet.create(state.doc, decs);
 
         return set;
       }
@@ -130,26 +143,44 @@ const cellSelecting = new Plugin({
     let anchorCell = null;
     let anchorTable = null;
     let anchorTableID = null;
-    let anchorWrapper = null;
-    let anchorWrapperRect = null;
+    let cellRect = null;
+    let wrapper = null;
+    let wrapperRect = null;
 
     let anchorPos = null;
 
     const loop = () => {
       const { tr } = view.state;
       const { dispatch } = view;
-      const { clientX, clientY } = moveEvent;
-
-      autoScroll(clientX, anchorWrapper, anchorWrapperRect);
-
-      const cell = document
-        .elementFromPoint(clientX, clientY)
-        ?.closest("td, th");
 
       const { operation } = trackActivityKey.getState(view.state);
 
+      const { clientX, clientY, pageX, pageY } = moveEvent;
+
+      const cell = moveEvent.target.closest("td, th");
+
+      autoScroll(clientX, wrapper, wrapperRect);
+
+      const mouseX = pageX + wrapper.scrollLeft;
+      const mouseY = pageY;
+
+      const { top, right, bottom, left } = cellRect;
+
       if (operation === null) {
-        if (cell === anchorCell) {
+        if (
+          !cellRect ||
+          Math.abs(mouseY - top) <= 5 ||
+          Math.abs(mouseY - bottom) <= 5 ||
+          Math.abs(mouseX - left) <= 5 ||
+          Math.abs(mouseX - right) <= 5
+        ) {
+          console.log("OUTSIDE"); // fix
+
+          const sel = CellSelection.create(tr.doc, anchorPos);
+          tr.setMeta(trackActivityKey, { operation: CELL_SELECTING });
+          tr.setSelection(sel);
+          dispatch(tr);
+        } else if (cell === anchorCell) {
           rafID = requestAnimationFrame(loop);
 
           return;
@@ -177,7 +208,7 @@ const cellSelecting = new Plugin({
         return;
       }
 
-      if (operation === "CELL_SELECTING") {
+      if (operation === CELL_SELECTING) {
         if (cell && cell.closest(".block-table").dataset.id === anchorTableID) {
           const headPos = getPosAtDOM(view, cell);
 
@@ -192,6 +223,8 @@ const cellSelecting = new Plugin({
 
         return;
       }
+
+      rafID = requestAnimationFrame(loop);
     };
 
     const down = (e) => {
@@ -201,43 +234,88 @@ const cellSelecting = new Plugin({
       const { tr } = view.state;
       const { dispatch } = view;
 
-      anchorCell = e.target.closest("td, th");
-      if (!anchorCell) return;
+      const cellDOM = e.target.closest("td, th");
+      if (!cellDOM) return;
 
-      anchorTable = anchorCell.closest(".block-table");
+      anchorCell = cellDOM;
+      anchorTable = cellDOM.closest(".block-table");
       anchorTableID = anchorTable.dataset.id;
-      anchorWrapper = anchorTable.querySelector(".tableWrapper");
-      anchorWrapperRect = anchorWrapper.getBoundingClientRect();
-
-      anchorPos = getPosAtDOM(view, anchorCell);
+      anchorPos = getPosAtDOM(view, cellDOM);
       const node = view.state.doc.nodeAt(anchorPos);
-      const after = anchorPos + node.nodeSize;
 
-      pointerdownOnCell(e, view, tr, anchorPos + 2, after - 2);
+      // pointerdownOnCell(
+      //   e,
+      //   view,
+      //   tr,
+      //   anchorPos + 2,
+      //   anchorPos + node.nodeSize - 2,
+      // );
 
-      dispatch(tr);
+      wrapper = cellDOM.closest(".tableWrapper");
+      wrapperRect = wrapper.getBoundingClientRect();
+
+      const selectionBox = e.target.closest(".selection-box");
+
+      const { top, right, bottom, left } = cellDOM.getBoundingClientRect();
+      // idea: I need a quick and easy way to identify the container of the Note
+      cellRect = {
+        top: top + window.scrollY,
+        bottom: bottom + window.scrollY,
+        left: left + wrapper.scrollLeft,
+        right: right + wrapper.scrollLeft,
+      };
+
+      const mouseX = e.pageX + wrapper.scrollLeft;
+      const mouseY = e.pageY;
+
+      if (
+        Math.abs(mouseY - cellRect.top) <= 5 ||
+        Math.abs(mouseY - cellRect.bottom) <= 5 ||
+        Math.abs(mouseX - cellRect.left) <= 5 ||
+        Math.abs(mouseX - cellRect.right) <= 5
+      ) {
+        e.preventDefault();
+
+        const sel = CellSelection.create(tr.doc, anchorPos);
+
+        tr.setMeta(trackActivityKey, { operation: CELL_SELECTING });
+        tr.setSelection(sel);
+
+        console.log("WHAT THE...", sel);
+
+        dispatch(tr);
+      } else if (selectionBox) {
+        e.preventDefault();
+
+        const { selection } = view.state;
+
+        tr.setSelection(selection);
+        dispatch(tr);
+
+        return;
+      }
 
       const move = (e) => {
         moveEvent = e;
 
-        if (rafID === null) rafID = requestAnimationFrame(loop);
+        if (!rafID) requestAnimationFrame(loop);
       };
 
       const up = () => {
         const { tr } = view.state;
         const { dispatch } = view;
 
-        if (rafID) {
-          cancelAnimationFrame(rafID);
+        const { operation } = trackActivityKey.getState(view.state);
+
+        if (operation === CELL_SELECTING) {
+          if (rafID) cancelAnimationFrame(rafID);
 
           rafID = null;
           moveEvent = null;
 
-          anchorCell = null;
-          anchorTable = null;
-          anchorTableID = null;
-          anchorWrapper = null;
-          anchorWrapperRect = null;
+          cellRect = null;
+          wrapper = null;
+          wrapperRect = null;
 
           anchorPos = null;
 

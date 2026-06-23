@@ -1,5 +1,3 @@
-/* todo: maybe I can do something with marks? */
-
 .block {
   padding: 4px;
   margin-bottom: 3px;
@@ -10,15 +8,36 @@
 }
 
 .active-node *::selection {
-  background-color: Highlight;
+  background-color: rgb(146, 212, 245);
+}
+
+mark *::selection {
+  background-color: Highlight !important;
 }
 
 .multi-selection,
 .multi-selection td {
-  background-color: rgb(191, 205, 219);
-  outline: 1px solid rgb(134, 152, 172);
+  background-color: rgb(199, 208, 221);
 }
 
-.multi-selection {
+.block.multi-selection {
+  outline: 2px solid rgb(30, 120, 255);
   border-radius: 5px;
+}
+
+table,
+tbody,
+tr,
+td {
+  isolation: auto;
+}
+
+.active-cell::after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  inset: 0;
+  background: #a1e1ff66;
+  border-radius: 3px;
+  pointer-events: none;
 }
